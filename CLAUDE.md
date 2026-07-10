@@ -79,13 +79,40 @@ por ID externo). Já aplicado no banco (2026-07-10):
 - **Módulo de alertas corrigido**: arquivo renomeado pra `alertas.service.ts` e relation
   `HistoricoAlerta.regra` adicionada no schema (migration aplicada)
 
-### Não iniciado
-- OCR de hodômetro/cupom fiscal (confirmado que vamos fazer — falta decidir/obter chaves de
-  Google Vision e Claude API)
-- SEFAZ (certificado digital ainda não confirmado qual arquivo/senha usar)
-- Deploy (Vercel + Railway) — propositalmente deixado por último
-- **Controle de versão**: o projeto NÃO é um repositório git — fazer `git init` + commit
-  inicial antes de mudanças grandes
+### Concluído em 2026-07-10 (segunda rodada — pós-docs do escopo)
+- **S05 completo**: taxas reais do BCB SGS (CDI série 12, Selic série 11, cache 6h, fallback),
+  simulador de financiamento ("posso assumir parcela de R$ X?" → meses em risco + aumento de
+  meta) e comparador aplicar×antecipar×reinvestir com TIR/VPL/payback (recomendação por VPL,
+  CDI como taxa de desconto). Endpoints: `/simulador/taxas`, `/simulador/financiamento`,
+  `/simulador/comparar-investimento`. UI na tela do simulador.
+- **S04 ampliado**: violação de descanso semanal (35h contínuas por janela de 7 dias) no
+  relatório da Lei do Motorista + endpoint `/jornada/lei-motorista/verificar/:motoristaId`
+  (interjornada 11h + viagem em andamento + sugestão de motoristas alternativos) pra usar na
+  alocação de OS. Classes de hora extra já conformes (diurna/noturna/feriado/domingo no DTO).
+- **Resumos diários** (Escopo §S02): crons 07h gestor / 07h30 manutenção / 08h atendimento
+  (`resumos.scheduler.ts`), gravando no painel de alertas via regras auto-criadas; quando o
+  WhatsApp conectar, o mesmo disparo passa a enviar mensagem.
+- **Git**: repositório inicializado (branch main), commit inicial limpo — `.env` fora do git,
+  `.env.example` como contrato de variáveis.
+- **Deploy web na Vercel**: projeto `molinett` (team digaaisuporte-4949s-projects), produção em
+  `molinett.vercel.app`, domínio `molinett.frotaai.com` adicionado ao projeto.
+  **DNS pendente do cliente**: CNAME `molinett` → `210f71e8bbc09d95.vercel-dns-017.com`
+  (fallback: `cname.vercel-dns.com`). Token Vercel fornecido pelo cliente (não comitar).
+
+### Não iniciado / pendente
+- **API em produção**: NestJS NÃO roda na Vercel — plano original é Railway. Enquanto não
+  houver API hospedada, o site em produção não loga (NEXT_PUBLIC_API_URL aponta pra
+  localhost). Próximo passo do deploy.
+- **Supabase Auth**: cliente confirmou que quer "supabase auth normal" pro plano multi-domínio
+  (molinett.frotaai.com / franco.frotaai.com). Migração JWT→Supabase Auth planejada, ainda
+  não iniciada — é refactor grande (auth module, guards, frontend, seeds).
+- OCR de hodômetro/cupom fiscal (falta decidir/obter chaves)
+- SEFAZ (certificado digital ainda não confirmado)
+- **Conflito a resolver com o cliente**: o Escopo v3/critérios de aceite exigem WhatsApp
+  **oficial da Meta** (guardrail: "nada de WhatsApp não-oficial"), mas a decisão registrada
+  foi Evolution API. Re-confirmar antes do go-live — critério de aceite cita Cloud API.
+- Senha do seed do admin (`SENHA_REMOVIDA_DO_HISTORICO_GIT`) está em `prisma/seed.ts` no git — trocar a senha
+  do admin em produção no primeiro login.
 
 ## Decisões em aberto (não decidir sozinho, perguntar)
 
