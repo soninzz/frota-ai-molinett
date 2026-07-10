@@ -96,6 +96,7 @@ model Veiculo {
   seguros             Seguro[]
   sinistros           Sinistro[]
   viagens             Viagem[]
+  telemetria          TelemetriaPosicao[]
 
   @@map("veiculos")
 }
@@ -536,8 +537,28 @@ model Viagem {
   motorista        Motorista    @relation(fields: [motoristaId], references: [id])
   os               OrdemServico @relation(fields: [osId], references: [id])
   veiculo          Veiculo      @relation(fields: [veiculoId], references: [id])
+  telemetria       TelemetriaPosicao[]
 
   @@map("viagens")
+}
+
+// Posições brutas do rastreador por viagem — necessário pra checar direção
+// contínua (5h30 + pausa 30min) e intervalo intrajornada (1h refeição),
+// que exigem granularidade ponto-a-ponto, não só o agregado HT/HP.
+model TelemetriaPosicao {
+  id          String   @id @default(cuid())
+  viagemId    String
+  veiculoId   String
+  latitude    Float
+  longitude   Float
+  velocidade  Float
+  motorLigado Boolean
+  timestamp   DateTime
+  viagem      Viagem   @relation(fields: [viagemId], references: [id])
+  veiculo     Veiculo  @relation(fields: [veiculoId], references: [id])
+
+  @@index([viagemId, timestamp])
+  @@map("telemetria_posicoes")
 }
 
 model HoraExtra {

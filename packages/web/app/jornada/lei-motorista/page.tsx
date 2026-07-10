@@ -18,12 +18,21 @@ type MotoristaRelatorio = {
   motorista: string;
   viagensAnalisadas: number;
   horasDirecaoTotal: number;
+  horasEsperaTotal: number;
+  horasJornadaTotal: number;
   violacoes: Violacao[];
   conforme: boolean;
 };
 
 type Relatorio = {
-  parametros: { limiteDirecaoDiariaHoras: number; descansoInterjornadaHoras: number };
+  parametros: {
+    limiteDirecaoDiariaHoras: number;
+    descansoInterjornadaHoras: number;
+    descansoSemanalHoras: number;
+    limiteDirecaoContinuaHoras: number;
+    pausaDirecaoMinutos: number;
+    intrajornadaRefeicaoMinutos: number;
+  };
   motoristas: MotoristaRelatorio[];
   totalViolacoes: number;
 };
@@ -40,6 +49,9 @@ type RelatorioClasses = { classes: ClasseHoraExtra[] };
 const TIPO_VIOLACAO: Record<string, string> = {
   DIRECAO_DIARIA_EXCEDIDA: "Direção diária excedida",
   INTERJORNADA_INSUFICIENTE: "Descanso interjornada insuficiente",
+  DESCANSO_SEMANAL_INSUFICIENTE: "Descanso semanal insuficiente (35h)",
+  DIRECAO_CONTINUA_EXCEDIDA: "Direção contínua excedida (5h30 sem pausa)",
+  INTRAJORNADA_AUSENTE: "Intervalo de refeição ausente (1h)",
 };
 
 export default function LeiMotoristaPage() {
@@ -152,7 +164,8 @@ export default function LeiMotoristaPage() {
                   <div>
                     <span className="text-[13px] font-semibold text-zinc-900">{m.motorista}</span>
                     <span className="ml-3 text-[12px] text-zinc-400">
-                      {m.viagensAnalisadas} viagem(ns) · {m.horasDirecaoTotal}h de direção
+                      {m.viagensAnalisadas} viagem(ns) · {m.horasDirecaoTotal}h de direção ·{" "}
+                      {m.horasEsperaTotal}h de espera · {m.horasJornadaTotal}h de jornada total
                     </span>
                   </div>
                   {m.conforme ? (

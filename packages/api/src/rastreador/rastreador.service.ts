@@ -124,31 +124,60 @@ export class RastreadorService {
     }
   }
  
+  // Abaixo da qual consideramos o veículo "parado" mesmo com motor ligado
+  // (tráfego, semáforo). Acima disso conta como direção efetiva.
+  private static readonly VELOCIDADE_PARADO_KMH = 5
+
   // ── Atualiza HT/HP da viagem em andamento com base nas posições ──
-  // Chamado por um cron (ex: a cada 5 min) para todas as viagens EM_ANDAMENTO
+  // Chamado por um cron (ex: a cada 5 min) para todas as viagens EM_ANDAMENTO.
+  // Também persiste a telemetria bruta (necessária pra checar direção
+  // contínua de 5h30 e intervalo intrajornada de 1h — Lei do Motorista).
   async atualizarViagensEmAndamento() {
     const posicoes = await this.buscarPosicoesNovas()
     if (!posicoes.length) return
- 
+
     const viagensAtivas = await this.prisma.viagem.findMany({
       where: { concluidaEm: null, iniciadaEm: { not: null } },
       include: { veiculo: true },
     })
- 
+
     for (const viagem of viagensAtivas) {
       const posicoesDoVeiculo = posicoes.filter((p) => p.placa === viagem.veiculo.placa)
       if (!posicoesDoVeiculo.length) continue
- 
-      const minutosMotorLigado = posicoesDoVeiculo.filter((p) => p.motorLigado).length * 5 // aproximação
-      const minutosMotorDesligado = posicoesDoVeiculo.filter((p) => !p.motorLigado).length * 5
- 
-      await this.prisma.viagem.update({
-        where: { id: viagem.id },
-        data: {
-          htMinutos: (viagem.htMinutos ?? 0) + minutosMotorLigado,
-          hpMotorDesligado: (viagem.hpMotorDesligado ?? 0) + minutosMotorDesligado,
-        },
-      })
+
+      // Motor ligado + em movimento = direção efetiva (HT).
+      // Motor ligado + parado = tempo de espera (HP motor ligado — CLT 235-C §§8/9,
+      // conta como jornada). Motor desligado = HP motor desligado.
+      let minutosDirecao = 0
+      let minutosEspera = 0
+      let minutosParado = 0
+      for (const p of posicoesDoVeiculo) {
+        if (p.motorLigado && p.velocidade > RastreadorService.VELOCIDADE_PARADO_KMH) minutosDirecao += 5
+        else if (p.motorLigado) minutosEspera += 5
+        else minutosParado += 5
+      }
+
+      await this.prisma.$transaction([
+        this.prisma.viagem.update({
+          where: { id: viagem.id },
+          data: {
+            htMinutos: (viagem.htMinutos ?? 0) + minutosDirecao,
+            hpMotorLigado: (viagem.hpMotorLigado ?? 0) + minutosEspera,
+            hpMotorDesligado: (viagem.hpMotorDesligado ?? 0) + minutosParado,
+          },
+        }),
+        this.prisma.telemetriaPosicao.createMany({
+          data: posicoesDoVeiculo.map((p) => ({
+            viagemId: viagem.id,
+            veiculoId: viagem.veiculoId,
+            latitude: p.latitude,
+            longitude: p.longitude,
+            velocidade: p.velocidade,
+            motorLigado: p.motorLigado,
+            timestamp: p.timestamp,
+          })),
+        }),
+      ])
     }
   }
 }

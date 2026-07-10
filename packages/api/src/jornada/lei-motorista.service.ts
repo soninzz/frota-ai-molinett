@@ -9,8 +9,22 @@ const DESCANSO_INTERJORNADA_MIN = 11 * 60 // 11h contínuas entre jornadas
 const DESCANSO_SEMANAL_MIN = 35 * 60 // 35h (24h + 11h) por semana
 const SEMANA_MS = 7 * 24 * 60 * 60 * 1000
 
+// CTB art. 67-C: direção contínua máx. 5h30, com pausa de 30 min a cada 6h
+const LIMITE_DIRECAO_CONTINUA_MIN = 5.5 * 60
+const PAUSA_DIRECAO_MIN = 30
+// CLT 235-C §2º: 1h mínima de refeição, separada da pausa de direção —
+// exigida quando a jornada do dia passa de 6h (regra geral de intervalo)
+const INTRAJORNADA_REFEICAO_MIN = 60
+const JORNADA_MINIMA_PARA_REFEICAO_MIN = 6 * 60
+const VELOCIDADE_PARADO_KMH = 5 // mesmo limiar do rastreador.service.ts
+
 export interface ViolacaoJornada {
-  tipo: 'DIRECAO_DIARIA_EXCEDIDA' | 'INTERJORNADA_INSUFICIENTE' | 'DESCANSO_SEMANAL_INSUFICIENTE'
+  tipo:
+    | 'DIRECAO_DIARIA_EXCEDIDA'
+    | 'INTERJORNADA_INSUFICIENTE'
+    | 'DESCANSO_SEMANAL_INSUFICIENTE'
+    | 'DIRECAO_CONTINUA_EXCEDIDA'
+    | 'INTRAJORNADA_AUSENTE'
   viagemId: string
   detalhe: string
 }
@@ -53,11 +67,15 @@ export class LeiMotoristaService {
       porMotorista.set(v.motoristaId, lista)
     }
 
-    const resultado = [...porMotorista.entries()].map(([motoristaId, viagensMotorista]) => {
+    const resultado = await Promise.all([...porMotorista.entries()].map(async ([motoristaId, viagensMotorista]) => {
       const violacoes: ViolacaoJornada[] = []
 
       for (let i = 0; i < viagensMotorista.length; i++) {
         const v = viagensMotorista[i]
+
+        // 4) Direção contínua (5h30) e intrajornada (1h refeição) — ponto a ponto
+        const analiseTelemetria = await this.analisarTelemetriaViagem(v.id)
+        violacoes.push(...analiseTelemetria.violacoes)
 
         // 1) Direção diária média acima do limite
         if (v.htMinutos && v.iniciadaEm) {
@@ -116,15 +134,19 @@ export class LeiMotoristaService {
       }
 
       const totalDirecaoMin = viagensMotorista.reduce((acc, v) => acc + (v.htMinutos ?? 0), 0)
+      // Tempo de espera (motor ligado, parado) conta como jornada — CLT 235-C §§8º/9º
+      const totalEsperaMin = viagensMotorista.reduce((acc, v) => acc + (v.hpMotorLigado ?? 0), 0)
       return {
         motoristaId,
         motorista: viagensMotorista[0].motorista.usuario.nome,
         viagensAnalisadas: viagensMotorista.length,
         horasDirecaoTotal: +(totalDirecaoMin / 60).toFixed(1),
+        horasEsperaTotal: +(totalEsperaMin / 60).toFixed(1),
+        horasJornadaTotal: +((totalDirecaoMin + totalEsperaMin) / 60).toFixed(1),
         violacoes,
         conforme: violacoes.length === 0,
       }
-    })
+    }))
 
     return {
       periodo: { inicio: dataInicio ?? null, fim: dataFim ?? null },
@@ -132,10 +154,88 @@ export class LeiMotoristaService {
         limiteDirecaoDiariaHoras: LIMITE_DIRECAO_DIARIA_MIN / 60,
         descansoInterjornadaHoras: DESCANSO_INTERJORNADA_MIN / 60,
         descansoSemanalHoras: DESCANSO_SEMANAL_MIN / 60,
+        limiteDirecaoContinuaHoras: LIMITE_DIRECAO_CONTINUA_MIN / 60,
+        pausaDirecaoMinutos: PAUSA_DIRECAO_MIN,
+        intrajornadaRefeicaoMinutos: INTRAJORNADA_REFEICAO_MIN,
       },
       motoristas: resultado,
       totalViolacoes: resultado.reduce((acc, m) => acc + m.violacoes.length, 0),
     }
+  }
+
+  // ── Direção contínua (5h30 + pausa 30min) e intrajornada (1h refeição) ──
+  // Exige granularidade ponto-a-ponto: percorre a telemetria persistida da
+  // viagem em ordem cronológica. Como a amostragem é a cada 5 min (cron do
+  // rastreador), uma parada de 30min aparece como VÁRIOS pontos consecutivos
+  // parados, não um único delta grande — por isso a pausa é ACUMULADA
+  // (soma de deltas consecutivos sem direção), não medida ponto a ponto.
+  // Gaps de sinal > 2h (falha de comunicação) não contam pra nenhum lado.
+  private async analisarTelemetriaViagem(
+    viagemId: string,
+  ): Promise<{ violacoes: ViolacaoJornada[]; teveIntervaloRefeicao: boolean; jornadaTotalMin: number }> {
+    const pontos = await this.prisma.telemetriaPosicao.findMany({
+      where: { viagemId },
+      orderBy: { timestamp: 'asc' },
+    })
+
+    const violacoes: ViolacaoJornada[] = []
+    if (pontos.length < 2) return { violacoes, teveIntervaloRefeicao: true, jornadaTotalMin: 0 }
+
+    let direcaoContinuaMin = 0
+    let pausaAtualMin = 0
+    let maiorPausaMin = 0
+    let jaAlertouContinua = false
+    const jornadaTotalMin = (pontos[pontos.length - 1].timestamp.getTime() - pontos[0].timestamp.getTime()) / 60000
+
+    for (let i = 1; i < pontos.length; i++) {
+      const anterior = pontos[i - 1]
+      const atual = pontos[i]
+      const deltaMin = (atual.timestamp.getTime() - anterior.timestamp.getTime()) / 60000
+      if (deltaMin <= 0 || deltaMin > 120) {
+        // Falha de sinal grande: não há evidência do que aconteceu nesse
+        // intervalo — reseta os contadores em vez de somar em cima de um
+        // estado que pode não ter continuidade real (evita falso positivo
+        // "costurando" direção de antes e depois do buraco de dados).
+        direcaoContinuaMin = 0
+        pausaAtualMin = 0
+        jaAlertouContinua = false
+        continue
+      }
+
+      const dirigindo = atual.motorLigado && atual.velocidade > VELOCIDADE_PARADO_KMH
+
+      if (dirigindo) {
+        direcaoContinuaMin += deltaMin
+        pausaAtualMin = 0 // qualquer pausa em andamento é interrompida
+        if (direcaoContinuaMin > LIMITE_DIRECAO_CONTINUA_MIN && !jaAlertouContinua) {
+          jaAlertouContinua = true
+          violacoes.push({
+            tipo: 'DIRECAO_CONTINUA_EXCEDIDA',
+            viagemId,
+            detalhe: `Direção contínua de ${(direcaoContinuaMin / 60).toFixed(1)}h sem pausa de ${PAUSA_DIRECAO_MIN}min — limite ${LIMITE_DIRECAO_CONTINUA_MIN / 60}h (CTB art. 67-C)`,
+          })
+        }
+      } else {
+        pausaAtualMin += deltaMin
+        if (pausaAtualMin > maiorPausaMin) maiorPausaMin = pausaAtualMin
+        if (pausaAtualMin >= PAUSA_DIRECAO_MIN) {
+          direcaoContinuaMin = 0
+          jaAlertouContinua = false
+        }
+      }
+    }
+
+    const precisaRefeicao = jornadaTotalMin > JORNADA_MINIMA_PARA_REFEICAO_MIN
+    const teveIntervaloRefeicao = !precisaRefeicao || maiorPausaMin >= INTRAJORNADA_REFEICAO_MIN
+    if (precisaRefeicao && !teveIntervaloRefeicao) {
+      violacoes.push({
+        tipo: 'INTRAJORNADA_AUSENTE',
+        viagemId,
+        detalhe: `Jornada de ${(jornadaTotalMin / 60).toFixed(1)}h sem intervalo de ${INTRAJORNADA_REFEICAO_MIN}min para refeição (maior pausa observada: ${maiorPausaMin.toFixed(0)}min) — CLT 235-C §2º`,
+      })
+    }
+
+    return { violacoes, teveIntervaloRefeicao, jornadaTotalMin }
   }
 
   // ── Verificação na alocação de OS (Escopo v3 §S04) ──
