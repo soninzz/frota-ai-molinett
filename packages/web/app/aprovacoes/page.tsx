@@ -17,6 +17,8 @@ type CotacaoPendente = {
   margemPct: number;
   valorFinal: number;
   criadoEm: string;
+  deficitRegistrado?: number | null;
+  justificativaDeficit?: string | null;
   cliente: { nome: string };
   veiculo: { placa: string };
   criadoPor: { nome: string };
@@ -108,6 +110,21 @@ export default function AprovacoesPage() {
                 {fmt(c.valorFinal)}
               </span>
             </div>
+
+            {(c.deficitRegistrado || c.justificativaDeficit) && (
+              <div className="rounded-lg bg-zinc-50 border border-zinc-200 px-3.5 py-2.5 mb-4">
+                {c.deficitRegistrado != null && (
+                  <p className="text-[12px] text-zinc-600 mb-1">
+                    Déficit registrado: <span className="font-mono font-medium text-[#C0392B]">{fmt(c.deficitRegistrado)}</span>
+                  </p>
+                )}
+                {c.justificativaDeficit && (
+                  <p className="text-[12px] text-zinc-600">
+                    <span className="font-medium text-zinc-500">Justificativa do atendimento:</span> &ldquo;{c.justificativaDeficit}&rdquo;
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex items-end gap-3">
               <div className="flex-1">

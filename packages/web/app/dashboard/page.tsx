@@ -11,8 +11,13 @@ import { api, toList } from "@/lib/api";
 // ============================================================
 
 type PainelFinanceiro = {
-  metas: { faturamentoMinimo: number; kmMaximo: number };
+  metas: { faturamentoMinimo: number; kmMaximo: number; mesReferencia: string };
   saldoARecuperar: number;
+  alertas: {
+    aVencer7dias: { total: number; valor: number };
+    aVencer30dias: { total: number; valor: number };
+    atrasados: { total: number; valor: number };
+  };
   fluxo30dias: { totais: { entradas: number; saidas: number } };
 };
 
@@ -132,6 +137,18 @@ export default function DashboardPage() {
               />
               <StatCard label="Viagens registradas" value={String(viagensCount)} />
             </div>
+
+            {financeiro && financeiro.alertas.atrasados.total > 0 && (
+              <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 px-4 py-3 flex items-center justify-between">
+                <p className="text-[13px] text-[#C0392B]">
+                  <span className="font-semibold">{financeiro.alertas.atrasados.total} conta(s) atrasada(s)</span>
+                  {" — "}{fmt(financeiro.alertas.atrasados.valor)} em aberto
+                </p>
+                <a href="/financeiro/lancamentos" className="text-[12px] font-medium text-[#C0392B] hover:underline whitespace-nowrap">
+                  Ver lançamentos
+                </a>
+              </div>
+            )}
 
             <div>
               <h2 className="text-[12px] font-semibold text-zinc-500 mb-3 uppercase tracking-wide">Módulos</h2>

@@ -21,6 +21,7 @@ type PainelVeiculo = {
     documentosAVencer: number;
     segurosAVencer: number;
   };
+  proximasRevisoes: { nome: string; kmProximo: number | null; dataProxima: string | null }[];
 };
 
 export default function FrotaPage() {
@@ -107,7 +108,9 @@ export default function FrotaPage() {
                 return (
                   <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                     <td className="px-5 py-3.5">
-                      <span className="font-mono tabular-nums font-semibold text-zinc-900">{v.placa}</span>
+                      <a href={`/frota/veiculos/${v.id}`} className="font-mono tabular-nums font-semibold text-zinc-900 hover:text-[#1E4C8C] hover:underline">
+                        {v.placa}
+                      </a>
                     </td>
                     <td className="px-5 py-3.5 text-zinc-600">
                       {v.marca} — {v.modelo}
@@ -125,6 +128,11 @@ export default function FrotaPage() {
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#16A34A]/10 text-[#16A34A]">
                           <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
                           Em dia
+                        </span>
+                      )}
+                      {v.proximasRevisoes.length > 0 && (
+                        <span className="block text-[11px] text-zinc-400 mt-1">
+                          {v.proximasRevisoes.map((r) => r.nome).join(", ")}
                         </span>
                       )}
                     </td>

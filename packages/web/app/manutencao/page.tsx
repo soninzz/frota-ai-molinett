@@ -41,6 +41,8 @@ const STATUS_COLOR: Record<string, string> = {
   CONCLUIDO: "#16A34A",
 };
 
+const STATUS_OPCOES = ["SOLICITADO", "EM_ABERTO", "AGUARDANDO_PECA", "AGENDADO", "EM_EXECUCAO", "CONCLUIDO"];
+
 export default function ManutencaoPage() {
   const [ordens, setOrdens] = useState<OsManutencao[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
@@ -76,6 +78,15 @@ export default function ManutencaoPage() {
   useEffect(() => {
     carregar();
   }, []);
+
+  async function mudarStatus(id: string, status: string) {
+    try {
+      await api.patch(`/manutencao/os/${id}/status`, { status });
+      carregar();
+    } catch (e) {
+      setErro((e as Error).message);
+    }
+  }
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
@@ -212,19 +223,21 @@ export default function ManutencaoPage() {
                   <td className="px-5 py-3.5 text-zinc-600">{o.descricao}</td>
                   <td className="px-5 py-3.5 text-zinc-500 text-[12px]">{o.prioridade}</td>
                   <td className="px-5 py-3.5">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
+                    <select
+                      value={o.status}
+                      onChange={(e) => mudarStatus(o.id, e.target.value)}
+                      className="rounded-full text-[11px] font-medium px-2.5 py-1 border-0 outline-none cursor-pointer"
                       style={{
                         backgroundColor: `${STATUS_COLOR[o.status] ?? "#71717A"}1A`,
                         color: STATUS_COLOR[o.status] ?? "#71717A",
                       }}
                     >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: STATUS_COLOR[o.status] ?? "#71717A" }}
-                      />
-                      {o.status.replace("_", " ")}
-                    </span>
+                      {STATUS_OPCOES.map((s) => (
+                        <option key={s} value={s}>
+                          {s.replace(/_/g, " ")}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               ))}

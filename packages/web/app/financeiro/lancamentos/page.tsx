@@ -21,6 +21,8 @@ type Lancamento = {
   formaPagamento?: string | null;
 };
 
+const PODE_DAR_BAIXA = new Set(["PENDENTE", "ATRASADO"]);
+
 const inputCls =
   "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
 
@@ -89,6 +91,27 @@ export default function LancamentosPage() {
       })
       .catch(() => {});
   }, []);
+
+  async function darBaixa(id: string) {
+    try {
+      await api.patch("/financeiro/lancamentos/baixar", {
+        lancamentoId: id,
+        pagoEm: new Date().toISOString(),
+      });
+      carregar();
+    } catch (e) {
+      setErro((e as Error).message);
+    }
+  }
+
+  async function reagendar(id: string) {
+    try {
+      await api.patch(`/financeiro/lancamentos/${id}/reagendar`);
+      carregar();
+    } catch (e) {
+      setErro((e as Error).message);
+    }
+  }
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
@@ -226,19 +249,20 @@ export default function LancamentosPage() {
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Vencimento</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Valor</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Ação</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && lancamentos.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Nenhum lançamento
                   </td>
                 </tr>
@@ -272,6 +296,20 @@ export default function LancamentosPage() {
                   >
                     {l.tipo === "R" ? "+" : ""}
                     {fmt(l.valor)}
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    {PODE_DAR_BAIXA.has(l.status) && (
+                      <div className="flex items-center justify-end gap-3">
+                        {l.status === "ATRASADO" && (
+                          <button onClick={() => reagendar(l.id)} className="text-[12px] font-medium text-zinc-400 hover:text-zinc-600">
+                            Reagendar
+                          </button>
+                        )}
+                        <button onClick={() => darBaixa(l.id)} className="text-[12px] font-medium text-[#1E4C8C] hover:underline">
+                          Dar baixa
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

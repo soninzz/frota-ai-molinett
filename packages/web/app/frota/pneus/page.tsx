@@ -9,6 +9,15 @@ import { api, toList, Veiculo } from "@/lib/api";
 // Cole em: packages/web/app/frota/pneus/page.tsx
 // ============================================================
 
+type Movimentacao = {
+  id: string;
+  tipo: "TROCA" | "RODIZIO" | "VIRADA";
+  posicaoDe?: string | null;
+  posicaoPara?: string | null;
+  kmNaMomento: number;
+  criadoEm: string;
+};
+
 type Pneu = {
   id: string;
   codigo: string;
@@ -18,7 +27,10 @@ type Pneu = {
   posicaoAtual?: string | null;
   kmAcumulados: number;
   ativo: boolean;
+  movimentacoes?: Movimentacao[];
 };
+
+const TIPO_MOV_LABEL: Record<string, string> = { TROCA: "Troca", RODIZIO: "Rodízio", VIRADA: "Virada" };
 
 const POSICOES = [
   "DIANTEIRA_DIREITA",
@@ -294,6 +306,11 @@ export default function PneusPage() {
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">{p.tamanho}</td>
                   <td className="px-5 py-3.5 text-[12px] text-zinc-500">
                     {p.posicaoAtual ? p.posicaoAtual.replace(/_/g, " ") : "—"}
+                    {p.movimentacoes && p.movimentacoes.length > 0 && (
+                      <span className="block text-[11px] text-zinc-400 mt-0.5">
+                        {p.movimentacoes.map((m) => `${TIPO_MOV_LABEL[m.tipo]} (${new Date(m.criadoEm).toLocaleDateString("pt-BR")})`).join(" · ")}
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">{p.kmAcumulados} km</td>
                   <td className="px-5 py-3.5 text-right">

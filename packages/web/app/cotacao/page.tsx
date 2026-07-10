@@ -23,6 +23,7 @@ type ResultadoCalculo = {
   cenarios: Cenario[];
   saldoARecuperar: number;
   margemSugerida: number;
+  tabelaMinima?: { valorSaida: number; mediaKm: number } | null;
 };
 
 type ResultadoConfirmacao = {
@@ -209,6 +210,13 @@ export default function CotacaoPage() {
                     {fmt(resultado.custoBase)}
                   </span>
                 </div>
+                {resultado.tabelaMinima && (
+                  <div className="mt-2 rounded-lg bg-[#1E4C8C]/6 px-3 py-2">
+                    <p className="text-[11px] font-medium text-[#1E4C8C]">
+                      Piso desse cliente: {fmt(resultado.tabelaMinima.valorSaida)} · média {resultado.tabelaMinima.mediaKm.toFixed(2)} R$/km
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -217,7 +225,7 @@ export default function CotacaoPage() {
         <section className="space-y-4">
           {!resultado && !confirmado && (
             <div className="bg-white rounded-2xl border border-dashed border-zinc-300 p-10 text-center text-zinc-400 text-[13px]">
-              Preencha os dados e clique em "Calcular cotação" para ver os cenários de margem
+              Preencha os dados e clique em &ldquo;Calcular cotação&rdquo; para ver os cenários de margem
             </div>
           )}
 

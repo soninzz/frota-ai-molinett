@@ -155,7 +155,9 @@ export default function CadastroVeiculosPage() {
               )}
               {veiculos.map((v) => (
                 <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900">{v.placa}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900">
+                    <a href={`/frota/veiculos/${v.id}`} className="hover:text-[#1E4C8C] hover:underline">{v.placa}</a>
+                  </td>
                   <td className="px-5 py-3.5 text-zinc-600">
                     {v.marca} — {v.modelo}
                   </td>

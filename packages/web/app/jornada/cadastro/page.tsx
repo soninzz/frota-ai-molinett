@@ -184,6 +184,7 @@ export default function CadastroMotoristasPage() {
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Nome</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">CPF</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">CNH</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Vencimento CNH</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Comissão</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
               </tr>
@@ -191,14 +192,14 @@ export default function CadastroMotoristasPage() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && motoristas.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Nenhum motorista cadastrado
                   </td>
                 </tr>
@@ -209,6 +210,19 @@ export default function CadastroMotoristasPage() {
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">{m.cpf}</td>
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
                     {m.cnh} ({m.cnhCategoria})
+                  </td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums">
+                    {(() => {
+                      const venceEm = new Date(m.cnhVencimento);
+                      const diasRestantes = Math.ceil((venceEm.getTime() - Date.now()) / 86400000);
+                      const vencida = diasRestantes < 0;
+                      const proxima = diasRestantes >= 0 && diasRestantes <= 60;
+                      return (
+                        <span className={vencida ? "text-[#C0392B] font-medium" : proxima ? "text-[#D97706] font-medium" : "text-zinc-500"}>
+                          {venceEm.toLocaleDateString("pt-BR")}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">{m.comissaoPct}%</td>
                   <td className="px-5 py-3.5">

@@ -155,7 +155,7 @@ export default function SinistrosPage() {
         )}
 
         {resumo && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white rounded-2xl border border-zinc-200 p-5">
               <p className="text-[12px] font-medium text-zinc-500 mb-1">Total de sinistros</p>
               <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">{resumo.total}</span>
@@ -164,6 +164,12 @@ export default function SinistrosPage() {
               <p className="text-[12px] font-medium text-zinc-500 mb-1">Em aberto</p>
               <span className="font-mono tabular-nums text-[24px] font-semibold text-[#C0392B]">
                 {(resumo.porStatus.ABERTO ?? 0) + (resumo.porStatus.ACIONADO ?? 0) + (resumo.porStatus.EM_ANALISE ?? 0)}
+              </span>
+            </div>
+            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <p className="text-[12px] font-medium text-zinc-500 mb-1">Franquias a desembolsar</p>
+              <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+                {fmt(resumo.franquiasTotal)}
               </span>
             </div>
             <div className="bg-white rounded-2xl border border-zinc-200 p-5">
@@ -270,7 +276,11 @@ export default function SinistrosPage() {
                 const st = STATUS[s.status] ?? { label: s.status, cor: "#71717A" };
                 return (
                   <tr key={s.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">#{s.numero}</td>
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                      <a href={`/frota/sinistros/${s.id}`} className="hover:text-[#1E4C8C] hover:underline">
+                        #{s.numero}
+                      </a>
+                    </td>
                     <td className="px-5 py-3.5">
                       <span className="font-mono tabular-nums font-semibold text-zinc-900">{s.veiculo.placa}</span>
                       <span className="block text-[11px] text-zinc-400">{s.veiculo.marca} — {s.veiculo.modelo}</span>

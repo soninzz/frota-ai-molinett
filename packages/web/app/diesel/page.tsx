@@ -16,8 +16,17 @@ type Abastecimento = {
   valorTotal: number;
   precoPorLitro: number;
   postoNome?: string | null;
+  consumoKmL?: number | null;
   timestamp: string;
 };
+
+type Anomalia = {
+  alerta: boolean;
+  consumoAtual: number;
+  mediaHistorica: number;
+  variacaoPct: number;
+  mensagem: string;
+} | null;
 
 const inputCls =
   "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
@@ -39,6 +48,7 @@ export default function DieselPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [anomalia, setAnomalia] = useState<Anomalia>(null);
 
   const [kmHodometro, setKmHodometro] = useState<number | "">("");
   const [volumeLitros, setVolumeLitros] = useState<number | "">("");
@@ -76,10 +86,11 @@ export default function DieselPage() {
     e.preventDefault();
     setSaving(true);
     setErro(null);
+    setAnomalia(null);
     try {
       const precoPorLitro =
         volumeLitros && valorTotal ? Number(valorTotal) / Number(volumeLitros) : 0;
-      await api.post("/diesel/abastecimentos", {
+      const res = await api.post<{ anomalia: Anomalia }>("/diesel/abastecimentos", {
         veiculoId,
         kmHodometro: Number(kmHodometro),
         volumeLitros: Number(volumeLitros),
@@ -87,6 +98,7 @@ export default function DieselPage() {
         precoPorLitro,
         postoNome: postoNome || undefined,
       });
+      if (res.anomalia?.alerta) setAnomalia(res.anomalia);
       setKmHodometro("");
       setVolumeLitros("");
       setValorTotal("");
@@ -130,6 +142,21 @@ export default function DieselPage() {
         {erro && (
           <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 text-[#C0392B] text-[13px] px-4 py-3">
             {erro}
+          </div>
+        )}
+
+        {anomalia && (
+          <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 px-4 py-3">
+            <p className="text-[13px] font-semibold text-[#C0392B] mb-1">
+              Consumo anômalo detectado — queda de {anomalia.variacaoPct}%
+            </p>
+            <p className="text-[12px] text-zinc-600">{anomalia.mensagem}</p>
+            <button
+              onClick={() => setAnomalia(null)}
+              className="text-[11px] font-medium text-zinc-400 hover:text-zinc-600 mt-2"
+            >
+              Dispensar
+            </button>
           </div>
         )}
 
@@ -190,6 +217,7 @@ export default function DieselPage() {
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">KM</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Litros</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">R$/L</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Consumo</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Posto</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Total</th>
               </tr>
@@ -197,14 +225,14 @@ export default function DieselPage() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && abastecimentos.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Nenhum abastecimento registrado para esse veículo
                   </td>
                 </tr>
@@ -218,6 +246,9 @@ export default function DieselPage() {
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">{a.volumeLitros}L</td>
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">
                     {fmt(a.precoPorLitro)}
+                  </td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">
+                    {a.consumoKmL ? `${a.consumoKmL} km/L` : "—"}
                   </td>
                   <td className="px-5 py-3.5 text-zinc-500">{a.postoNome || "—"}</td>
                   <td className="px-5 py-3.5 text-right font-mono tabular-nums font-medium text-zinc-900">

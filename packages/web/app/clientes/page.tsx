@@ -9,14 +9,24 @@ import { api, toList } from "@/lib/api";
 // Cole em: packages/web/app/clientes/page.tsx
 // ============================================================
 
+type RegraPrazo = { tipo: "dias" | "dia_mes"; valor?: number; dia?: number };
+
 type Cliente = {
   id: string;
   nome: string;
   cnpj?: string | null;
   telefone?: string | null;
   email?: string | null;
+  regraPrazo?: RegraPrazo | null;
   ativo: boolean;
 };
+
+function formatarRegraPrazo(r?: RegraPrazo | null) {
+  if (!r) return "—";
+  if (r.tipo === "dias") return `${r.valor} dias após emissão`;
+  if (r.tipo === "dia_mes") return `dia ${r.dia} do mês`;
+  return "—";
+}
 
 const inputCls =
   "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
@@ -159,21 +169,22 @@ export default function ClientesPage() {
               <tr className="border-b border-zinc-100 text-left">
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Nome</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">CNPJ</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Telefone</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Contato</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Prazo de pagamento</th>
                 <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && clientes.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
                     Nenhum cliente cadastrado
                   </td>
                 </tr>
@@ -182,7 +193,11 @@ export default function ClientesPage() {
                 <tr key={c.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                   <td className="px-5 py-3.5 text-zinc-900 font-medium">{c.nome}</td>
                   <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">{c.cnpj || "—"}</td>
-                  <td className="px-5 py-3.5 text-zinc-500">{c.telefone || "—"}</td>
+                  <td className="px-5 py-3.5 text-zinc-500">
+                    {c.telefone || "—"}
+                    {c.email && <span className="block text-[11px] text-zinc-400">{c.email}</span>}
+                  </td>
+                  <td className="px-5 py-3.5 text-zinc-500">{formatarRegraPrazo(c.regraPrazo)}</td>
                   <td className="px-5 py-3.5">
                     <span
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"

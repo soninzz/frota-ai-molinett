@@ -29,17 +29,40 @@ type Lancamento = {
   tipo: string;
 };
 
+type Dre = {
+  mes: string;
+  grupos: Record<string, { receita: number; despesa: number }>;
+  receitaTotal: number;
+  despesaTotal: number;
+  resultadoLiquido: number;
+  margemPct: number;
+};
+
+type FluxoCaixa = {
+  totais: { entradas: number; saidas: number };
+  curva: { dia: string; entradas: number; saidas: number; saldoAcumulado: number }[];
+};
+
 export default function FinanceiroPage() {
   const [painel, setPainel] = useState<PainelFinanceiro | null>(null);
   const [proximos, setProximos] = useState<Lancamento[]>([]);
+  const [dre, setDre] = useState<Dre | null>(null);
+  const [fluxo, setFluxo] = useState<FluxoCaixa | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.get("/financeiro/painel"), api.get("/financeiro/lancamentos")])
-      .then(([p, l]) => {
+    Promise.all([
+      api.get("/financeiro/painel"),
+      api.get("/financeiro/lancamentos"),
+      api.get<Dre>("/financeiro/dre"),
+      api.get<FluxoCaixa>("/financeiro/fluxo-caixa?dias=90"),
+    ])
+      .then(([p, l, d, f]) => {
         setPainel(p as PainelFinanceiro);
         setProximos(toList<Lancamento>(l).slice(0, 6));
+        setDre(d);
+        setFluxo(f);
       })
       .catch((e) => setErro((e as Error).message))
       .finally(() => setLoading(false));
@@ -133,6 +156,70 @@ export default function FinanceiroPage() {
                 </span>
               </div>
             </div>
+
+            {dre && (
+              <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-[13px] font-semibold text-zinc-900">DRE — {dre.mes}</h2>
+                  <span
+                    className="font-mono tabular-nums text-[13px] font-semibold"
+                    style={{ color: dre.resultadoLiquido >= 0 ? "#16A34A" : "#C0392B" }}
+                  >
+                    {fmt(dre.resultadoLiquido)} ({dre.margemPct}%)
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-[13px]">
+                  {Object.entries(dre.grupos).map(([grupo, v]) => (
+                    <div key={grupo} className="flex items-center justify-between border-b border-zinc-50 pb-1.5">
+                      <span className="text-zinc-500">{grupo}</span>
+                      <span className="font-mono tabular-nums text-zinc-900">
+                        {fmt(v.receita - v.despesa)}
+                      </span>
+                    </div>
+                  ))}
+                  {Object.keys(dre.grupos).length === 0 && (
+                    <p className="text-zinc-400 col-span-2">Sem lançamentos classificados por grupo contábil este mês</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {fluxo && fluxo.curva.length > 0 && (
+              <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+                <div className="px-5 py-4 border-b border-zinc-100">
+                  <h2 className="text-[13px] font-semibold text-zinc-900">Fluxo de caixa projetado — próximos 90 dias</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[13px]">
+                    <thead>
+                      <tr className="border-b border-zinc-100 text-left">
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Dia</th>
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Entradas</th>
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Saídas</th>
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Saldo acumulado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fluxo.curva.slice(0, 10).map((d) => (
+                        <tr key={d.dia} className="border-b border-zinc-50 last:border-0">
+                          <td className="px-5 py-2 font-mono tabular-nums text-zinc-500">
+                            {new Date(d.dia).toLocaleDateString("pt-BR")}
+                          </td>
+                          <td className="px-5 py-2 font-mono tabular-nums text-[#16A34A] text-right">{fmt(d.entradas)}</td>
+                          <td className="px-5 py-2 font-mono tabular-nums text-zinc-600 text-right">{fmt(d.saidas)}</td>
+                          <td
+                            className="px-5 py-2 font-mono tabular-nums font-medium text-right"
+                            style={{ color: d.saldoAcumulado >= 0 ? "#16A34A" : "#C0392B" }}
+                          >
+                            {fmt(d.saldoAcumulado)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">

@@ -20,6 +20,7 @@ type OsDetalhe = {
     valorFinal: number;
     margemPct: number;
     kmEstimado?: number;
+    motorista?: string | null;
   };
   viagem?: {
     id: string;
@@ -33,6 +34,12 @@ type OsDetalhe = {
     concluidaEm?: string | null;
   } | null;
   comissao?: { valor: number; percentual: number; pago: boolean } | null;
+};
+
+type Disponibilidade = {
+  apto: boolean;
+  motivos: string[];
+  alternativos: { id: string; nome: string }[];
 };
 
 const inputCls =
@@ -56,12 +63,19 @@ export default function DetalheOsPage() {
   const [kmInicio, setKmInicio] = useState<number | "">("");
   const [kmFim, setKmFim] = useState<number | "">("");
   const [processando, setProcessando] = useState(false);
+  const [disponibilidade, setDisponibilidade] = useState<Disponibilidade | null>(null);
 
   async function carregar() {
     setLoading(true);
     try {
       const data = await api.get<OsDetalhe>(`/cotacoes/os/${osId}`);
       setOs(data);
+      if (data.snapshot.motorista && !data.viagem && data.status === "AGUARDANDO") {
+        api
+          .get<Disponibilidade>(`/jornada/lei-motorista/verificar/${data.snapshot.motorista}`)
+          .then(setDisponibilidade)
+          .catch(() => {});
+      }
     } catch (e) {
       setErro((e as Error).message);
     } finally {
@@ -71,6 +85,7 @@ export default function DetalheOsPage() {
 
   useEffect(() => {
     if (osId) carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osId]);
 
   async function iniciar() {
@@ -156,6 +171,24 @@ export default function DetalheOsPage() {
             </div>
           </div>
         </div>
+
+        {disponibilidade && !disponibilidade.apto && (
+          <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 px-4 py-3">
+            <p className="text-[13px] font-semibold text-[#C0392B] mb-1">
+              Motorista pode não estar apto pela Lei do Motorista
+            </p>
+            <ul className="text-[12px] text-zinc-600 list-disc pl-4 space-y-0.5">
+              {disponibilidade.motivos.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+            {disponibilidade.alternativos.length > 0 && (
+              <p className="text-[12px] text-zinc-600 mt-2">
+                Motoristas livres agora: {disponibilidade.alternativos.map((a) => a.nome).join(", ")}
+              </p>
+            )}
+          </div>
+        )}
 
         {!os.viagem && os.status === "AGUARDANDO" && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
