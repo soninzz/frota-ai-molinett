@@ -115,13 +115,18 @@ export default function LeiMotoristaPage() {
           >
             Filtrar
           </button>
-          {relatorio && (
-            <span className="ml-auto text-[12px] text-zinc-400">
-              Limites: {relatorio.parametros.limiteDirecaoDiariaHoras}h direção/dia ·{" "}
-              {relatorio.parametros.descansoInterjornadaHoras}h interjornada
-            </span>
-          )}
         </div>
+
+        {relatorio && (
+          <div className="rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-3 text-[12px] text-zinc-500 flex flex-wrap gap-x-5 gap-y-1.5">
+            <span><b className="text-zinc-700">{relatorio.parametros.limiteDirecaoContinuaHoras}h</b> direção contínua máx. (CTB art. 67-C)</span>
+            <span><b className="text-zinc-700">{relatorio.parametros.pausaDirecaoMinutos}min</b> pausa de direção</span>
+            <span><b className="text-zinc-700">{relatorio.parametros.intrajornadaRefeicaoMinutos}min</b> refeição obrigatória (CLT 235-C §2º)</span>
+            <span><b className="text-zinc-700">{relatorio.parametros.limiteDirecaoDiariaHoras}h</b> direção/dia</span>
+            <span><b className="text-zinc-700">{relatorio.parametros.descansoInterjornadaHoras}h</b> interjornada</span>
+            <span><b className="text-zinc-700">{relatorio.parametros.descansoSemanalHoras}h</b> descanso semanal</span>
+          </div>
+        )}
 
         {relatorio && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
