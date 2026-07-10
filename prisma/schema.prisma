@@ -1,0 +1,863 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Usuario {
+  id             String         @id @default(cuid())
+  nome           String
+  email          String         @unique
+  senhaHash      String
+  perfil         Perfil
+  whatsappNumero String?
+  whatsappAtivo  Boolean        @default(false)
+  ativo          Boolean        @default(true)
+  criadoEm       DateTime       @default(now())
+  atualizadoEm   DateTime       @updatedAt
+  auditLogs      AuditLog[]
+  cotacoes       Cotacao[]
+  motorista      Motorista?
+  aprovacoesOS   OrdemServico[] @relation("AprovadorOS")
+  outboxMock     OutboxMock[]
+
+  @@map("usuarios")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  usuarioId  String
+  entidade   String
+  registroId String
+  acao       String
+  antes      Json?
+  depois     Json?
+  motivo     String?
+  ip         String?
+  timestamp  DateTime @default(now())
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([entidade, registroId])
+  @@index([usuarioId])
+  @@map("audit_logs")
+}
+
+model OutboxMock {
+  id         String   @id @default(cuid())
+  servico    String
+  payload    Json
+  processado Boolean  @default(false)
+  criadoPor  String?
+  criadoEm   DateTime @default(now())
+  usuario    Usuario? @relation(fields: [criadoPor], references: [id])
+
+  @@map("outbox_mock")
+}
+
+model IntegracaoLog {
+  id        String           @id @default(cuid())
+  fonte     String
+  status    StatusIntegracao
+  detalhes  String?
+  erro      String?
+  timestamp DateTime         @default(now())
+
+  @@index([fonte, timestamp])
+  @@map("integracao_logs")
+}
+
+model Veiculo {
+  id                  String             @id @default(cuid())
+  placa               String             @unique
+  modelo              String
+  marca               String
+  ano                 Int
+  renavam             String?
+  chassi              String?
+  ativo               Boolean            @default(true)
+  criadoEm            DateTime           @default(now())
+  custoKmAtual        Float?
+  custoHoraAtual      Float?
+  custoKmAtualizadoEm DateTime?
+  abastecimentos      Abastecimento[]
+  alinhamentos        Alinhamento[]
+  cotacoes            Cotacao[]
+  documentosVeiculo   DocumentoVeiculo[]
+  itensRevisao        ItemRevisao[]
+  lancamentos         Lancamento[]       @relation("LancamentoVeiculo")
+  movimentacoes       MovimentacaoPneu[]
+  multas              Multa[]
+  osManutencao        OsManutencao[]
+  pneus               Pneu[]
+  seguros             Seguro[]
+  sinistros           Sinistro[]
+  viagens             Viagem[]
+
+  @@map("veiculos")
+}
+
+model ItemRevisao {
+  id            String             @id @default(cuid())
+  veiculoId     String
+  nome          String
+  kmIntervalo   Int?
+  diasIntervalo Int?
+  kmProximo     Int?
+  dataProxima   DateTime?
+  kmAlerta      Int                @default(1000)
+  diasAlerta    Int                @default(15)
+  ativo         Boolean            @default(true)
+  criadoEm      DateTime           @default(now())
+  atualizadoEm  DateTime           @updatedAt
+  historico     HistoricoRevisao[]
+  veiculo       Veiculo            @relation(fields: [veiculoId], references: [id])
+
+  @@map("itens_revisao")
+}
+
+model HistoricoRevisao {
+  id            String      @id @default(cuid())
+  itemRevisaoId String
+  kmNaMoment    Int
+  dataTroca     DateTime
+  fornecedor    String?
+  valor         Float?
+  observacao    String?
+  criadoEm      DateTime    @default(now())
+  itemRevisao   ItemRevisao @relation(fields: [itemRevisaoId], references: [id])
+
+  @@map("historico_revisoes")
+}
+
+model Abastecimento {
+  id             String     @id @default(cuid())
+  veiculoId      String
+  motoristaId    String?
+  kmHodometro    Int
+  ocrConfianca   Float?
+  painelFotoUrl  String?
+  volumeLitros   Float
+  valorTotal     Float
+  precoPorLitro  Float
+  postoCnpj      String?
+  postoNome      String?
+  cupomFotoUrl   String?
+  cupomNfeChave  String?
+  kmRodadoTrecho Int?
+  consumoKmL     Float?
+  pendenteCupom  Boolean    @default(false)
+  timestamp      DateTime   @default(now())
+  motorista      Motorista? @relation(fields: [motoristaId], references: [id])
+  veiculo        Veiculo    @relation(fields: [veiculoId], references: [id])
+
+  @@index([veiculoId, timestamp])
+  @@map("abastecimentos")
+}
+
+model Pneu {
+  id            String             @id @default(cuid())
+  codigo        String             @unique
+  veiculoId     String
+  posicaoAtual  PosicaoPneu?
+  marca         String
+  modelo        String
+  tamanho       String
+  podeVirar     Boolean            @default(true)
+  dataCompra    DateTime?
+  valorCompra   Float?
+  fornecedor    String?
+  nfOrigemUrl   String?
+  fotoUrl       String?
+  kmAcumulados  Int                @default(0)
+  ativo         Boolean            @default(true)
+  criadoEm      DateTime           @default(now())
+  movimentacoes MovimentacaoPneu[]
+  veiculo       Veiculo            @relation(fields: [veiculoId], references: [id])
+
+  @@map("pneus")
+}
+
+model MovimentacaoPneu {
+  id          String               @id @default(cuid())
+  pneuId      String
+  veiculoId   String
+  tipo        TipoMovimentacaoPneu
+  posicaoDe   PosicaoPneu?
+  posicaoPara PosicaoPneu?
+  kmNaMomento Int
+  fornecedor  String?
+  valor       Float?
+  observacao  String?
+  criadoEm    DateTime             @default(now())
+  pneu        Pneu                 @relation(fields: [pneuId], references: [id])
+  veiculo     Veiculo              @relation(fields: [veiculoId], references: [id])
+
+  @@map("movimentacoes_pneu")
+}
+
+model OsManutencao {
+  id             String               @id @default(cuid())
+  numero         Int                  @default(autoincrement())
+  veiculoId      String
+  solicitanteId  String?
+  status         StatusOsManutencao   @default(SOLICITADO)
+  prioridade     PrioridadeManutencao @default(BAIXA)
+  descricao      String
+  subsistema     String?
+  oficina        String?
+  valorEstimado  Float?
+  valorReal      Float?
+  prazoEstimado  DateTime?
+  concluidoEm    DateTime?
+  origemWhatsapp Boolean              @default(false)
+  mensagemOrigem String?
+  observacao     String?
+  criadoEm       DateTime             @default(now())
+  atualizadoEm   DateTime             @updatedAt
+  lancamentos    Lancamento[]         @relation("LancamentoOsManutencao")
+  veiculo        Veiculo              @relation(fields: [veiculoId], references: [id])
+  pecas          OsManutencaoPeca[]
+
+  @@map("os_manutencao")
+}
+
+model OsManutencaoPeca {
+  id            String       @id @default(cuid())
+  osId          String
+  itemEstoqueId String?
+  descricao     String
+  quantidade    Float        @default(1)
+  valorUnitario Float?
+  criadoEm      DateTime     @default(now())
+  itemEstoque   ItemEstoque? @relation(fields: [itemEstoqueId], references: [id])
+  os            OsManutencao @relation(fields: [osId], references: [id])
+
+  @@map("os_manutencao_pecas")
+}
+
+model Alinhamento {
+  id          String   @id @default(cuid())
+  veiculoId   String
+  tipo        String
+  kmNaMomento Int
+  fornecedor  String?
+  valor       Float?
+  motivo      String?
+  criadoEm    DateTime @default(now())
+  veiculo     Veiculo  @relation(fields: [veiculoId], references: [id])
+
+  @@map("alinhamentos")
+}
+
+model ItemEstoque {
+  id               String                @id @default(cuid())
+  nome             String
+  codigo           String?
+  categoria        String?
+  quantidadeAtual  Float                 @default(0)
+  quantidadeMinima Float                 @default(1)
+  unidade          String                @default("un")
+  fornecedorPref   String?
+  valorMedio       Float?
+  localizacao      String?
+  ativo            Boolean               @default(true)
+  criadoEm         DateTime              @default(now())
+  atualizadoEm     DateTime              @updatedAt
+  movimentacoes    MovimentacaoEstoque[]
+  pecasOs          OsManutencaoPeca[]
+
+  @@map("itens_estoque")
+}
+
+model MovimentacaoEstoque {
+  id             String      @id @default(cuid())
+  itemId         String
+  tipo           String
+  quantidade     Float
+  motivo         String?
+  veiculoId      String?
+  valor          Float?
+  origemWhatsapp Boolean     @default(false)
+  criadoEm       DateTime    @default(now())
+  item           ItemEstoque @relation(fields: [itemId], references: [id])
+
+  @@map("movimentacoes_estoque")
+}
+
+model DocumentoVeiculo {
+  id         String   @id @default(cuid())
+  veiculoId  String
+  tipo       String
+  vencimento DateTime
+  valor      Float?
+  pago       Boolean  @default(false)
+  alertaDias Int      @default(30)
+  criadoEm   DateTime @default(now())
+  veiculo    Veiculo  @relation(fields: [veiculoId], references: [id])
+
+  @@map("documentos_veiculo")
+}
+
+model Seguro {
+  id                     String     @id @default(cuid())
+  veiculoId              String
+  seguradora             String
+  apolice                String?
+  vencimento             DateTime
+  valor                  Float?
+  cobertura              String?
+  franquia               Float?
+  responsavelAcionamento String?
+  contatoResponsavel     String?
+  documentoUrl           String?
+  criadoEm               DateTime   @default(now())
+  veiculo                Veiculo    @relation(fields: [veiculoId], references: [id])
+  sinistros              Sinistro[]
+
+  @@map("seguros")
+}
+
+model Sinistro {
+  id                String           @id @default(cuid())
+  numero            Int              @default(autoincrement())
+  veiculoId         String
+  motoristaId       String?
+  seguroId          String?
+  tipo              TipoSinistro
+  status            StatusSinistro   @default(ABERTO)
+  dataOcorrencia    DateTime
+  local             String?
+  descricao         String
+  boletimUrl        String?
+  protocolo         String?
+  franquiaValor     Float?
+  valorOrcado       Float?
+  valorIndenizado   Float?
+  terceiroEnvolvido Boolean          @default(false)
+  terceiroDados     String?
+  observacao        String?
+  criadoEm          DateTime         @default(now())
+  atualizadoEm      DateTime         @updatedAt
+  veiculo           Veiculo          @relation(fields: [veiculoId], references: [id])
+  motorista         Motorista?       @relation(fields: [motoristaId], references: [id])
+  seguro            Seguro?          @relation(fields: [seguroId], references: [id])
+  eventos           SinistroEvento[]
+
+  @@index([veiculoId])
+  @@index([status])
+  @@map("sinistros")
+}
+
+model SinistroEvento {
+  id         String   @id @default(cuid())
+  sinistroId String
+  descricao  String
+  criadoEm   DateTime @default(now())
+  sinistro   Sinistro @relation(fields: [sinistroId], references: [id])
+
+  @@index([sinistroId, criadoEm])
+  @@map("sinistro_eventos")
+}
+
+model CenarioSimulacao {
+  id           String   @id @default(cuid())
+  nome         String
+  descricao    String?
+  premissas    Json
+  resultado    Json?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("cenarios_simulacao")
+}
+
+model Multa {
+  id           String       @id @default(cuid())
+  veiculoId    String
+  motoristaId  String?
+  auto         String?
+  descricao    String
+  valor        Float
+  vencimento   DateTime
+  dataInfracao DateTime?
+  pontos       Int          @default(0)
+  condutorId   Boolean      @default(false)
+  recursoAte   DateTime?
+  status       String       @default("PENDENTE")
+  criadoEm     DateTime     @default(now())
+  lancamentos  Lancamento[] @relation("LancamentoMulta")
+  motorista    Motorista?   @relation(fields: [motoristaId], references: [id])
+  veiculo      Veiculo      @relation(fields: [veiculoId], references: [id])
+
+  @@map("multas")
+}
+
+model Motorista {
+  id                     String          @id @default(cuid())
+  usuarioId              String          @unique
+  cpf                    String          @unique
+  cnh                    String          @unique
+  cnhCategoria           String
+  cnhVencimento          DateTime
+  toxicologicoVencimento DateTime?
+  mopp                   Boolean         @default(false)
+  moppVencimento         DateTime?
+  nr20                   Boolean         @default(false)
+  nr20Vencimento         DateTime?
+  comissaoPct            Float           @default(0)
+  criadoEm               DateTime        @default(now())
+  atualizadoEm           DateTime        @updatedAt
+  abastecimentos         Abastecimento[]
+  comissoes              Comissao[]
+  cotacoes               Cotacao[]
+  usuario                Usuario         @relation(fields: [usuarioId], references: [id])
+  multas                 Multa[]
+  sinistros              Sinistro[]
+  viagens                Viagem[]
+
+  @@map("motoristas")
+}
+
+model Cliente {
+  id           String        @id @default(cuid())
+  nome         String
+  cnpj         String?       @unique
+  telefone     String?
+  email        String?
+  regraPrazo   Json?
+  ativo        Boolean       @default(true)
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+  cotacoes     Cotacao[]
+  lancamentos  Lancamento[]
+  tabelaMinima TabelaMinima?
+
+  @@map("clientes")
+}
+
+model TabelaMinima {
+  id           String   @id @default(cuid())
+  clienteId    String   @unique
+  valorSaida   Float?
+  kmSaida      Float?
+  kmExcedente  Float?
+  htValor      Float?
+  hpValor      Float?
+  mediaKmTotal Float?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  cliente      Cliente  @relation(fields: [clienteId], references: [id])
+
+  @@map("tabela_minima")
+}
+
+model Cotacao {
+  id                   String        @id @default(cuid())
+  numero               Int           @default(autoincrement())
+  clienteId            String
+  veiculoId            String
+  motoristaId          String?
+  criadoPorId          String
+  origem               String
+  destino              String
+  kmEstimado           Float?
+  tipoServico          String?
+  custoKmSnapshot      Float
+  custoTotalBase       Float
+  margemPct            Float
+  valorFinal           Float
+  deficitRegistrado    Float?
+  justificativaDeficit String?
+  status               String        @default("ABERTA")
+  motivoCancelamento   String?
+  criadoEm             DateTime      @default(now())
+  cliente              Cliente       @relation(fields: [clienteId], references: [id])
+  criadoPor            Usuario       @relation(fields: [criadoPorId], references: [id])
+  motorista            Motorista?    @relation(fields: [motoristaId], references: [id])
+  veiculo              Veiculo       @relation(fields: [veiculoId], references: [id])
+  ordemServico         OrdemServico?
+
+  @@index([clienteId])
+  @@map("cotacoes")
+}
+
+model SaldoRecuperar {
+  id           String   @id @default("singleton")
+  saldoTotal   Float    @default(0)
+  atualizadoEm DateTime @updatedAt
+
+  @@map("saldo_recuperar")
+}
+
+model OrdemServico {
+  id                 String      @id @default(cuid())
+  numero             Int         @default(autoincrement())
+  cotacaoId          String      @unique
+  aprovadorId        String?
+  snapshot           Json
+  status             StatusOS    @default(AGUARDANDO)
+  motivoCancelamento String?
+  geradaEm           DateTime    @default(now())
+  concluidaEm        DateTime?
+  comissao           Comissao?
+  lancamento         Lancamento? @relation("LancamentoOS")
+  aprovador          Usuario?    @relation("AprovadorOS", fields: [aprovadorId], references: [id])
+  cotacao            Cotacao     @relation(fields: [cotacaoId], references: [id])
+  viagem             Viagem?
+
+  @@map("ordens_servico")
+}
+
+model Viagem {
+  id               String       @id @default(cuid())
+  osId             String       @unique
+  veiculoId        String
+  motoristaId      String
+  kmInicio         Int?
+  kmFim            Int?
+  kmRodado         Int?
+  iniciadaEm       DateTime?
+  concluidaEm      DateTime?
+  htMinutos        Int?
+  hpMotorLigado    Int?
+  hpMotorDesligado Int?
+  receitaReal      Float?
+  custoReal        Float?
+  margemReal       Float?
+  positivo         Boolean?
+  observacao       String?
+  criadoEm         DateTime     @default(now())
+  atualizadoEm     DateTime     @updatedAt
+  horasExtra       HoraExtra[]
+  motorista        Motorista    @relation(fields: [motoristaId], references: [id])
+  os               OrdemServico @relation(fields: [osId], references: [id])
+  veiculo          Veiculo      @relation(fields: [veiculoId], references: [id])
+
+  @@map("viagens")
+}
+
+model HoraExtra {
+  id        String   @id @default(cuid())
+  viagemId  String
+  tipo      String
+  minutos   Int
+  valorHora Float?
+  criadoEm  DateTime @default(now())
+  viagem    Viagem   @relation(fields: [viagemId], references: [id])
+
+  @@map("horas_extra")
+}
+
+model Comissao {
+  id          String       @id @default(cuid())
+  osId        String       @unique
+  motoristaId String
+  percentual  Float
+  valor       Float
+  pago        Boolean      @default(false)
+  pagoEm      DateTime?
+  criadoEm    DateTime     @default(now())
+  motorista   Motorista    @relation(fields: [motoristaId], references: [id])
+  os          OrdemServico @relation(fields: [osId], references: [id])
+
+  @@map("comissoes")
+}
+
+model ContaBancaria {
+  id          String       @id @default(cuid())
+  banco       String
+  agencia     String?
+  conta       String
+  tipo        String?
+  descricao   String?
+  ativa       Boolean      @default(true)
+  criadoEm    DateTime     @default(now())
+  lancamentos Lancamento[]
+
+  @@map("contas_bancarias")
+}
+
+model CentroCusto {
+  id          String       @id @default(cuid())
+  codigo      String       @unique
+  nome        String
+  tipo        String
+  ativo       Boolean      @default(true)
+  lancamentos Lancamento[]
+
+  @@map("centros_custo")
+}
+
+model ContaContabil {
+  id          String       @id @default(cuid())
+  codigo      String       @unique
+  nome        String
+  grupo       String
+  tipo        String
+  ativo       Boolean      @default(true)
+  lancamentos Lancamento[]
+
+  @@map("contas_contabeis")
+}
+
+model Lancamento {
+  id              String          @id @default(cuid())
+  tipo            TipoLancamento
+  descricao       String
+  valor           Float
+  vencimento      DateTime
+  dataNf          DateTime?
+  nfeChave        String?
+  formaPagamento  FormaPagamento?
+  status          StatusPagamento @default(PENDENTE)
+  pagoEm          DateTime?
+  contaBancariaId String
+  centroCustoId   String?
+  contaContabilId String?
+  clienteId       String?
+  veiculoId       String?
+  osId            String?         @unique
+  osManutencaoId  String?
+  multaId         String?
+  parcelaId       String?
+  observacao      String?
+  recorrente      Boolean         @default(false)
+  periocidade     String?
+  criadoEm        DateTime        @default(now())
+  atualizadoEm    DateTime        @updatedAt
+  centroCusto     CentroCusto?    @relation(fields: [centroCustoId], references: [id])
+  cliente         Cliente?        @relation(fields: [clienteId], references: [id])
+  contaBancaria   ContaBancaria   @relation(fields: [contaBancariaId], references: [id])
+  contaContabil   ContaContabil?  @relation(fields: [contaContabilId], references: [id])
+  multa           Multa?          @relation("LancamentoMulta", fields: [multaId], references: [id])
+  os              OrdemServico?   @relation("LancamentoOS", fields: [osId], references: [id])
+  osManutencao    OsManutencao?   @relation("LancamentoOsManutencao", fields: [osManutencaoId], references: [id])
+  parcela         Parcela?        @relation(fields: [parcelaId], references: [id])
+  veiculo         Veiculo?        @relation("LancamentoVeiculo", fields: [veiculoId], references: [id])
+
+  @@index([vencimento, status])
+  @@index([clienteId])
+  @@map("lancamentos")
+}
+
+model Emprestimo {
+  id            String    @id @default(cuid())
+  credor        String
+  valorTotal    Float
+  totalParcelas Int
+  taxaJuros     Float?
+  dataInicio    DateTime
+  observacao    String?
+  criadoEm      DateTime  @default(now())
+  parcelas      Parcela[]
+
+  @@map("emprestimos")
+}
+
+model Parcela {
+  id           String          @id @default(cuid())
+  emprestimoId String
+  numero       Int
+  vencimento   DateTime
+  valor        Float
+  juros        Float           @default(0)
+  status       StatusPagamento @default(PENDENTE)
+  pagoEm       DateTime?
+  lancamentos  Lancamento[]
+  emprestimo   Emprestimo      @relation(fields: [emprestimoId], references: [id])
+
+  @@map("parcelas")
+}
+
+model Imobilizado {
+  id                String   @id @default(cuid())
+  descricao         String
+  veiculoId         String?
+  valorAquisicao    Float
+  dataAquisicao     DateTime
+  vidaUtilMeses     Int
+  depreciacaoMensal Float
+  valorResidual     Float    @default(0)
+  ativo             Boolean  @default(true)
+  criadoEm          DateTime @default(now())
+
+  @@map("imobilizado")
+}
+
+model ParametroTributario {
+  id          String   @id @default(cuid())
+  competencia String   @unique
+  pis         Float    @default(0.0065)
+  cofins      Float    @default(0.03)
+  csll        Float    @default(0.0108)
+  irpj        Float    @default(0.012)
+  iss         Float    @default(0.02)
+  cbs         Float?
+  ibs         Float?
+  criadoEm    DateTime @default(now())
+
+  @@map("parametros_tributarios")
+}
+
+model MetaOperacional {
+  id                 String   @id @default("singleton")
+  faturamentoMinimo  Float
+  kmMaximo           Float
+  margemSegurancaPct Float    @default(10)
+  mesReferencia      String
+  atualizadoEm       DateTime @updatedAt
+
+  @@map("meta_operacional")
+}
+
+model RegraAlerta {
+  id                  String            @id @default(cuid())
+  categoria           CategoriaAlerta
+  evento              String
+  descricao           String
+  destinatariosPerfis Perfil[]
+  canal               CanalAlerta       @default(WHATSAPP)
+  ativo               Boolean           @default(true)
+  configuracao        Json?
+  criadoEm            DateTime          @default(now())
+  atualizadoEm        DateTime          @updatedAt
+  historicos          HistoricoAlerta[]
+
+  @@map("regras_alerta")
+}
+
+model HistoricoAlerta {
+  id           String      @id @default(cuid())
+  regraId      String
+  destinatario String
+  canal        CanalAlerta
+  payload      Json
+  entregue     Boolean     @default(false)
+  erro         String?
+  enviadoEm    DateTime    @default(now())
+  regra        RegraAlerta @relation(fields: [regraId], references: [id])
+
+  @@index([regraId, enviadoEm])
+  @@map("historico_alertas")
+}
+
+enum Perfil {
+  ATENDIMENTO
+  MOTORISTA
+  OPERACIONAL
+  GESTOR_MANUTENCAO
+  FINANCEIRO
+  GESTOR_PRINCIPAL
+  ADMINISTRADOR
+}
+
+enum StatusOS {
+  COTACAO
+  AGUARDANDO
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum StatusOsManutencao {
+  SOLICITADO
+  EM_ABERTO
+  AGUARDANDO_PECA
+  AGENDADO
+  EM_EXECUCAO
+  CONCLUIDO
+}
+
+enum PrioridadeManutencao {
+  ALTA
+  MEDIA
+  BAIXA
+}
+
+enum TipoLancamento {
+  R
+  D
+  E
+  M
+  DP
+}
+
+enum StatusPagamento {
+  PENDENTE
+  PAGO
+  ATRASADO
+  CANCELADO
+}
+
+enum FormaPagamento {
+  BOLETO
+  PIX
+  DEBITO_AUTOMATICO
+  CARTAO_CREDITO
+  TRANSFERENCIA
+  DINHEIRO
+}
+
+enum TipoMovimentacaoPneu {
+  TROCA
+  RODIZIO
+  VIRADA
+}
+
+enum PosicaoPneu {
+  DIANTEIRA_DIREITA
+  DIANTEIRA_ESQUERDA
+  TRACAO_DIREITA_EXTERNA
+  TRACAO_DIREITA_INTERNA
+  TRACAO_ESQUERDA_EXTERNA
+  TRACAO_ESQUERDA_INTERNA
+  TRASEIRA_DIREITA_EXTERNA
+  TRASEIRA_DIREITA_INTERNA
+  TRASEIRA_ESQUERDA_EXTERNA
+  TRASEIRA_ESQUERDA_INTERNA
+  STEP_DIREITA
+  STEP_ESQUERDA
+  ESTEPE
+}
+
+enum CanalAlerta {
+  WHATSAPP
+  PAINEL
+  EMAIL
+}
+
+enum CategoriaAlerta {
+  FINANCEIRO
+  OPERACIONAL
+  MANUTENCAO
+  COMERCIAL
+  COMPLIANCE
+}
+
+enum StatusIntegracao {
+  OK
+  ERRO
+  DEGRADADO
+}
+
+enum TipoSinistro {
+  COLISAO
+  ROUBO_FURTO
+  INCENDIO
+  DANOS_TERCEIROS
+  PANE
+  OUTRO
+}
+
+enum StatusSinistro {
+  ABERTO
+  ACIONADO
+  EM_ANALISE
+  APROVADO
+  RECUSADO
+  ENCERRADO
+}

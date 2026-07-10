@@ -1,0 +1,29 @@
+# Segredos — NUNCA comitar
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+/secrets/
+
+# Dependências
+node_modules
+
+# Builds
+packages/api/dist/
+packages/web/.next/
+packages/web/out/
+/generated/prisma
+
+# Logs e temporários
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Vercel
+.vercel
