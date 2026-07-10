@@ -1,0 +1,220 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Shell } from "@/components/Shell";
+import { api } from "@/lib/api";
+
+// ============================================================
+// FROTA AI · Molinett — Lei do Motorista (13.103/2015) + Hora extra por classe (S04)
+// ============================================================
+
+const inputCls =
+  "rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+
+type Violacao = { tipo: string; viagemId: string; detalhe: string };
+
+type MotoristaRelatorio = {
+  motoristaId: string;
+  motorista: string;
+  viagensAnalisadas: number;
+  horasDirecaoTotal: number;
+  violacoes: Violacao[];
+  conforme: boolean;
+};
+
+type Relatorio = {
+  parametros: { limiteDirecaoDiariaHoras: number; descansoInterjornadaHoras: number };
+  motoristas: MotoristaRelatorio[];
+  totalViolacoes: number;
+};
+
+type ClasseHoraExtra = {
+  classe: string;
+  horasTotal: number;
+  valorTotal: number;
+  motoristas: { nome: string; horas: number; valor: number }[];
+};
+
+type RelatorioClasses = { classes: ClasseHoraExtra[] };
+
+const TIPO_VIOLACAO: Record<string, string> = {
+  DIRECAO_DIARIA_EXCEDIDA: "Direção diária excedida",
+  INTERJORNADA_INSUFICIENTE: "Descanso interjornada insuficiente",
+};
+
+export default function LeiMotoristaPage() {
+  const [relatorio, setRelatorio] = useState<Relatorio | null>(null);
+  const [classes, setClasses] = useState<RelatorioClasses | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+
+  async function carregar() {
+    setLoading(true);
+    setErro(null);
+    const qs = new URLSearchParams();
+    if (dataInicio) qs.set("dataInicio", dataInicio);
+    if (dataFim) qs.set("dataFim", dataFim);
+    const sufixo = qs.toString() ? `?${qs.toString()}` : "";
+    try {
+      const [rel, cls] = await Promise.all([
+        api.get<Relatorio>(`/jornada/lei-motorista${sufixo}`),
+        api.get<RelatorioClasses>(`/jornada/horas-extra/por-classe${sufixo}`),
+      ]);
+      setRelatorio(rel);
+      setClasses(cls);
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Shell
+      title="Lei do Motorista"
+      subtitle="Conformidade com a Lei 13.103/2015 e horas extra por classe"
+    >
+      <div className="space-y-6">
+        {erro && (
+          <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 text-[#C0392B] text-[13px] px-4 py-3">
+            {erro}
+          </div>
+        )}
+
+        <div className="flex items-end gap-3">
+          <label className="block">
+            <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">De</span>
+            <input type="date" className={inputCls} value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+          </label>
+          <label className="block">
+            <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Até</span>
+            <input type="date" className={inputCls} value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+          </label>
+          <button
+            onClick={carregar}
+            className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors"
+          >
+            Filtrar
+          </button>
+          {relatorio && (
+            <span className="ml-auto text-[12px] text-zinc-400">
+              Limites: {relatorio.parametros.limiteDirecaoDiariaHoras}h direção/dia ·{" "}
+              {relatorio.parametros.descansoInterjornadaHoras}h interjornada
+            </span>
+          )}
+        </div>
+
+        {relatorio && (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <p className="text-[12px] font-medium text-zinc-500 mb-1">Motoristas analisados</p>
+              <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+                {relatorio.motoristas.length}
+              </span>
+            </div>
+            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <p className="text-[12px] font-medium text-zinc-500 mb-1">Violações encontradas</p>
+              <span
+                className="font-mono tabular-nums text-[24px] font-semibold"
+                style={{ color: relatorio.totalViolacoes > 0 ? "#C0392B" : "#16A34A" }}
+              >
+                {relatorio.totalViolacoes}
+              </span>
+            </div>
+            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <p className="text-[12px] font-medium text-zinc-500 mb-1">Em conformidade</p>
+              <span className="font-mono tabular-nums text-[24px] font-semibold text-[#16A34A]">
+                {relatorio.motoristas.filter((m) => m.conforme).length}/{relatorio.motoristas.length}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100">
+            <h2 className="text-[13px] font-semibold text-zinc-900">Conformidade por motorista</h2>
+          </div>
+          {loading && <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Carregando...</p>}
+          {!loading && (!relatorio || relatorio.motoristas.length === 0) && (
+            <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhuma viagem no período</p>
+          )}
+          {!loading &&
+            relatorio?.motoristas.map((m) => (
+              <div key={m.motoristaId} className="border-b border-zinc-50 last:border-0 px-5 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[13px] font-semibold text-zinc-900">{m.motorista}</span>
+                    <span className="ml-3 text-[12px] text-zinc-400">
+                      {m.viagensAnalisadas} viagem(ns) · {m.horasDirecaoTotal}h de direção
+                    </span>
+                  </div>
+                  {m.conforme ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#16A34A]/10 text-[#16A34A]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
+                      Conforme
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#C0392B]/10 text-[#C0392B]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#C0392B]" />
+                      {m.violacoes.length} violação(ões)
+                    </span>
+                  )}
+                </div>
+                {m.violacoes.length > 0 && (
+                  <ul className="mt-3 space-y-1.5">
+                    {m.violacoes.map((v, i) => (
+                      <li key={i} className="text-[12px] text-zinc-600 flex gap-2">
+                        <span className="font-medium text-[#C0392B] shrink-0">
+                          {TIPO_VIOLACAO[v.tipo] ?? v.tipo}:
+                        </span>
+                        {v.detalhe}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100">
+            <h2 className="text-[13px] font-semibold text-zinc-900">Hora extra por classe</h2>
+          </div>
+          {!loading && (!classes || classes.classes.length === 0) && (
+            <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhuma hora extra registrada no período</p>
+          )}
+          {classes?.classes.map((c) => (
+            <div key={c.classe} className="border-b border-zinc-50 last:border-0">
+              <div className="px-5 py-3.5 flex items-center justify-between bg-zinc-50/50">
+                <span className="text-[13px] font-semibold text-zinc-900">{c.classe}</span>
+                <span className="font-mono tabular-nums text-[13px] text-zinc-600">
+                  {c.horasTotal}h · R$ {c.valorTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <table className="w-full text-[13px]">
+                <tbody>
+                  {c.motoristas.map((m) => (
+                    <tr key={m.nome} className="border-t border-zinc-50">
+                      <td className="px-5 py-2.5 text-zinc-600">{m.nome}</td>
+                      <td className="px-5 py-2.5 font-mono tabular-nums text-zinc-500 text-right">{m.horas}h</td>
+                      <td className="px-5 py-2.5 font-mono tabular-nums text-zinc-900 text-right">
+                        R$ {m.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Shell>
+  );
+}
