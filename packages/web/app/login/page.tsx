@@ -52,12 +52,11 @@ export default function LoginPage() {
         </div>
 
         <div className="relative">
-          <p className="text-[13px] font-medium text-[#16A34A] mb-3">Custo/km atualizado agora</p>
+          <p className="text-[13px] font-medium text-[#16A34A] mb-3">Custo/km atualizado a cada abastecimento</p>
           <div className="flex items-baseline gap-3 mb-6">
-            <span className="font-mono tabular-nums text-[56px] leading-none font-semibold text-white tracking-tight">
-              R$ 4,50
+            <span className="font-mono tabular-nums text-[40px] leading-none font-semibold text-white tracking-tight">
+              Frota AI
             </span>
-            <span className="text-[13px] text-zinc-400 pb-1.5">/km · MHG</span>
           </div>
           <p className="text-[14px] text-zinc-400 leading-relaxed max-w-sm">
             Cada cotação já nasce com o custo real da frota — sem planilha, sem defasagem,

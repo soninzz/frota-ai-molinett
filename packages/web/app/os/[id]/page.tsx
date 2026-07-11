@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Shell } from "@/components/Shell";
-import { api, toList, Veiculo } from "@/lib/api";
+import { api, toList } from "@/lib/api";
+
+type MotoristaOpcao = { id: string; usuario: { nome: string } };
 
 // ============================================================
 // FROTA AI · Molinett — Detalhe da OS (cotação + viagem + comissão)
@@ -15,11 +17,9 @@ type OsDetalhe = {
   numero: number;
   status: string;
   snapshot: {
-    origem: string;
-    destino: string;
+    rota: { origem: string; destino: string; km?: number | null };
     valorFinal: number;
-    margemPct: number;
-    kmEstimado?: number;
+    margem: number;
     motorista?: string | null;
   };
   viagem?: {
@@ -64,6 +64,8 @@ export default function DetalheOsPage() {
   const [kmFim, setKmFim] = useState<number | "">("");
   const [processando, setProcessando] = useState(false);
   const [disponibilidade, setDisponibilidade] = useState<Disponibilidade | null>(null);
+  const [motoristas, setMotoristas] = useState<MotoristaOpcao[]>([]);
+  const [motoristaEscolhido, setMotoristaEscolhido] = useState("");
 
   async function carregar() {
     setLoading(true);
@@ -88,11 +90,19 @@ export default function DetalheOsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osId]);
 
+  useEffect(() => {
+    api.get("/motoristas").then((res) => setMotoristas(toList<MotoristaOpcao>(res))).catch(() => {});
+  }, []);
+
   async function iniciar() {
     setProcessando(true);
     setErro(null);
     try {
-      await api.post("/viagens/iniciar", { osId, kmInicio: Number(kmInicio) });
+      await api.post("/viagens/iniciar", {
+        osId,
+        kmInicio: Number(kmInicio),
+        motoristaId: motoristaEscolhido || undefined,
+      });
       carregar();
     } catch (e) {
       setErro((e as Error).message);
@@ -134,7 +144,7 @@ export default function DetalheOsPage() {
   }
 
   return (
-    <Shell title={`OS #${os.numero}`} subtitle={`${os.snapshot.origem} → ${os.snapshot.destino}`}>
+    <Shell title={`OS #${os.numero}`} subtitle={`${os.snapshot.rota.origem} → ${os.snapshot.rota.destino}`}>
       <div className="max-w-2xl space-y-6">
         {erro && (
           <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 text-[#C0392B] text-[13px] px-4 py-3">
@@ -160,13 +170,13 @@ export default function DetalheOsPage() {
             <div>
               <p className="text-[11px] text-zinc-500">Rota</p>
               <p className="text-zinc-900">
-                {os.snapshot.origem} → {os.snapshot.destino}
+                {os.snapshot.rota.origem} → {os.snapshot.rota.destino}
               </p>
             </div>
             <div>
               <p className="text-[11px] text-zinc-500">Valor / Margem</p>
               <p className="font-mono tabular-nums text-zinc-900">
-                {fmt(os.snapshot.valorFinal)} · {os.snapshot.margemPct}%
+                {fmt(os.snapshot.valorFinal)} · {os.snapshot.margem}%
               </p>
             </div>
           </div>
@@ -193,6 +203,25 @@ export default function DetalheOsPage() {
         {!os.viagem && os.status === "AGUARDANDO" && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
             <h2 className="text-[13px] font-semibold text-zinc-900 mb-4">Iniciar viagem</h2>
+            {!os.snapshot.motorista && (
+              <div className="mb-4">
+                <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">
+                  Motorista (não foi definido na cotação)
+                </span>
+                <select
+                  className={inputCls + " appearance-none"}
+                  value={motoristaEscolhido}
+                  onChange={(e) => setMotoristaEscolhido(e.target.value)}
+                >
+                  <option value="">Selecione...</option>
+                  {motoristas.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.usuario.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="flex items-end gap-3">
               <div className="flex-1">
                 <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">KM do hodômetro (início)</span>
@@ -205,7 +234,7 @@ export default function DetalheOsPage() {
               </div>
               <button
                 onClick={iniciar}
-                disabled={processando || kmInicio === ""}
+                disabled={processando || kmInicio === "" || (!os.snapshot.motorista && !motoristaEscolhido)}
                 className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
               >
                 {processando ? "Iniciando..." : "Iniciar viagem"}

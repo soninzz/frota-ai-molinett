@@ -11,6 +11,8 @@ import { api, toList, Veiculo } from "@/lib/api";
 
 type Cliente = { id: string; nome: string };
 
+type MotoristaOpcao = { id: string; usuario: { nome: string } };
+
 type Cenario = { margem: number; valorFinal: number; lucro: number; precoKm: number };
 
 type ResultadoCalculo = {
@@ -46,9 +48,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export default function CotacaoPage() {
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [motoristas, setMotoristas] = useState<MotoristaOpcao[]>([]);
 
   const [veiculoId, setVeiculoId] = useState("");
   const [clienteId, setClienteId] = useState("");
+  const [motoristaId, setMotoristaId] = useState("");
   const [origem, setOrigem] = useState("Chapecó");
   const [destino, setDestino] = useState("Xanxerê");
   const [km, setKm] = useState(120);
@@ -63,14 +67,17 @@ export default function CotacaoPage() {
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.get("/frota/veiculos"), api.get("/clientes")])
-      .then(([vs, cs]) => {
+    Promise.all([api.get("/frota/veiculos"), api.get("/clientes"), api.get("/motoristas")])
+      .then(([vs, cs, ms]) => {
         const listaV = toList<Veiculo>(vs);
         const listaC = toList<Cliente>(cs);
+        const listaM = toList<MotoristaOpcao>(ms);
         setVeiculos(listaV);
         setClientes(listaC);
+        setMotoristas(listaM);
         if (listaV.length) setVeiculoId(listaV[0].id);
         if (listaC.length) setClienteId(listaC[0].id);
+        if (listaM.length) setMotoristaId(listaM[0].id);
       })
       .catch((e) => setErro((e as Error).message));
   }, []);
@@ -83,6 +90,7 @@ export default function CotacaoPage() {
       const res = await api.post<ResultadoCalculo>("/cotacoes/calcular", {
         veiculoId,
         clienteId,
+        motoristaId: motoristaId || undefined,
         origem,
         destino,
         kmEstimado: km,
@@ -159,6 +167,17 @@ export default function CotacaoPage() {
                 {clientes.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nome}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Motorista">
+              <select className={inputCls + " appearance-none"} value={motoristaId} onChange={(e) => setMotoristaId(e.target.value)}>
+                <option value="">Definir depois</option>
+                {motoristas.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.usuario.nome}
                   </option>
                 ))}
               </select>

@@ -19,8 +19,11 @@ export class CotacaoMetasService {
     mensagem?: string
   }> {
     const meta = await this.getMetas()
-    if (!meta) return { faturamentoOk: true, kmOk: true, precisaAprovacao: false }
- 
+    // Meta ainda não calculada de verdade (sem despesas cadastradas no mês
+    // ainda) — kmMaximo=0 nesse caso significa "sem dado", não "não pode
+    // rodar nada". Tratar como meta ausente evita bloquear toda cotação.
+    if (!meta || meta.kmMaximo <= 0) return { faturamentoOk: true, kmOk: true, precisaAprovacao: false }
+
     // Busca total já faturado no mês
     const inicioMes = new Date()
     inicioMes.setDate(1)
