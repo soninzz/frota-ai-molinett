@@ -106,8 +106,22 @@ por ID externo). Já aplicado no banco (2026-07-10):
 - **Supabase Auth**: cliente confirmou que quer "supabase auth normal" pro plano multi-domínio
   (molinett.frotaai.com / franco.frotaai.com). Migração JWT→Supabase Auth planejada, ainda
   não iniciada — é refactor grande (auth module, guards, frontend, seeds).
-- OCR de hodômetro/cupom fiscal (falta decidir/obter chaves)
-- SEFAZ (certificado digital ainda não confirmado)
+- **OCR de hodômetro/cupom + SEFAZ (2026-07-14)**: parcialmente resolvido.
+  - **Decodificador de chave/QR Code da NFC-e** (`packages/api/src/ocr/nfce-chave.util.ts`):
+    funcionando de verdade, sem credencial nenhuma — extrai CNPJ do emitente, UF e data de
+    emissão direto dos 44 dígitos da chave (testado com chave sintética, dígito verificador
+    módulo 11 confere). Esse é o caminho fiscalmente correto recomendado pelos docs (evita OCR).
+  - **Limite confirmado**: a consulta pública da SEFAZ-SC (`sat.sef.sc.gov.br/nfce/consulta`)
+    tem proteção anti-bot (captcha) — não dá pra buscar valor/itens da nota programaticamente
+    sem o certificado e-CNPJ (webservice oficial `NFeDistribuicaoDFe`), que ainda não temos.
+  - **OCR (hodômetro/cupom)**: módulo `packages/api/src/ocr/` criado com `OCR_MODE=mock|live`
+    (mesmo padrão do rastreador). Em mock (padrão hoje), sempre retorna
+    `precisaConfirmacaoHumana: true` sem inventar dado — não há chave de visão configurada
+    ainda. Em live, chama a API da Anthropic (`ANTHROPIC_API_KEY` no `.env`, ainda vazia).
+    Endpoints: `POST /ocr/hodometro`, `POST /ocr/cupom`, `POST /ocr/qrcode-cupom` (esse último
+    já é live). Tela `/diesel` tem campo pra colar o QR Code e conferir CNPJ/data na hora.
+  - **Falta**: decidir/fornecer a chave de API de visão (Anthropic ou Google Vision) pra virar
+    `live`; e o certificado e-CNPJ se quiserem consulta automática de valor via NFeDistribuicaoDFe.
 - **Conflito a resolver com o cliente**: o Escopo v3/critérios de aceite exigem WhatsApp
   **oficial da Meta** (guardrail: "nada de WhatsApp não-oficial"), mas a decisão registrada
   foi Evolution API. Re-confirmar antes do go-live — critério de aceite cita Cloud API.

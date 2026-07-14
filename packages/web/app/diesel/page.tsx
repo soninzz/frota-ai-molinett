@@ -55,6 +55,27 @@ export default function DieselPage() {
   const [valorTotal, setValorTotal] = useState<number | "">("");
   const [postoNome, setPostoNome] = useState("");
 
+  const [qrCode, setQrCode] = useState("");
+  const [lendoQrCode, setLendoQrCode] = useState(false);
+  const [infoQrCode, setInfoQrCode] = useState<{
+    chaveDecodificada: { uf: string | null; cnpjEmitente: string; anoEmissao: number; mesEmissao: number; valida: boolean } | null;
+    mensagem: string;
+  } | null>(null);
+
+  async function lerQrCode() {
+    if (!qrCode.trim()) return;
+    setLendoQrCode(true);
+    setInfoQrCode(null);
+    try {
+      const res = await api.post<typeof infoQrCode>("/ocr/qrcode-cupom", { conteudoQrCode: qrCode });
+      setInfoQrCode(res);
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setLendoQrCode(false);
+    }
+  }
+
   async function carregarVeiculos() {
     const vs = toList<Veiculo>(await api.get("/frota/veiculos"));
     setVeiculos(vs);
@@ -157,6 +178,51 @@ export default function DieselPage() {
             >
               Dispensar
             </button>
+          </div>
+        )}
+
+        {showForm && (
+          <div className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-3">
+            <h2 className="text-[13px] font-semibold text-zinc-900">
+              Conferir cupom fiscal (QR Code da NFC-e)
+            </h2>
+            <p className="text-[11px] text-zinc-400">
+              Cole o conteúdo do QR Code do cupom — confirma CNPJ do posto e data de emissão direto
+              da chave de acesso, sem precisar de OCR.
+            </p>
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <input
+                  className={inputCls}
+                  placeholder="https://sat.sef.sc.gov.br/nfce/qrcode?p=..."
+                  value={qrCode}
+                  onChange={(e) => setQrCode(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={lerQrCode}
+                disabled={lendoQrCode || !qrCode.trim()}
+                className="rounded-xl border border-zinc-200 text-zinc-700 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+              >
+                {lendoQrCode ? "Lendo..." : "Conferir"}
+              </button>
+            </div>
+            {infoQrCode && (
+              <div
+                className={`rounded-lg px-3.5 py-2.5 text-[12px] ${
+                  infoQrCode.chaveDecodificada?.valida ? "bg-[#16A34A]/8 text-[#16A34A]" : "bg-[#C0392B]/8 text-[#C0392B]"
+                }`}
+              >
+                {infoQrCode.chaveDecodificada && (
+                  <p className="font-mono mb-1">
+                    CNPJ {infoQrCode.chaveDecodificada.cnpjEmitente} · {infoQrCode.chaveDecodificada.uf} ·{" "}
+                    {String(infoQrCode.chaveDecodificada.mesEmissao).padStart(2, "0")}/{infoQrCode.chaveDecodificada.anoEmissao}
+                  </p>
+                )}
+                <p className="text-zinc-600">{infoQrCode.mensagem}</p>
+              </div>
+            )}
           </div>
         )}
 

@@ -6,6 +6,11 @@
 *.pem
 /secrets/
 
+# Planilhas reais do cliente (dado de negócio real — nunca vai pro git)
+*.xls
+*.xlsx
+*.xlsm
+
 # Dependências
 node_modules
 

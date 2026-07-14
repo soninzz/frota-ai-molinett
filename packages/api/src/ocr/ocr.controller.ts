@@ -1,0 +1,33 @@
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
+import { OcrService } from './ocr.service'
+import { LerHodometroDto, LerCupomDto, LerQrCodeDto } from './dto/ocr.dto'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { RolesGuard } from '../common/guards/roles.guard'
+import { Roles } from '../common/decorators/roles.decorator'
+import { Perfil } from '@prisma/client'
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('ocr')
+export class OcrController {
+  constructor(private ocrService: OcrService) {}
+
+  @Roles(Perfil.MOTORISTA, Perfil.OPERACIONAL, Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  @Post('hodometro')
+  lerHodometro(@Body() dto: LerHodometroDto) {
+    return this.ocrService.lerHodometro(dto.imagemBase64, dto.mimeType)
+  }
+
+  @Roles(Perfil.MOTORISTA, Perfil.OPERACIONAL, Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  @Post('cupom')
+  lerCupom(@Body() dto: LerCupomDto) {
+    return this.ocrService.lerCupom(dto.imagemBase64, dto.mimeType)
+  }
+
+  // Caminho fiscalmente correto (primário) — decodifica a chave direto do
+  // QR Code, sem OCR e sem consumir a cota da API de visão.
+  @Roles(Perfil.MOTORISTA, Perfil.OPERACIONAL, Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  @Post('qrcode-cupom')
+  lerQrCode(@Body() dto: LerQrCodeDto) {
+    return this.ocrService.lerQrCodeCupom(dto.conteudoQrCode)
+  }
+}

@@ -15,6 +15,7 @@ import { RastreadorModule } from './rastreador/rastreador.module'
 import { AlertasModule } from './alertas/alertas.module'
 import { SinistrosModule } from './sinistros/sinistros.module'
 import { SimuladorModule } from './simulador/simulador.module'
+import { OcrModule } from './ocr/ocr.module'
  
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { SimuladorModule } from './simulador/simulador.module'
     AlertasModule,
     SinistrosModule,
     SimuladorModule,
+    OcrModule,
   ],
 })
 export class AppModule {}
