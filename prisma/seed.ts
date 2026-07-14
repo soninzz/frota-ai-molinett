@@ -487,7 +487,13 @@ async function main() {
   // ============================================================
   console.log('👤 Criando usuário administrador...')
 
-  const senhaHash = await bcrypt.hash('SENHA_REMOVIDA_DO_HISTORICO_GIT', 12)
+  const senhaInicial = process.env.SEED_ADMIN_PASSWORD
+  if (!senhaInicial) {
+    throw new Error(
+      'SEED_ADMIN_PASSWORD não definida no .env — defina antes de rodar o seed (evita senha hardcoded no git).',
+    )
+  }
+  const senhaHash = await bcrypt.hash(senhaInicial, 12)
 
   await prisma.usuario.upsert({
     where: { email: 'admin@molinett.com.br' },

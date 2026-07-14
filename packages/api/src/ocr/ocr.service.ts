@@ -2,12 +2,14 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { decodificarChaveNFCe, ChaveDecodificada } from './nfce-chave.util'
 
+type Provedor = 'mock' | 'gemini' | 'anthropic'
+
 export interface LeituraHodometro {
   odometroKm: number | null
   confianca: number
   modeloPainel: string | null
   precisaConfirmacaoHumana: boolean
-  fonte: 'mock' | 'anthropic'
+  fonte: Provedor
 }
 
 export interface LeituraCupom {
@@ -17,27 +19,33 @@ export interface LeituraCupom {
   precoPorLitro: number | null
   confianca: number
   precisaConfirmacaoHumana: boolean
-  fonte: 'mock' | 'anthropic'
+  fonte: Provedor
 }
 
 const PROMPT_HODOMETRO =
   'Leia SOMENTE o hodômetro (km) deste painel de caminhão. Identifique o modelo do painel ' +
-  'se possível. Responda JSON: {"odometro_km": int, "confianca": 0-1, "modelo_painel": string}'
+  'se possível. Responda APENAS com JSON, sem texto extra: ' +
+  '{"odometro_km": int, "confianca": 0-1, "modelo_painel": string}'
 
 const PROMPT_CUPOM =
   'Leia este cupom fiscal de abastecimento de diesel. Extraia nome do posto, volume em litros, ' +
-  'valor total pago e preço por litro. Responda JSON: {"posto_nome": string, "volume_litros": ' +
-  'float, "valor_total": float, "preco_por_litro": float, "confianca": 0-1}'
+  'valor total pago e preço por litro. Responda APENAS com JSON, sem texto extra: ' +
+  '{"posto_nome": string, "volume_litros": float, "valor_total": float, "preco_por_litro": float, "confianca": 0-1}'
 
 const LIMIAR_CONFIANCA = 0.7
 
+// Adaptador de provedor de IA multimodal — troca de Gemini pra Anthropic (ou
+// qualquer outro) mudando só LLM_PROVIDER no .env, sem reescrever quem chama.
+// Gemini é o padrão porque foi o provedor pedido pelo cliente (Gemini Flash).
 @Injectable()
 export class OcrService {
   private readonly logger = new Logger(OcrService.name)
-  private readonly modo: string
+  private readonly modoOcr: string
+  private readonly provedor: Provedor
 
   constructor(private config: ConfigService) {
-    this.modo = this.config.get<string>('OCR_MODE', 'mock')
+    this.modoOcr = this.config.get<string>('OCR_MODE', 'mock')
+    this.provedor = this.config.get<Provedor>('LLM_PROVIDER', 'gemini')
   }
 
   // ── Chave/QR Code da NFC-e — funciona sem chave de IA nenhuma ──
@@ -66,18 +74,50 @@ export class OcrService {
 
   // ── OCR do hodômetro (foto do painel) ──
   async lerHodometro(imagemBase64: string, mimeType = 'image/jpeg'): Promise<LeituraHodometro> {
-    if (this.modo !== 'live') {
-      return this.mockHodometro()
+    if (this.modoOcr !== 'live') return this.mockHodometro()
+    try {
+      const r = await this.chamarIA(imagemBase64, mimeType, PROMPT_HODOMETRO)
+      const confianca = typeof r.confianca === 'number' ? r.confianca : 0
+      return {
+        odometroKm: typeof r.odometro_km === 'number' ? r.odometro_km : null,
+        confianca,
+        modeloPainel: r.modelo_painel ?? null,
+        precisaConfirmacaoHumana: confianca < LIMIAR_CONFIANCA,
+        fonte: this.provedor,
+      }
+    } catch (e) {
+      this.logger.error(`Falha na leitura do hodômetro via ${this.provedor}`, e)
+      return { odometroKm: null, confianca: 0, modeloPainel: null, precisaConfirmacaoHumana: true, fonte: this.provedor }
     }
-    return this.lerHodometroAnthropic(imagemBase64, mimeType)
   }
 
   // ── OCR do cupom fiscal (fallback quando QR Code está ilegível/rasgado) ──
   async lerCupom(imagemBase64: string, mimeType = 'image/jpeg'): Promise<LeituraCupom> {
-    if (this.modo !== 'live') {
-      return this.mockCupom()
+    if (this.modoOcr !== 'live') return this.mockCupom()
+    try {
+      const r = await this.chamarIA(imagemBase64, mimeType, PROMPT_CUPOM)
+      const confianca = typeof r.confianca === 'number' ? r.confianca : 0
+      return {
+        postoNome: r.posto_nome ?? null,
+        volumeLitros: typeof r.volume_litros === 'number' ? r.volume_litros : null,
+        valorTotal: typeof r.valor_total === 'number' ? r.valor_total : null,
+        precoPorLitro: typeof r.preco_por_litro === 'number' ? r.preco_por_litro : null,
+        confianca,
+        precisaConfirmacaoHumana: confianca < LIMIAR_CONFIANCA,
+        fonte: this.provedor,
+      }
+    } catch (e) {
+      this.logger.error(`Falha na leitura do cupom via ${this.provedor}`, e)
+      return {
+        postoNome: null,
+        volumeLitros: null,
+        valorTotal: null,
+        precoPorLitro: null,
+        confianca: 0,
+        precisaConfirmacaoHumana: true,
+        fonte: this.provedor,
+      }
     }
-    return this.lerCupomAnthropic(imagemBase64, mimeType)
   }
 
   private mockHodometro(): LeituraHodometro {
@@ -98,10 +138,55 @@ export class OcrService {
     }
   }
 
+  // ── Dispatch por provedor ──
+  private async chamarIA(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
+    if (this.provedor === 'anthropic') return this.chamarAnthropic(imagemBase64, mimeType, prompt)
+    return this.chamarGemini(imagemBase64, mimeType, prompt)
+  }
+
+  // GEMINI_MODEL fica configurável de propósito — a nomenclatura dos modelos
+  // Gemini muda com frequência e não dá pra garantir aqui qual é o nome exato
+  // vigente da versão "Flash" pedida pelo cliente; confirmar o ID certo em
+  // ai.google.dev/gemini-api/docs/models antes de virar OCR_MODE=live.
+  private async chamarGemini(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
+    const apiKey = this.config.get<string>('GEMINI_API_KEY')
+    if (!apiKey) {
+      throw new Error('OCR_MODE=live com LLM_PROVIDER=gemini mas GEMINI_API_KEY não está configurada')
+    }
+    const model = this.config.get<string>('GEMINI_MODEL', 'gemini-2.5-flash')
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { inline_data: { mime_type: mimeType, data: imagemBase64 } },
+                { text: prompt },
+              ],
+            },
+          ],
+          generationConfig: { response_mime_type: 'application/json' },
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      throw new Error(`Gemini API (${model}) retornou ${response.status}: ${await response.text()}`)
+    }
+
+    const dados = await response.json()
+    const texto = dados.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}'
+    return JSON.parse(texto)
+  }
+
   private async chamarAnthropic(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY')
     if (!apiKey) {
-      throw new Error('OCR_MODE=live mas ANTHROPIC_API_KEY não está configurada')
+      throw new Error('OCR_MODE=live com LLM_PROVIDER=anthropic mas ANTHROPIC_API_KEY não está configurada')
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -134,49 +219,5 @@ export class OcrService {
     const texto = dados.content?.[0]?.text ?? '{}'
     const jsonMatch = texto.match(/\{[\s\S]*\}/)
     return jsonMatch ? JSON.parse(jsonMatch[0]) : {}
-  }
-
-  private async lerHodometroAnthropic(imagemBase64: string, mimeType: string): Promise<LeituraHodometro> {
-    try {
-      const r = await this.chamarAnthropic(imagemBase64, mimeType, PROMPT_HODOMETRO)
-      const confianca = typeof r.confianca === 'number' ? r.confianca : 0
-      return {
-        odometroKm: typeof r.odometro_km === 'number' ? r.odometro_km : null,
-        confianca,
-        modeloPainel: r.modelo_painel ?? null,
-        precisaConfirmacaoHumana: confianca < LIMIAR_CONFIANCA,
-        fonte: 'anthropic',
-      }
-    } catch (e) {
-      this.logger.error('Falha na leitura do hodômetro via Anthropic', e)
-      return { odometroKm: null, confianca: 0, modeloPainel: null, precisaConfirmacaoHumana: true, fonte: 'anthropic' }
-    }
-  }
-
-  private async lerCupomAnthropic(imagemBase64: string, mimeType: string): Promise<LeituraCupom> {
-    try {
-      const r = await this.chamarAnthropic(imagemBase64, mimeType, PROMPT_CUPOM)
-      const confianca = typeof r.confianca === 'number' ? r.confianca : 0
-      return {
-        postoNome: r.posto_nome ?? null,
-        volumeLitros: typeof r.volume_litros === 'number' ? r.volume_litros : null,
-        valorTotal: typeof r.valor_total === 'number' ? r.valor_total : null,
-        precoPorLitro: typeof r.preco_por_litro === 'number' ? r.preco_por_litro : null,
-        confianca,
-        precisaConfirmacaoHumana: confianca < LIMIAR_CONFIANCA,
-        fonte: 'anthropic',
-      }
-    } catch (e) {
-      this.logger.error('Falha na leitura do cupom via Anthropic', e)
-      return {
-        postoNome: null,
-        volumeLitros: null,
-        valorTotal: null,
-        precoPorLitro: null,
-        confianca: 0,
-        precisaConfirmacaoHumana: true,
-        fonte: 'anthropic',
-      }
-    }
   }
 }

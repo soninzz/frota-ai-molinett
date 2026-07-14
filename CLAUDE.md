@@ -117,16 +117,23 @@ por ID externo). Já aplicado no banco (2026-07-10):
   - **OCR (hodômetro/cupom)**: módulo `packages/api/src/ocr/` criado com `OCR_MODE=mock|live`
     (mesmo padrão do rastreador). Em mock (padrão hoje), sempre retorna
     `precisaConfirmacaoHumana: true` sem inventar dado — não há chave de visão configurada
-    ainda. Em live, chama a API da Anthropic (`ANTHROPIC_API_KEY` no `.env`, ainda vazia).
+    ainda. **Atualizado 2026-07-14**: `OCR_MODE=live` ativado de verdade, `LLM_PROVIDER=gemini`
+    (pedido do cliente — "Gemini Flash"), `GEMINI_API_KEY` real configurada, modelo
+    `gemini-2.5-flash`. Testado ponta a ponta com imagem sintética (número desenhado lido
+    corretamente, confiança 0.99) — a integração funciona de verdade, não é mock. Adapter mantém
+    `chamarAnthropic()` como provedor alternativo (`LLM_PROVIDER=anthropic`) sem mudar código.
     Endpoints: `POST /ocr/hodometro`, `POST /ocr/cupom`, `POST /ocr/qrcode-cupom` (esse último
     já é live). Tela `/diesel` tem campo pra colar o QR Code e conferir CNPJ/data na hora.
-  - **Falta**: decidir/fornecer a chave de API de visão (Anthropic ou Google Vision) pra virar
-    `live`; e o certificado e-CNPJ se quiserem consulta automática de valor via NFeDistribuicaoDFe.
+  - **Falta**: confirmar o ID exato do modelo Gemini "Flash" vigente com o cliente/docs (usado
+    `gemini-2.5-flash`, funcionando, mas nomenclatura Gemini muda); e o certificado e-CNPJ se
+    quiserem consulta automática de valor via NFeDistribuicaoDFe.
 - **Conflito a resolver com o cliente**: o Escopo v3/critérios de aceite exigem WhatsApp
   **oficial da Meta** (guardrail: "nada de WhatsApp não-oficial"), mas a decisão registrada
   foi Evolution API. Re-confirmar antes do go-live — critério de aceite cita Cloud API.
-- Senha do seed do admin (`SENHA_REMOVIDA_DO_HISTORICO_GIT`) está em `prisma/seed.ts` no git — trocar a senha
-  do admin em produção no primeiro login.
+- Senha do seed do admin não fica mais hardcoded em `prisma/seed.ts` — lê de
+  `SEED_ADMIN_PASSWORD` no `.env` (nunca commitado). Isso destravou o `git push` (estava
+  bloqueado antes por causa da senha real de produção entrando no histórico do git).
+  Trocar a senha do admin em produção no primeiro login continua pendente.
 
 ## Decisões em aberto (não decidir sozinho, perguntar)
 
