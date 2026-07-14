@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { api, toList } from "@/lib/api";
+import { api, toList, downloadFile } from "@/lib/api";
 
 // ============================================================
 // FROTA AI · Molinett — Lançamentos Financeiros
@@ -57,6 +57,7 @@ export default function LancamentosPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [exportando, setExportando] = useState(false);
 
   const [tipo, setTipo] = useState("D");
   const [descricao, setDescricao] = useState("");
@@ -104,6 +105,17 @@ export default function LancamentosPage() {
     }
   }
 
+  async function exportarCsv() {
+    setExportando(true);
+    try {
+      await downloadFile("/financeiro/lancamentos/exportar", "lancamentos.csv");
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setExportando(false);
+    }
+  }
+
   async function reagendar(id: string) {
     try {
       await api.patch(`/financeiro/lancamentos/${id}/reagendar`);
@@ -143,7 +155,14 @@ export default function LancamentosPage() {
   return (
     <Shell title="Lançamentos" subtitle={`${lancamentos.length} lançamentos financeiros`}>
       <div className="space-y-6">
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={exportarCsv}
+            disabled={exportando}
+            className="rounded-xl border border-zinc-200 bg-white text-zinc-700 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+          >
+            {exportando ? "Exportando..." : "Exportar CSV"}
+          </button>
           <button
             onClick={() => setShowForm((s) => !s)}
             className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors"

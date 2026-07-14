@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../database/prisma.service'
+import { paraCsv } from '../common/csv.util'
 
 // Parâmetros da Lei 13.103/2015 (Lei do Motorista) — regras vivas pós-ADI 5322:
 // interjornada de 11h CONTÍNUAS (fracionamento derrubado pelo STF) e descanso
@@ -345,5 +346,20 @@ export class LeiMotoristaService {
         })),
       })),
     }
+  }
+
+  // ── Export CSV pronto pra folha de pagamento (motorista × classe) ──
+  async horasExtraPorClasseCsv(dataInicio?: string, dataFim?: string) {
+    const { classes } = await this.horasExtraPorClasse(dataInicio, dataFim)
+
+    const colunas = ['Motorista', 'Classe', 'Horas', 'Valor']
+    const linhas: (string | number)[][] = []
+    for (const classe of classes) {
+      for (const m of classe.motoristas) {
+        linhas.push([m.nome, classe.classe, m.horas.toFixed(2).replace('.', ','), m.valor.toFixed(2).replace('.', ',')])
+      }
+    }
+
+    return paraCsv(colunas, linhas)
   }
 }

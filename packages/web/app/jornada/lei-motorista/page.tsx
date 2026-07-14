@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { api } from "@/lib/api";
+import { api, downloadFile } from "@/lib/api";
 
 // ============================================================
 // FROTA AI · Molinett — Lei do Motorista (13.103/2015) + Hora extra por classe (S04)
@@ -61,6 +61,7 @@ export default function LeiMotoristaPage() {
   const [loading, setLoading] = useState(true);
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [exportando, setExportando] = useState(false);
 
   async function carregar() {
     setLoading(true);
@@ -87,6 +88,21 @@ export default function LeiMotoristaPage() {
     carregar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function exportarCsv() {
+    setExportando(true);
+    const qs = new URLSearchParams();
+    if (dataInicio) qs.set("dataInicio", dataInicio);
+    if (dataFim) qs.set("dataFim", dataFim);
+    const sufixo = qs.toString() ? `?${qs.toString()}` : "";
+    try {
+      await downloadFile(`/jornada/horas-extra/exportar${sufixo}`, "horas-extra.csv");
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setExportando(false);
+    }
+  }
 
   return (
     <Shell
@@ -202,8 +218,15 @@ export default function LeiMotoristaPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100">
+          <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
             <h2 className="text-[13px] font-semibold text-zinc-900">Hora extra por classe</h2>
+            <button
+              onClick={exportarCsv}
+              disabled={exportando}
+              className="rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-medium px-3 py-1.5 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+            >
+              {exportando ? "Exportando..." : "Exportar CSV (folha de pagamento)"}
+            </button>
           </div>
           {!loading && (!classes || classes.classes.length === 0) && (
             <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhuma hora extra registrada no período</p>

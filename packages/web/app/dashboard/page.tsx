@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Shell } from "@/components/Shell";
 import { api, toList } from "@/lib/api";
 
@@ -22,6 +23,62 @@ type PainelFinanceiro = {
 };
 
 type PainelVeiculo = { id: string; alertas: { revisoesCriticas: number; documentosAVencer: number; segurosAVencer: number } };
+
+type PontoFluxo = { dia: string; entradas: number; saidas: number; saldoAcumulado: number };
+type FluxoCaixa = { curva: PontoFluxo[] };
+
+function GraficoFluxoCaixa({ pontos }: { pontos: PontoFluxo[] }) {
+  const dados = pontos.map((p) => ({
+    ...p,
+    diaCurto: new Date(p.dia).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+  }));
+
+  if (dados.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-zinc-200 p-5 h-[280px] flex items-center justify-center">
+        <p className="text-[13px] text-zinc-400">Sem lançamentos previstos nos próximos 30 dias</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[13px] font-semibold text-zinc-900">Fluxo de caixa projetado (30 dias)</h2>
+        <div className="flex items-center gap-4 text-[11px] text-zinc-500">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#16A34A]" />Entradas</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#C0392B]" />Saídas</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#1E4C8C]" />Saldo acumulado</span>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={240}>
+        <AreaChart data={dados} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="corSaldo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#1E4C8C" stopOpacity={0.25} />
+              <stop offset="95%" stopColor="#1E4C8C" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#F4F4F5" vertical={false} />
+          <XAxis dataKey="diaCurto" tick={{ fontSize: 11, fill: "#A1A1AA" }} axisLine={false} tickLine={false} />
+          <YAxis
+            tick={{ fontSize: 11, fill: "#A1A1AA" }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+          />
+          <Tooltip
+            formatter={(v) => Number(v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            contentStyle={{ borderRadius: 12, border: "1px solid #E4E4E7", fontSize: 12 }}
+          />
+          <Area type="monotone" dataKey="entradas" stroke="#16A34A" fill="#16A34A" fillOpacity={0.08} strokeWidth={2} />
+          <Area type="monotone" dataKey="saidas" stroke="#C0392B" fill="#C0392B" fillOpacity={0.08} strokeWidth={2} />
+          <Area type="monotone" dataKey="saldoAcumulado" stroke="#1E4C8C" fill="url(#corSaldo)" strokeWidth={2.5} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 function StatCard({ label, value, delta, deltaPositive = true }: { label: string; value: string; delta?: string; deltaPositive?: boolean }) {
   return (
@@ -67,6 +124,7 @@ export default function DashboardPage() {
   const [cotacoesAbertas, setCotacoesAbertas] = useState(0);
   const [viagensCount, setViagensCount] = useState(0);
   const [comissoesPendentes, setComissoesPendentes] = useState(0);
+  const [fluxo, setFluxo] = useState<FluxoCaixa | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -76,13 +134,15 @@ export default function DashboardPage() {
       api.get("/cotacoes"),
       api.get("/viagens"),
       api.get("/comissoes?pago=false"),
+      api.get("/financeiro/fluxo-caixa?dias=30"),
     ])
-      .then(([fin, frota, cot, viag, com]) => {
+      .then(([fin, frota, cot, viag, com, flx]) => {
         setFinanceiro(fin as PainelFinanceiro);
         setVeiculos(toList<PainelVeiculo>(frota));
         setCotacoesAbertas(toList(cot).filter((c: any) => c.status === "ABERTA").length);
         setViagensCount(toList(viag).length);
         setComissoesPendentes(toList(com).length);
+        setFluxo(flx as FluxoCaixa);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -149,6 +209,8 @@ export default function DashboardPage() {
                 </a>
               </div>
             )}
+
+            <GraficoFluxoCaixa pontos={fluxo?.curva ?? []} />
 
             <div>
               <h2 className="text-[12px] font-semibold text-zinc-500 mb-3 uppercase tracking-wide">Módulos</h2>

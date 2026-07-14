@@ -1,6 +1,7 @@
 import {
-  Controller, Post, Get, Patch, Body, Param, Query, UseGuards,
+  Controller, Post, Get, Patch, Body, Param, Query, UseGuards, Res,
 } from '@nestjs/common'
+import type { Response } from 'express'
 import { ViagensService } from './viagens.service'
 import { MotoristasService } from './motoristas.service'
 import { ComissoesService } from './comissoes.service'
@@ -48,7 +49,20 @@ export class JornadaController {
   ) {
     return this.leiMotoristaService.horasExtraPorClasse(dataInicio, dataFim)
   }
- 
+
+  @Get('jornada/horas-extra/exportar')
+  @Roles(Perfil.OPERACIONAL, Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  async exportarHorasExtra(
+    @Query('dataInicio') dataInicio: string | undefined,
+    @Query('dataFim')    dataFim:    string | undefined,
+    @Res()                res:        Response,
+  ) {
+    const csv = await this.leiMotoristaService.horasExtraPorClasseCsv(dataInicio, dataFim)
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="horas-extra-${new Date().toISOString().slice(0, 10)}.csv"`)
+    res.send(csv)
+  }
+
   // ── Motoristas ──
   @Get('motoristas')
   listarMotoristas() {

@@ -1,7 +1,8 @@
 import {
   Controller, Get, Post, Patch, Body,
-  Query, Param, UseGuards
+  Query, Param, UseGuards, Res
 } from '@nestjs/common'
+import type { Response } from 'express'
 import { FinanceiroService } from './financeiro.service'
 import { FinanceiroMetasService } from './financeiro-metas.service'
 import { CriarLancamentoDto, BaixarLancamentoDto } from './dto/lancamento.dto'
@@ -54,6 +55,19 @@ export class FinanceiroController {
     return this.financeiroService.listarLancamentos(tipo, status, Number(pagina) || 1, Number(limite) || 20)
   }
  
+  @Get('lancamentos/exportar')
+  @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  async exportar(
+    @Query('tipo')   tipo:   string,
+    @Query('status') status: string,
+    @Res()           res:    Response,
+  ) {
+    const csv = await this.financeiroService.exportarLancamentosCsv(tipo, status)
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="lancamentos-${new Date().toISOString().slice(0, 10)}.csv"`)
+    res.send(csv)
+  }
+
   @Get('lancamentos/atrasados')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   getAtrasados() {

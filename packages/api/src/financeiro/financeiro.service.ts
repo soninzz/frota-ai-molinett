@@ -7,6 +7,7 @@ import { PrismaService } from '../database/prisma.service'
 import { CriarLancamentoDto, BaixarLancamentoDto } from './dto/lancamento.dto'
 import { FinanceiroClientesService } from './financeiro-clientes.service'
 import { FinanceiroMetasService } from './financeiro-metas.service'
+import { paraCsv } from '../common/csv.util'
  
 @Injectable()
 export class FinanceiroService {
@@ -167,7 +168,40 @@ export class FinanceiroService {
  
     return { lancamentos, total, pagina, limite }
   }
- 
+
+  // ── Exportação de lançamentos (CSV, pronto pra Excel) ─────
+  async exportarLancamentosCsv(tipo?: string, status?: string) {
+    const where: any = {}
+    if (tipo)   where.tipo   = tipo
+    if (status) where.status = status
+
+    const lancamentos = await this.prisma.lancamento.findMany({
+      where,
+      orderBy: { vencimento: 'asc' },
+      include: { cliente: true, veiculo: true, contaBancaria: true, centroCusto: true },
+    })
+
+    const colunas = [
+      'Tipo', 'Descrição', 'Valor', 'Vencimento', 'Status', 'Pago em',
+      'Cliente', 'Veículo', 'Centro de custo', 'Conta bancária', 'Observação',
+    ]
+    const linhas = lancamentos.map((l) => [
+      l.tipo,
+      l.descricao,
+      l.valor.toFixed(2).replace('.', ','),
+      l.vencimento.toISOString().slice(0, 10),
+      l.status,
+      l.pagoEm ? l.pagoEm.toISOString().slice(0, 10) : '',
+      l.cliente?.nome ?? '',
+      l.veiculo?.placa ?? '',
+      l.centroCusto?.nome ?? '',
+      l.contaBancaria?.banco ?? '',
+      l.observacao ?? '',
+    ])
+
+    return paraCsv(colunas, linhas)
+  }
+
   // ── Contas atrasadas ──────────────────────────────────────
   async getAtrasados() {
     const hoje = new Date()

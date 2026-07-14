@@ -46,6 +46,29 @@ export const api = {
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
+// Baixa um arquivo (CSV/XLSX) de um endpoint autenticado direto no navegador
+export async function downloadFile(path: string, nomeArquivoFallback: string) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status} ao exportar`);
+
+  const disposition = res.headers.get("Content-Disposition") || "";
+  const match = disposition.match(/filename="?([^"]+)"?/);
+  const nomeArquivo = match ? match[1] : nomeArquivoFallback;
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nomeArquivo;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
 // Normaliza qualquer formato de lista que a API devolva:
 // array puro, { data: [...] }, { items: [...] } ou { results: [...] }
 export function toList<T>(res: unknown): T[] {
