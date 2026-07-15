@@ -36,4 +36,10 @@ export class DieselController {
   getPendentes() {
     return this.dieselService.getPendentesCupom()
   }
+
+  @Get('sugestao-postos')
+  @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.MOTORISTA, Perfil.OPERACIONAL)
+  sugerirPostos(@Query('meses') meses: string) {
+    return this.dieselService.sugerirPostos(Number(meses) || 6)
+  }
 }

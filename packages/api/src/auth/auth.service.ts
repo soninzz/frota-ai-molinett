@@ -50,4 +50,54 @@ export class AuthService {
       },
     })
   }
+
+  // Direito de acesso (LGPD art. 18, I + art. 19 — prazo de 15 dias) —
+  // exporta todo dado pessoal que o sistema guarda sobre o usuário logado,
+  // incluindo o vínculo de Motorista (CPF/CNH/GPS via viagens) quando existir.
+  async exportarMeusDados(userId: string) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        whatsappNumero: true,
+        perfil: true,
+        ativo: true,
+        criadoEm: true,
+      },
+    })
+
+    const motorista = await this.prisma.motorista.findUnique({
+      where: { usuarioId: userId },
+      select: {
+        id: true,
+        cpf: true,
+        cnh: true,
+        cnhCategoria: true,
+        cnhVencimento: true,
+        toxicologicoVencimento: true,
+        mopp: true,
+        moppVencimento: true,
+        nr20: true,
+        nr20Vencimento: true,
+        comissaoPct: true,
+        viagens: {
+          select: { id: true, iniciadaEm: true, concluidaEm: true, kmRodado: true },
+          orderBy: { criadoEm: 'desc' },
+          take: 100,
+        },
+      },
+    })
+
+    return {
+      geradoEm: new Date().toISOString(),
+      baseLegal: {
+        dadosCadastrais: 'Execução de contrato de trabalho/prestação de serviço (LGPD art. 7º, V)',
+        gpsDeViagens: motorista ? 'Legítimo interesse do controlador, com LIA (LGPD art. 7º, IX)' : null,
+      },
+      usuario,
+      motorista,
+    }
+  }
 }

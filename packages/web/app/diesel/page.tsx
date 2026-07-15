@@ -28,6 +28,13 @@ type Anomalia = {
   mensagem: string;
 } | null;
 
+type PostoSugerido = {
+  posto: string;
+  precoMedioLitro: number;
+  rendimentoMedioKmL: number | null;
+  amostras: number;
+};
+
 const inputCls =
   "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
 
@@ -49,6 +56,7 @@ export default function DieselPage() {
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [anomalia, setAnomalia] = useState<Anomalia>(null);
+  const [postosSugeridos, setPostosSugeridos] = useState<PostoSugerido[]>([]);
 
   const [kmHodometro, setKmHodometro] = useState<number | "">("");
   const [volumeLitros, setVolumeLitros] = useState<number | "">("");
@@ -97,6 +105,10 @@ export default function DieselPage() {
 
   useEffect(() => {
     carregarVeiculos();
+    api
+      .get<{ ranking: PostoSugerido[] }>("/diesel/sugestao-postos")
+      .then((r) => setPostosSugeridos(r.ranking))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -273,6 +285,35 @@ export default function DieselPage() {
               {saving ? "Salvando..." : "Registrar"}
             </button>
           </form>
+        )}
+
+        {postosSugeridos.length > 0 && (
+          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+            <h2 className="text-[13px] font-semibold text-zinc-900 mb-1">Sugestão de postos (últimos 6 meses)</h2>
+            <p className="text-[11px] text-zinc-400 mb-3">
+              Ranking por preço médio real pago, com rendimento médio observado nos veículos que abasteceram lá.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {postosSugeridos.slice(0, 6).map((p, i) => (
+                <div
+                  key={p.posto}
+                  className={`rounded-xl border p-3.5 ${i === 0 ? "border-[#16A34A]/30 bg-[#16A34A]/5" : "border-zinc-100"}`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[13px] font-semibold text-zinc-900">{p.posto}</span>
+                    {i === 0 && (
+                      <span className="text-[10px] font-medium text-[#16A34A] uppercase tracking-wide">Melhor preço</span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-zinc-500">
+                    R$ {p.precoMedioLitro.toFixed(2)}/L
+                    {p.rendimentoMedioKmL && ` · ${p.rendimentoMedioKmL} km/L`}
+                  </p>
+                  <p className="text-[11px] text-zinc-300 mt-1">{p.amostras} abastecimento(s)</p>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">

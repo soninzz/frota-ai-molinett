@@ -139,6 +139,21 @@ por ID externo). Já aplicado no banco (2026-07-10):
   `SEED_ADMIN_PASSWORD` no `.env` (nunca commitado). Isso destravou o `git push` (estava
   bloqueado antes por causa da senha real de produção entrando no histórico do git).
   Trocar a senha do admin em produção no primeiro login continua pendente.
+- **[A VALIDAR COM A CONTABILIDADE] CT-e vs NFS-e (2026-07-15)**: `pesquisa_juridico_fiscal_junho2026.md`
+  §2 (pesquisa em fonte oficial, SEFAZ-MT) conclui que reboque/guincho é **transporte de carga
+  → CT-e modelo 57**, não NFS-e/ISS. O sistema hoje assume NFS-e (`NFSE_URL`/`NFSE_CNPJ` no
+  `.env`, `ParametroTributario.iss = 2%` no seed). **Não decidi trocar sozinho** — é decisão real
+  de emissão fiscal, com consequência regulatória. O que já fiz: `nfce-chave.util.ts` decodifica
+  chave de CT-e (mod 57) igual à de NFC-e (o layout de 44 dígitos é o mesmo pra todo DF-e); nova
+  env var `FISCAL_DOC_TYPE` (default `"nfse"`, preparada pra virar `"cte"` quando confirmado).
+  Nota: `ParametroTributario.iss` **não é consumido em nenhum cálculo hoje** (só cadastro morto,
+  igual o `AuditLog` estava antes de ser plugado) — ou seja, não tem imposto sendo cobrado errado
+  em produção agora, é só a integração NFS-e que pode estar apontando pro documento fiscal errado.
+- **Veículos de teste desativados (2026-07-15)**: `AAC` e `OPG` (`ativo=false`) — confirmado com
+  o cliente que eram só teste. Ficaram com histórico real vinculado (AAC: 17 cotações, 6 viagens,
+  1 abastecimento, 1 OS de manutenção) — não apaguei os registros, só desativei o veículo (some
+  das telas normais, mas o histórico não se perde). Se quiser limpar esse histórico de teste
+  também, avisar explicitamente antes — é dado com FK, apagar em cascata é irreversível.
 
 ## Decisões em aberto (não decidir sozinho, perguntar)
 

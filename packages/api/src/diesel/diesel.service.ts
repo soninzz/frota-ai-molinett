@@ -107,4 +107,43 @@ export class DieselService {
       orderBy: { timestamp: 'desc' },
     })
   }
+
+  // Sugestão de postos por preço/rendimento — baseado no histórico real de
+  // abastecimentos (não tem dado de horário/rota ainda, só preço e consumo
+  // médio observado em cada posto).
+  async sugerirPostos(limiteMeses = 6) {
+    const desde = new Date()
+    desde.setMonth(desde.getMonth() - limiteMeses)
+
+    const abastecimentos = await this.prisma.abastecimento.findMany({
+      where: {
+        timestamp: { gte: desde },
+        postoNome: { not: null },
+      },
+      select: { postoNome: true, precoPorLitro: true, consumoKmL: true },
+    })
+
+    const porPosto = new Map<string, { precos: number[]; consumos: number[] }>()
+    for (const a of abastecimentos) {
+      const nome = a.postoNome as string
+      const grupo = porPosto.get(nome) ?? { precos: [], consumos: [] }
+      grupo.precos.push(a.precoPorLitro)
+      if (a.consumoKmL !== null) grupo.consumos.push(a.consumoKmL)
+      porPosto.set(nome, grupo)
+    }
+
+    const media = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
+
+    const ranking = [...porPosto.entries()]
+      .map(([posto, g]) => ({
+        posto,
+        precoMedioLitro: +media(g.precos).toFixed(3),
+        rendimentoMedioKmL: g.consumos.length ? +media(g.consumos).toFixed(2) : null,
+        amostras: g.precos.length,
+      }))
+      .filter((r) => r.amostras >= 2) // descarta posto com 1 amostra só (ruído)
+      .sort((a, b) => a.precoMedioLitro - b.precoMedioLitro)
+
+    return { periodo: { desde, meses: limiteMeses }, ranking }
+  }
 }

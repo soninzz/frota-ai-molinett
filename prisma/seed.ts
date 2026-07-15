@@ -294,6 +294,9 @@ async function main() {
           cofins: 0.0300,  // 3%
           csll:   0.0108,  // 1,08%
           irpj:   0.0120,  // 1,2%
+          // [A VALIDAR] iss assume NFS-e (serviço). Pesquisa jurídico-fiscal
+          // concluiu que reboque/guincho é transporte de carga → CT-e modelo 57,
+          // sem ISS — confirmar com a contabilidade antes de aplicar em cálculo.
           iss:    0.0200,  // 2%
           cbs:    0.0090,  // 0,9% — ano-teste 2026 (LC 214/2025 art. 348)
           ibs:    0.0010,  // 0,1% — ano-teste 2026

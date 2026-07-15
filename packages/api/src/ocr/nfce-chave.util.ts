@@ -1,4 +1,7 @@
-// Decodificador da chave de acesso de 44 dígitos da NFC-e/NFe.
+// Decodificador da chave de acesso de 44 dígitos de qualquer DF-e nacional
+// (NF-e, NFC-e, CT-e...) — o layout da chave é o mesmo pra todos os modelos,
+// só o campo "mod" muda. Nome do arquivo ficou "nfce" por ter nascido pro
+// cupom de diesel, mas serve pra decodificar chave de CT-e (modelo 57) igual.
 // Padrão nacional (SEFAZ/ENCAT) — não muda por estado, funciona sem
 // credencial nenhuma: cUF(2) AAMM(4) CNPJ(14) mod(2) serie(3) nNF(9)
 // tpEmis(1) cNF(8) cDV(1) = 44 dígitos.
@@ -20,6 +23,12 @@ const UF_POR_CODIGO: Record<string, string> = {
 const MODELO_DOCUMENTO: Record<string, string> = {
   '55': 'NF-e (produto)',
   '65': 'NFC-e (consumidor)',
+  '57': 'CT-e (transporte de carga)', // documento fiscal correto pra reboque/guincho —
+  // ver pesquisa_juridico_fiscal_junho2026.md §2: "reboque/guincho = transporte de
+  // carga → CT-e modelo 57", não NFS-e/ISS. `[A VALIDAR]` com a contabilidade da
+  // Molinett antes de trocar o tributo/documento em produção.
+  '67': 'CT-e OS (passageiros/valores)',
+  '62': 'NFCom (telecom)',
 }
 
 export interface ChaveDecodificada {

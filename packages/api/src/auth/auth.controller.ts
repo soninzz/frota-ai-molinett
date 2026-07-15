@@ -18,4 +18,11 @@ export class AuthController {
   me(@CurrentUser() user: any) {
     return this.authService.me(user.id)
   }
+
+  // LGPD art. 18/19 — qualquer usuário pode exportar os próprios dados
+  @UseGuards(JwtAuthGuard)
+  @Get('me/dados')
+  exportarMeusDados(@CurrentUser() user: any) {
+    return this.authService.exportarMeusDados(user.id)
+  }
 }
