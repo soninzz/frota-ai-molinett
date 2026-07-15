@@ -83,6 +83,12 @@ model Veiculo {
   custoKmAtual        Float?
   custoHoraAtual      Float?
   custoKmAtualizadoEm DateTime?
+  ultimaLatitude      Float?
+  ultimaLongitude     Float?
+  ultimaVelocidade    Float?
+  ultimoMotorLigado   Boolean?
+  ultimaPosicaoEm     DateTime?
+  ultimaPosicaoFonte  String?
   abastecimentos      Abastecimento[]
   alinhamentos        Alinhamento[]
   cotacoes            Cotacao[]

@@ -30,7 +30,7 @@ export class RastreadorScheduler {
 
     this.executando = true
     try {
-      await this.rastreadorService.atualizarViagensEmAndamento()
+      await this.rastreadorService.sincronizarPosicoes()
       this.logger.log('Sincronização de posições concluída')
     } catch (e) {
       this.logger.error('Falha na sincronização de posições', e)

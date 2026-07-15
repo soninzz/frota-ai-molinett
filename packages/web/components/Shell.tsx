@@ -30,6 +30,7 @@ const NAV_GROUPS = [
     label: "Frota",
     items: [
       { label: "Painel da frota", href: "/frota", icon: "▤" },
+      { label: "Mapa ao vivo", href: "/frota/mapa", icon: "◎" },
       { label: "Veículos", href: "/frota/cadastro", icon: "▦" },
       { label: "Manutenção", href: "/manutencao", icon: "▧" },
       { label: "Diesel", href: "/diesel", icon: "▨" },

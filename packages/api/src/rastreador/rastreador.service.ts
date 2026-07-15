@@ -87,6 +87,7 @@ export class RastreadorService {
       velocidade: Math.random() > 0.3 ? Math.round(Math.random() * 90) : 0,
       motorLigado: Math.random() > 0.2,
       timestamp: new Date(),
+      fonte: 'assemilsat' as const,
     }))
   }
  
@@ -146,6 +147,7 @@ export class RastreadorService {
         velocidade: parseFloat(d.velocidade) || 0,
         motorLigado: d.ignicao === 'L',
         timestamp: new Date(d.data_gps.replace(' ', 'T')),
+        fonte: 'assemilsat' as const,
       }))
     } catch (e) {
       this.logger.error('Falha ao conectar com Assemilsat', e)
@@ -227,6 +229,7 @@ export class RastreadorService {
         velocidade: t.speed || 0,
         motorLigado: t.ign,
         timestamp: new Date(t.date.replace(' ', 'T')),
+        fonte: 'megasat' as const,
       }))
     } catch (e) {
       this.logger.error('Falha ao conectar com MegaSat/STC', e)
@@ -241,14 +244,50 @@ export class RastreadorService {
   // (tráfego, semáforo). Acima disso conta como direção efetiva.
   private static readonly VELOCIDADE_PARADO_KMH = 5
 
-  // ── Atualiza HT/HP da viagem em andamento com base nas posições ──
-  // Chamado por um cron (ex: a cada 5 min) para todas as viagens EM_ANDAMENTO.
-  // Também persiste a telemetria bruta (necessária pra checar direção
-  // contínua de 5h30 e intervalo intrajornada de 1h — Lei do Motorista).
-  async atualizarViagensEmAndamento() {
+  // ── Ponto único chamado pelo cron a cada 5 min ──
+  // Busca as posições UMA vez (Assemilsat não é idempotente — não pode
+  // chamar de novo) e usa o mesmo resultado pra duas coisas: (1) atualiza
+  // "última posição conhecida" de TODOS os veículos, pro mapa ao vivo;
+  // (2) atualiza HT/HP das viagens em andamento + telemetria bruta (Lei do
+  // Motorista).
+  async sincronizarPosicoes() {
     const posicoes = await this.buscarPosicoesNovas()
     if (!posicoes.length) return
 
+    await this.atualizarUltimaPosicaoVeiculos(posicoes)
+    await this.atualizarViagensEmAndamento(posicoes)
+  }
+
+  private async atualizarUltimaPosicaoVeiculos(posicoes: PosicaoVeiculo[]) {
+    const veiculos = await this.prisma.veiculo.findMany({
+      where: { placa: { in: posicoes.map((p) => p.placa) } },
+      select: { id: true, placa: true },
+    })
+    const idPorPlaca = new Map(veiculos.map((v) => [v.placa, v.id]))
+
+    await Promise.all(
+      posicoes.map((p) => {
+        const veiculoId = idPorPlaca.get(p.placa)
+        if (!veiculoId) return null
+        return this.prisma.veiculo.update({
+          where: { id: veiculoId },
+          data: {
+            ultimaLatitude: p.latitude,
+            ultimaLongitude: p.longitude,
+            ultimaVelocidade: p.velocidade,
+            ultimoMotorLigado: p.motorLigado,
+            ultimaPosicaoEm: p.timestamp,
+            ultimaPosicaoFonte: p.fonte,
+          },
+        })
+      }),
+    )
+  }
+
+  // ── Atualiza HT/HP da viagem em andamento com base nas posições ──
+  // Também persiste a telemetria bruta (necessária pra checar direção
+  // contínua de 5h30 e intervalo intrajornada de 1h — Lei do Motorista).
+  private async atualizarViagensEmAndamento(posicoes: PosicaoVeiculo[]) {
     const viagensAtivas = await this.prisma.viagem.findMany({
       where: { concluidaEm: null, iniciadaEm: { not: null } },
       include: { veiculo: true },
