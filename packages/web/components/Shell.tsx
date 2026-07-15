@@ -55,6 +55,13 @@ const NAV_GROUPS = [
       { label: "Simulador", href: "/financeiro/simulador", icon: "◫" },
     ],
   },
+  {
+    label: "Sistema",
+    items: [
+      { label: "Saúde das integrações", href: "/sistema/integracoes", icon: "◍" },
+      { label: "Permissões", href: "/sistema/permissoes", icon: "◫" },
+    ],
+  },
 ];
 
 export function Sidebar() {

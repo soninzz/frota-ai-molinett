@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Controller, Get, Param, UseGuards } from '@nestjs/common'
 import { FrotaService } from './frota.service'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
@@ -8,6 +9,7 @@ import { CriarVeiculoDto } from './dto/criar-veiculo.dto'
 import { Post, Body } from '@nestjs/common'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('frota')
 @Controller('frota')
 export class FrotaController {
   constructor(private frotaService: FrotaService) {}

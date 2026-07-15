@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common'
 import { PneusService } from './pneus.service'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
@@ -7,6 +8,7 @@ import { Perfil, TipoMovimentacaoPneu, PosicaoPneu } from '@prisma/client'
 import { CriarPneuDto } from './dto/criar-pneu.dto'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('pneus')
 @Controller('pneus')
 export class PneusController {
   constructor(private pneusService: PneusService) {}

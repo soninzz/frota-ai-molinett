@@ -465,6 +465,22 @@ async function main() {
     },
     {
       categoria:           CategoriaAlerta.COMPLIANCE,
+      evento:              'MOPP_A_VENCER',
+      descricao:           'Certificação MOPP do motorista a vencer',
+      destinatariosPerfis: [Perfil.GESTOR_MANUTENCAO, Perfil.MOTORISTA],
+      canal:               CanalAlerta.WHATSAPP,
+      configuracao:        { antecedenciaDias: 30 },
+    },
+    {
+      categoria:           CategoriaAlerta.COMPLIANCE,
+      evento:              'NR20_A_VENCER',
+      descricao:           'Certificação NR-20 do motorista a vencer',
+      destinatariosPerfis: [Perfil.GESTOR_MANUTENCAO, Perfil.MOTORISTA],
+      canal:               CanalAlerta.WHATSAPP,
+      configuracao:        { antecedenciaDias: 30 },
+    },
+    {
+      categoria:           CategoriaAlerta.COMPLIANCE,
       evento:              'MULTA_NOVA',
       descricao:           'Nova multa registrada no sistema',
       destinatariosPerfis: [Perfil.GESTOR_PRINCIPAL],

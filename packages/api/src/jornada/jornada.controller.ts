@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import {
   Controller, Post, Get, Patch, Body, Param, Query, UseGuards, Res,
 } from '@nestjs/common'
@@ -16,6 +17,7 @@ import { Perfil } from '@prisma/client'
 import { CriarMotoristaDto } from './dto/criar-motorista.dto'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('jornada')
 @Controller()
 export class JornadaController {
   constructor(
@@ -77,7 +79,13 @@ export class JornadaController {
   ) {
     return this.motoristasService.painelJornada(id, dataInicio, dataFim)
   }
- 
+
+  @Get('motoristas/comparativo')
+  @Roles(Perfil.OPERACIONAL, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  comparativoMotoristas(@Query('dataInicio') dataInicio?: string, @Query('dataFim') dataFim?: string) {
+    return this.motoristasService.comparativoMotoristas(dataInicio, dataFim)
+  }
+
   // ── Viagens ──
   @Roles(Perfil.OPERACIONAL, Perfil.MOTORISTA, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Post('viagens/iniciar')

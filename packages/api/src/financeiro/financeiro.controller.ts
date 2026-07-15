@@ -1,8 +1,10 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import {
   Controller, Get, Post, Patch, Body,
   Query, Param, UseGuards, Res
 } from '@nestjs/common'
 import type { Response } from 'express'
+import { CurrentUser } from '../common/decorators/current-user.decorator'
 import { FinanceiroService } from './financeiro.service'
 import { FinanceiroMetasService } from './financeiro-metas.service'
 import { CriarLancamentoDto, BaixarLancamentoDto } from './dto/lancamento.dto'
@@ -12,6 +14,7 @@ import { Roles } from '../common/decorators/roles.decorator'
 import { Perfil } from '@prisma/client'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('financeiro')
 @Controller('financeiro')
 export class FinanceiroController {
   constructor(
@@ -40,8 +43,8 @@ export class FinanceiroController {
  
   @Post('lancamentos')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
-  criarLancamento(@Body() dto: CriarLancamentoDto) {
-    return this.financeiroService.criarLancamento(dto)
+  criarLancamento(@Body() dto: CriarLancamentoDto, @CurrentUser() user: any) {
+    return this.financeiroService.criarLancamento(dto, user.id)
   }
  
   @Get('lancamentos')
@@ -76,14 +79,14 @@ export class FinanceiroController {
  
   @Patch('lancamentos/baixar')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
-  baixar(@Body() dto: BaixarLancamentoDto) {
-    return this.financeiroService.baixarLancamento(dto)
+  baixar(@Body() dto: BaixarLancamentoDto, @CurrentUser() user: any) {
+    return this.financeiroService.baixarLancamento(dto, user.id)
   }
- 
+
   @Patch('lancamentos/:id/reagendar')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
-  reagendar(@Param('id') id: string) {
-    return this.financeiroService.reagendarLancamento(id)
+  reagendar(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.financeiroService.reagendarLancamento(id, user.id)
   }
  
   @Get('metas')
@@ -96,6 +99,17 @@ export class FinanceiroController {
   @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   recalcularMetas() {
     return this.metasService.recalcularMetas()
+  }
+
+  // Guardrail 4: gestor só pode AUMENTAR a meta acima do piso calculado
+  @Patch('metas/ajustar')
+  @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  ajustarMetas(
+    @Body('faturamentoMinimoManual') faturamentoMinimoManual: number | undefined,
+    @Body('kmMaximoManual') kmMaximoManual: number | undefined,
+    @CurrentUser() user: any,
+  ) {
+    return this.metasService.ajustarManualmente(user.id, faturamentoMinimoManual, kmMaximoManual)
   }
  
   @Post('simulador')

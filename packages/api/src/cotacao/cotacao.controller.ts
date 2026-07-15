@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import {
   Controller,
   Post,
@@ -20,6 +21,7 @@ import { Perfil } from '@prisma/client'
  import { AprovarCotacaoDto } from './dto/aprovar-cotacao.dto'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('cotacao')
 @Controller('cotacoes')
 export class CotacaoController {
   constructor(private cotacaoService: CotacaoService) {}
@@ -56,6 +58,12 @@ export class CotacaoController {
   listarPendentesAprovacao() {
     return this.cotacaoService.listarPendentesAprovacao()
   }
+
+  @Get('metricas/canceladas-perdidas')
+  @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.FINANCEIRO)
+  contadorCanceladasPerdidas(@Query('dataInicio') dataInicio?: string, @Query('dataFim') dataFim?: string) {
+    return this.cotacaoService.contadorCanceladasPerdidas(dataInicio, dataFim)
+  }
  
   // Detalhe de uma cotação
   @Get(':id')
@@ -67,8 +75,8 @@ export class CotacaoController {
   // Cancela cotação
   @Delete(':id')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
-  cancelar(@Param('id') id: string, @Body('motivo') motivo: string) {
-    return this.cotacaoService.cancelar(id, motivo)
+  cancelar(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
+    return this.cotacaoService.cancelar(id, motivo, user.id)
   }
  
   // Solicita alteração de OS

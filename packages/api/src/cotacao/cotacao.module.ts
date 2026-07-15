@@ -5,9 +5,10 @@ import { CotacaoSaldoService } from './cotacao-saldo.service'
 import { CotacaoMetasService } from './cotacao-metas.service'
 import { CotacaoTabelaService } from './cotacao-tabela.service'
 import { AlertasModule } from '../alertas/alertas.module'
+import { AuditoriaModule } from '../common/auditoria/auditoria.module'
 
 @Module({
-  imports: [AlertasModule],
+  imports: [AlertasModule, AuditoriaModule],
   providers: [
     CotacaoService,
     CotacaoSaldoService,

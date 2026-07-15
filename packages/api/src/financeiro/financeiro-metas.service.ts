@@ -1,14 +1,65 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../database/prisma.service'
- 
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
+
 @Injectable()
 export class FinanceiroMetasService {
-  constructor(private prisma: PrismaService) {}
- 
+  constructor(
+    private prisma: PrismaService,
+    private auditoria: AuditoriaService,
+  ) {}
+
   async getMetas() {
-    return this.prisma.metaOperacional.findUnique({
+    const meta = await this.prisma.metaOperacional.findUnique({
       where: { id: 'singleton' },
     })
+    if (!meta) return meta
+
+    // Meta efetiva = piso calculado, exceto se o gestor aumentou (guardrail 4:
+    // nunca abaixo do piso — por isso o override só é aplicado se for maior)
+    return {
+      ...meta,
+      faturamentoMinimoEfetivo: Math.max(meta.faturamentoMinimo, meta.faturamentoMinimoManual ?? 0),
+      kmMaximoEfetivo: Math.max(meta.kmMaximo, meta.kmMaximoManual ?? 0),
+    }
+  }
+
+  // ── Ajuste manual do gestor — guardrail 4: nunca abaixo do piso calculado ──
+  async ajustarManualmente(
+    usuarioId: string,
+    faturamentoMinimoManual?: number,
+    kmMaximoManual?: number,
+  ) {
+    const meta = await this.prisma.metaOperacional.findUnique({ where: { id: 'singleton' } })
+    if (!meta) throw new BadRequestException('Meta ainda não calculada — aguarde o próximo ciclo do cron')
+
+    if (faturamentoMinimoManual !== undefined && faturamentoMinimoManual < meta.faturamentoMinimo) {
+      throw new BadRequestException(
+        `Faturamento mínimo não pode ficar abaixo do piso calculado (R$ ${meta.faturamentoMinimo.toFixed(2)})`,
+      )
+    }
+    if (kmMaximoManual !== undefined && kmMaximoManual < meta.kmMaximo) {
+      throw new BadRequestException(`Km máximo não pode ficar abaixo do piso calculado (${meta.kmMaximo})`)
+    }
+
+    const atualizada = await this.prisma.metaOperacional.update({
+      where: { id: 'singleton' },
+      data: {
+        ...(faturamentoMinimoManual !== undefined && { faturamentoMinimoManual }),
+        ...(kmMaximoManual !== undefined && { kmMaximoManual }),
+      },
+    })
+
+    await this.auditoria.registrar({
+      usuarioId,
+      entidade: 'MetaOperacional',
+      registroId: 'singleton',
+      acao: 'AJUSTAR_MANUAL',
+      antes: { faturamentoMinimoManual: meta.faturamentoMinimoManual, kmMaximoManual: meta.kmMaximoManual },
+      depois: { faturamentoMinimoManual, kmMaximoManual },
+    })
+
+    return atualizada
   }
  
   // Recalcula metas dinamicamente — chamado pelo cron diário

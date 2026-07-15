@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { DieselService } from './diesel.service'
 import { RegistrarAbastecimentoDto } from './dto/abastecimento.dto'
@@ -7,6 +8,7 @@ import { Roles } from '../common/decorators/roles.decorator'
 import { Perfil } from '@prisma/client'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('diesel')
 @Controller('diesel')
 export class DieselController {
   constructor(private dieselService: DieselService) {}

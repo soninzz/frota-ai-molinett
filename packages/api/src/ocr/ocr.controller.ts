@@ -1,12 +1,14 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Body, Controller, Post, UseGuards } from '@nestjs/common'
 import { OcrService } from './ocr.service'
-import { LerHodometroDto, LerCupomDto, LerQrCodeDto } from './dto/ocr.dto'
+import { LerHodometroDto, LerCupomDto, LerQrCodeDto, ConfirmarHodometroDto } from './dto/ocr.dto'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Perfil } from '@prisma/client'
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('ocr')
 @Controller('ocr')
 export class OcrController {
   constructor(private ocrService: OcrService) {}
@@ -15,6 +17,12 @@ export class OcrController {
   @Post('hodometro')
   lerHodometro(@Body() dto: LerHodometroDto) {
     return this.ocrService.lerHodometro(dto.imagemBase64, dto.mimeType)
+  }
+
+  @Roles(Perfil.MOTORISTA, Perfil.OPERACIONAL, Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  @Post('hodometro/confirmar')
+  confirmarHodometro(@Body() dto: ConfirmarHodometroDto) {
+    return this.ocrService.confirmarHodometro(dto.veiculoId, dto.kmHodometro, dto.confianca, dto.fonte)
   }
 
   @Roles(Perfil.MOTORISTA, Perfil.OPERACIONAL, Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)

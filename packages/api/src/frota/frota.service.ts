@@ -43,9 +43,14 @@ export class FrotaService {
     em30dias.setDate(hoje.getDate() + 30)
 
     return veiculos.map(v => {
-      // Revisões a vencer
+      // Revisões a vencer — por DATA ou por KM (fonte única de km: hodômetro
+      // via OCR/confirmação manual em v.kmAtual, nunca o rastreador)
       const revisoesCriticas = v.itensRevisao.filter(item => {
         if (item.dataProxima && item.dataProxima <= em30dias) return true
+        if (item.kmProximo !== null && v.kmAtual !== null) {
+          const faltamKm = item.kmProximo - v.kmAtual
+          if (faltamKm <= item.kmAlerta) return true
+        }
         return false
       })
 

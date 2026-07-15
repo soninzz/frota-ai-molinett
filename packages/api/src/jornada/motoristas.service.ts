@@ -111,4 +111,38 @@ export class MotoristasService {
       comissaoPendente,
     }
   }
+
+  // ── Comparativo entre motoristas no período (§S04 DoD) ──
+  async comparativoMotoristas(dataInicio?: string, dataFim?: string) {
+    const motoristas = await this.prisma.motorista.findMany({
+      include: { usuario: { select: { nome: true } } },
+    })
+
+    const linhas = await Promise.all(
+      motoristas.map(async (m) => {
+        const p = await this.painelJornada(m.id, dataInicio, dataFim)
+        return {
+          motoristaId: m.id,
+          nome: m.usuario.nome,
+          totalViagens: p.totalViagens,
+          totalKm: p.totalKm,
+          totalHtHoras: p.totalHtHoras,
+          comissaoTotal: p.comissaoTotal,
+          kmPorViagem: p.totalViagens ? +(p.totalKm / p.totalViagens).toFixed(1) : 0,
+        }
+      }),
+    )
+
+    const comViagens = linhas.filter((l) => l.totalViagens > 0)
+    const ordenadoPorKm = [...comViagens].sort((a, b) => a.totalKm - b.totalKm)
+    const piorDesempenho = ordenadoPorKm[0] ?? null
+    const melhorDesempenho = ordenadoPorKm[ordenadoPorKm.length - 1] ?? null
+
+    return {
+      periodo: { inicio: dataInicio ?? null, fim: dataFim ?? null },
+      motoristas: linhas.sort((a, b) => b.totalKm - a.totalKm),
+      piorDesempenho,
+      melhorDesempenho,
+    }
+  }
 }

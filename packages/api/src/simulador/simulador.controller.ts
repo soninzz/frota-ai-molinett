@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common'
 import { Perfil } from '@prisma/client'
 import { SimuladorService } from './simulador.service'
@@ -9,6 +10,7 @@ import { SimularDto, CriarCenarioDto } from './dto/simular.dto'
 import { SimularFinanciamentoDto, CompararCenariosDto } from './dto/financiamento.dto'
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('simulador')
 @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
 @Controller('simulador')
 export class SimuladorController {

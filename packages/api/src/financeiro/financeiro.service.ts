@@ -8,17 +8,19 @@ import { CriarLancamentoDto, BaixarLancamentoDto } from './dto/lancamento.dto'
 import { FinanceiroClientesService } from './financeiro-clientes.service'
 import { FinanceiroMetasService } from './financeiro-metas.service'
 import { paraCsv } from '../common/csv.util'
- 
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
+
 @Injectable()
 export class FinanceiroService {
   constructor(
     private prisma:    PrismaService,
     private clientes:  FinanceiroClientesService,
     private metas:     FinanceiroMetasService,
+    private auditoria: AuditoriaService,
   ) {}
- 
+
   // ── Criar lançamento ──────────────────────────────────────
-  async criarLancamento(dto: CriarLancamentoDto) {
+  async criarLancamento(dto: CriarLancamentoDto, usuarioId?: string) {
     // Guardrail 5: conta bancária obrigatória
     if (!dto.contaBancariaId) {
       throw new BadRequestException('Conta bancária é obrigatória em todo lançamento.')
@@ -41,7 +43,7 @@ export class FinanceiroService {
       }
     }
  
-    return this.prisma.lancamento.create({
+    const criado = await this.prisma.lancamento.create({
       data: {
         tipo:            dto.tipo,
         descricao:       dto.descricao,
@@ -61,20 +63,32 @@ export class FinanceiroService {
         status:          'PENDENTE',
       },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Lancamento',
+        registroId: criado.id,
+        acao: 'CRIAR',
+        depois: { tipo: criado.tipo, valor: criado.valor, vencimento: criado.vencimento },
+      })
+    }
+
+    return criado
   }
- 
+
   // ── Baixar lançamento (marcar como pago) ──────────────────
-  async baixarLancamento(dto: BaixarLancamentoDto) {
+  async baixarLancamento(dto: BaixarLancamentoDto, usuarioId?: string) {
     const lancamento = await this.prisma.lancamento.findUnique({
       where: { id: dto.lancamentoId },
     })
     if (!lancamento) throw new NotFoundException('Lançamento não encontrado')
     if (lancamento.status === 'PAGO') throw new BadRequestException('Lançamento já pago')
- 
+
     const pagoEm   = new Date(dto.pagoEm)
     const atrasado = pagoEm > lancamento.vencimento
- 
-    return this.prisma.lancamento.update({
+
+    const atualizado = await this.prisma.lancamento.update({
       where: { id: dto.lancamentoId },
       data:  {
         status: atrasado ? 'ATRASADO' : 'PAGO',
@@ -82,6 +96,19 @@ export class FinanceiroService {
         ...(dto.valorPago && { valor: dto.valorPago }),
       },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Lancamento',
+        registroId: dto.lancamentoId,
+        acao: 'BAIXAR',
+        antes: { status: lancamento.status },
+        depois: { status: atualizado.status, pagoEm: atualizado.pagoEm },
+      })
+    }
+
+    return atualizado
   }
  
   // ── Fluxo de caixa projetado (90 dias) ───────────────────
@@ -216,19 +243,30 @@ export class FinanceiroService {
   }
  
   // ── Reagendar recebível atrasado ──────────────────────────
-  async reagendarLancamento(lancamentoId: string) {
+  async reagendarLancamento(lancamentoId: string, usuarioId?: string) {
     const lancamento = await this.prisma.lancamento.findUnique({
       where: { id: lancamentoId },
     })
     if (!lancamento) throw new NotFoundException('Lançamento não encontrado')
- 
+
     // Próximo dia útil
     const proximoDiaUtil = new Date()
     proximoDiaUtil.setDate(proximoDiaUtil.getDate() + 1)
     while (proximoDiaUtil.getDay() === 0 || proximoDiaUtil.getDay() === 6) {
       proximoDiaUtil.setDate(proximoDiaUtil.getDate() + 1)
     }
- 
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Lancamento',
+        registroId: lancamentoId,
+        acao: 'REAGENDAR',
+        antes: { vencimento: lancamento.vencimento },
+        depois: { vencimento: proximoDiaUtil },
+      })
+    }
+
     return this.prisma.lancamento.update({
       where: { id: lancamentoId },
       data:  { vencimento: proximoDiaUtil },

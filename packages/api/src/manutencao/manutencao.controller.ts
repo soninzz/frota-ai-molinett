@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { ManutencaoService } from './manutencao.service'
 import { CriarOsManutencaoDto, AtualizarStatusOsDto } from './dto/manutencao.dto'
@@ -8,6 +9,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator'
 import { Perfil } from '@prisma/client'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('manutencao')
 @Controller('manutencao')
 export class ManutencaoController {
   constructor(private manutencaoService: ManutencaoService) {}

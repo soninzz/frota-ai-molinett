@@ -89,6 +89,10 @@ model Veiculo {
   ultimoMotorLigado   Boolean?
   ultimaPosicaoEm     DateTime?
   ultimaPosicaoFonte  String?
+  kmAtual             Int?
+  kmAtualEm           DateTime?
+  kmAtualFonte        String?
+  tacografoAfericaoVencimento DateTime?
   abastecimentos      Abastecimento[]
   alinhamentos        Alinhamento[]
   cotacoes            Cotacao[]
@@ -732,8 +736,10 @@ model ParametroTributario {
 
 model MetaOperacional {
   id                 String   @id @default("singleton")
-  faturamentoMinimo  Float
-  kmMaximo           Float
+  faturamentoMinimo  Float // piso calculado — recalculado todo dia, nunca editado direto
+  kmMaximo           Float // piso calculado — idem
+  faturamentoMinimoManual Float? // override do gestor — só pode ficar >= faturamentoMinimo
+  kmMaximoManual          Float? // override do gestor — só pode ficar >= kmMaximo
   margemSegurancaPct Float    @default(10)
   mesReferencia      String
   atualizadoEm       DateTime @updatedAt
@@ -780,6 +786,21 @@ enum Perfil {
   FINANCEIRO
   GESTOR_PRINCIPAL
   ADMINISTRADOR
+}
+
+// Override de RBAC editável pelo Administrador (sem deploy). Guard consulta
+// esta tabela primeiro; sem registro aqui, usa o @Roles() hardcoded do
+// controller como padrão seguro. Granularidade por módulo (não por rota).
+model RegraPermissao {
+  id           String   @id @default(cuid())
+  perfil       Perfil
+  recurso      String // ex: "financeiro", "cotacao", "frota", "sinistros"
+  permitido    Boolean
+  atualizadoPor String?
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([perfil, recurso])
+  @@map("regras_permissao")
 }
 
 enum StatusOS {

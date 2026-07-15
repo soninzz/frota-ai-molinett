@@ -16,7 +16,10 @@ import { AlertasModule } from './alertas/alertas.module'
 import { SinistrosModule } from './sinistros/sinistros.module'
 import { SimuladorModule } from './simulador/simulador.module'
 import { OcrModule } from './ocr/ocr.module'
- 
+import { AuditoriaModule } from './common/auditoria/auditoria.module'
+import { IntegracoesModule } from './common/integracoes/integracoes.module'
+import { PermissoesModule } from './common/permissoes/permissoes.module'
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,6 +42,9 @@ import { OcrModule } from './ocr/ocr.module'
     SinistrosModule,
     SimuladorModule,
     OcrModule,
+    AuditoriaModule,
+    IntegracoesModule,
+    PermissoesModule,
   ],
 })
 export class AppModule {}

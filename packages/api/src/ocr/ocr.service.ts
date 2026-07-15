@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { decodificarChaveNFCe, ChaveDecodificada } from './nfce-chave.util'
+import { fetchComRetry } from '../common/fetch-retry.util'
+import { PrismaService } from '../database/prisma.service'
 
 type Provedor = 'mock' | 'gemini' | 'anthropic'
 
@@ -43,7 +45,10 @@ export class OcrService {
   private readonly modoOcr: string
   private readonly provedor: Provedor
 
-  constructor(private config: ConfigService) {
+  constructor(
+    private config: ConfigService,
+    private prisma: PrismaService,
+  ) {
     this.modoOcr = this.config.get<string>('OCR_MODE', 'mock')
     this.provedor = this.config.get<Provedor>('LLM_PROVIDER', 'gemini')
   }
@@ -78,6 +83,9 @@ export class OcrService {
     try {
       const r = await this.chamarIA(imagemBase64, mimeType, PROMPT_HODOMETRO)
       const confianca = typeof r.confianca === 'number' ? r.confianca : 0
+      await this.prisma.integracaoLog.create({
+        data: { fonte: `ocr_${this.provedor}`, status: 'OK', detalhes: `hodômetro, confiança ${confianca}` },
+      })
       return {
         odometroKm: typeof r.odometro_km === 'number' ? r.odometro_km : null,
         confianca,
@@ -87,8 +95,36 @@ export class OcrService {
       }
     } catch (e) {
       this.logger.error(`Falha na leitura do hodômetro via ${this.provedor}`, e)
+      await this.prisma.integracaoLog.create({
+        data: { fonte: `ocr_${this.provedor}`, status: 'ERRO', erro: (e as Error).message },
+      })
       return { odometroKm: null, confianca: 0, modeloPainel: null, precisaConfirmacaoHumana: true, fonte: this.provedor }
     }
+  }
+
+  // ── Confirma a leitura do hodômetro e grava como km oficial do veículo ──
+  // Guardrail 3: hodômetro (OCR ou correção manual) é a ÚNICA fonte de km
+  // usada pra revisão/custo — o rastreador nunca escreve aqui. Km decrescente
+  // vira BadRequestException (some/erro de leitura), nunca é aceito silencioso.
+  async confirmarHodometro(veiculoId: string, kmHodometro: number, confianca?: number, fonte?: string) {
+    const veiculo = await this.prisma.veiculo.findUnique({ where: { id: veiculoId } })
+    if (!veiculo) throw new NotFoundException('Veículo não encontrado')
+
+    if (veiculo.kmAtual !== null && kmHodometro < veiculo.kmAtual) {
+      throw new BadRequestException(
+        `Km informado (${kmHodometro}) é menor que o km atual registrado (${veiculo.kmAtual}) — confirme a leitura antes de gravar.`,
+      )
+    }
+
+    return this.prisma.veiculo.update({
+      where: { id: veiculoId },
+      data: {
+        kmAtual: kmHodometro,
+        kmAtualEm: new Date(),
+        kmAtualFonte: fonte ?? this.provedor,
+      },
+      select: { id: true, placa: true, kmAtual: true, kmAtualEm: true },
+    })
   }
 
   // ── OCR do cupom fiscal (fallback quando QR Code está ilegível/rasgado) ──
@@ -97,6 +133,9 @@ export class OcrService {
     try {
       const r = await this.chamarIA(imagemBase64, mimeType, PROMPT_CUPOM)
       const confianca = typeof r.confianca === 'number' ? r.confianca : 0
+      await this.prisma.integracaoLog.create({
+        data: { fonte: `ocr_${this.provedor}`, status: 'OK', detalhes: `cupom, confiança ${confianca}` },
+      })
       return {
         postoNome: r.posto_nome ?? null,
         volumeLitros: typeof r.volume_litros === 'number' ? r.volume_litros : null,
@@ -108,6 +147,9 @@ export class OcrService {
       }
     } catch (e) {
       this.logger.error(`Falha na leitura do cupom via ${this.provedor}`, e)
+      await this.prisma.integracaoLog.create({
+        data: { fonte: `ocr_${this.provedor}`, status: 'ERRO', erro: (e as Error).message },
+      })
       return {
         postoNome: null,
         volumeLitros: null,
@@ -155,7 +197,7 @@ export class OcrService {
     }
     const model = this.config.get<string>('GEMINI_MODEL', 'gemini-2.5-flash')
 
-    const response = await fetch(
+    const response = await fetchComRetry(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
@@ -189,7 +231,7 @@ export class OcrService {
       throw new Error('OCR_MODE=live com LLM_PROVIDER=anthropic mas ANTHROPIC_API_KEY não está configurada')
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetchComRetry('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,

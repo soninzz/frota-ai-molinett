@@ -1,3 +1,4 @@
+import { Recurso } from '../common/decorators/recurso.decorator'
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
 import { Perfil, StatusSinistro } from '@prisma/client'
 import { SinistrosService } from './sinistros.service'
@@ -8,6 +9,7 @@ import { CriarSinistroDto } from './dto/criar-sinistro.dto'
 import { AtualizarSinistroDto } from './dto/atualizar-sinistro.dto'
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Recurso('sinistros')
 @Controller('sinistros')
 export class SinistrosController {
   constructor(private sinistrosService: SinistrosService) {}

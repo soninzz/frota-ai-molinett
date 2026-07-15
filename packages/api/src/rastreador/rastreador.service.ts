@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../database/prisma.service'
 import { PosicaoVeiculo } from './dto/posicao-veiculo.dto'
+import { fetchComRetry } from '../common/fetch-retry.util'
 
 interface AssemilsatPosicao {
   idveiculo: string
@@ -171,7 +172,7 @@ export class RastreadorService {
     const senha = this.config.get<string>('MEGASAT_SENHA')
 
     try {
-      const loginResp = await fetch(`${baseUrl}/integration/prod/sys/api/user/login`, {
+      const loginResp = await fetchComRetry(`${baseUrl}/integration/prod/sys/api/user/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, user: usuario, pass: senha, locale: 'pt', variables: {} }),
@@ -185,7 +186,7 @@ export class RastreadorService {
         return []
       }
 
-      const gridResp = await fetch(`${baseUrl}/integration/prod/sys/grid/loadGridTracker`, {
+      const gridResp = await fetchComRetry(`${baseUrl}/integration/prod/sys/grid/loadGridTracker`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

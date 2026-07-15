@@ -13,6 +13,7 @@ import { CotacaoSaldoService } from './cotacao-saldo.service'
 import { CotacaoMetasService } from './cotacao-metas.service'
 import { CotacaoTabelaService } from './cotacao-tabela.service'
 import { AlertasService } from '../alertas/alertas.service'
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
 
 const MARGENS_PERMITIDAS = [0, 5, 10, 15, 20]
 
@@ -24,6 +25,7 @@ export class CotacaoService {
     private metasService: CotacaoMetasService,
     private tabelaService: CotacaoTabelaService,
     private alertasService: AlertasService,
+    private auditoria: AuditoriaService,
   ) {}
 
   // ── Calcula os 5 cenários de margem ──────────────────────
@@ -258,16 +260,13 @@ export class CotacaoService {
       { forcarAprovacao: true },
     )
 
-    // Trilha de auditoria
-    await this.prisma.auditLog.create({
-      data: {
-        usuarioId: gestorId,
-        entidade: 'Cotacao',
-        registroId: cotacaoId,
-        acao: 'APROVAR_MARGEM_NEGATIVA',
-        motivo: dto.motivo,
-        depois: { margemPct: cotacao.margemPct, motivo: dto.motivo },
-      },
+    await this.auditoria.registrar({
+      usuarioId: gestorId,
+      entidade: 'Cotacao',
+      registroId: cotacaoId,
+      acao: 'APROVAR_MARGEM_NEGATIVA',
+      motivo: dto.motivo,
+      depois: { margemPct: cotacao.margemPct, motivo: dto.motivo },
     })
 
     return resultado
@@ -304,16 +303,56 @@ export class CotacaoService {
     return { cotacoes, total, pagina, limite }
   }
 
+  // ── Contador de OS/cotações canceladas e perdidas (§S04 DoD) ──
+  // "Perdida" = cotação cancelada antes de virar OS (negócio nunca fechou).
+  // "Cancelada" = OS já gerada, cancelada depois (negócio fechou e desfez).
+  async contadorCanceladasPerdidas(dataInicio?: string, dataFim?: string) {
+    const filtroData = dataInicio || dataFim
+      ? {
+          criadoEm: {
+            ...(dataInicio ? { gte: new Date(dataInicio) } : {}),
+            ...(dataFim ? { lte: new Date(dataFim) } : {}),
+          },
+        }
+      : {}
+
+    const [cotacoesPerdidas, totalCotacoes, osCanceladas, totalOs] = await Promise.all([
+      this.prisma.cotacao.count({ where: { status: 'CANCELADA', ordemServico: null, ...filtroData } }),
+      this.prisma.cotacao.count({ where: filtroData }),
+      this.prisma.ordemServico.count({ where: { status: 'CANCELADA', cotacao: filtroData } }),
+      this.prisma.ordemServico.count({ where: { cotacao: filtroData } }),
+    ])
+
+    return {
+      perdidas: { total: cotacoesPerdidas, taxaPct: totalCotacoes ? +((cotacoesPerdidas / totalCotacoes) * 100).toFixed(1) : 0 },
+      canceladasAposOs: { total: osCanceladas, taxaPct: totalOs ? +((osCanceladas / totalOs) * 100).toFixed(1) : 0 },
+    }
+  }
+
   // ── Cancela cotação ───────────────────────────────────────
-  async cancelar(id: string, motivo: string) {
+  async cancelar(id: string, motivo: string, usuarioId?: string) {
     const cotacao = await this.prisma.cotacao.findUnique({ where: { id } })
     if (!cotacao) throw new NotFoundException('Cotação não encontrada')
     if (cotacao.status === 'CANCELADA') throw new BadRequestException('Cotação já cancelada')
 
-    return this.prisma.cotacao.update({
+    const atualizada = await this.prisma.cotacao.update({
       where: { id },
       data: { status: 'CANCELADA', motivoCancelamento: motivo },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Cotacao',
+        registroId: id,
+        acao: 'CANCELAR',
+        antes: { status: cotacao.status },
+        depois: { status: 'CANCELADA' },
+        motivo,
+      })
+    }
+
+    return atualizada
   }
 
   // ── Solicita alteração de OS (vai para fila do gestor) ────
@@ -325,15 +364,13 @@ export class CotacaoService {
     if (!os) throw new NotFoundException('OS não encontrada')
 
     // Registra em auditoria (snapshot antes preservado)
-    await this.prisma.auditLog.create({
-      data: {
-        usuarioId,
-        entidade:   'OrdemServico',
-        registroId: os.id,
-        acao:       'SOLICITAR_ALTERACAO',
-        antes:      os.snapshot as any,
-        motivo:     dto.motivo,
-      },
+    await this.auditoria.registrar({
+      usuarioId,
+      entidade: 'OrdemServico',
+      registroId: os.id,
+      acao: 'SOLICITAR_ALTERACAO',
+      antes: os.snapshot,
+      motivo: dto.motivo,
     })
 
     // Alerta ao gestor sobre a solicitação de alteração
