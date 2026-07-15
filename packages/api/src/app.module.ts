@@ -19,6 +19,7 @@ import { OcrModule } from './ocr/ocr.module'
 import { AuditoriaModule } from './common/auditoria/auditoria.module'
 import { IntegracoesModule } from './common/integracoes/integracoes.module'
 import { PermissoesModule } from './common/permissoes/permissoes.module'
+import { LgpdModule } from './lgpd/lgpd.module'
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { PermissoesModule } from './common/permissoes/permissoes.module'
     AuditoriaModule,
     IntegracoesModule,
     PermissoesModule,
+    LgpdModule,
   ],
 })
 export class AppModule {}

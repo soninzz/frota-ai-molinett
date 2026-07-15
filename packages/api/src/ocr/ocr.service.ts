@@ -12,6 +12,7 @@ export interface LeituraHodometro {
   modeloPainel: string | null
   precisaConfirmacaoHumana: boolean
   fonte: Provedor
+  veiculosSugeridos: { id: string; placa: string; marca: string; modelo: string }[]
 }
 
 export interface LeituraCupom {
@@ -25,9 +26,10 @@ export interface LeituraCupom {
 }
 
 const PROMPT_HODOMETRO =
-  'Leia SOMENTE o hodômetro (km) deste painel de caminhão. Identifique o modelo do painel ' +
-  'se possível. Responda APENAS com JSON, sem texto extra: ' +
-  '{"odometro_km": int, "confianca": 0-1, "modelo_painel": string}'
+  'Leia SOMENTE o hodômetro (km) deste painel de caminhão. Identifique o modelo do painel, ' +
+  'e se possível a MARCA do veículo (ex: Volvo, Mercedes-Benz, Volkswagen, MAN, Scania) ' +
+  'pelo design do painel/instrumentos. Responda APENAS com JSON, sem texto extra: ' +
+  '{"odometro_km": int, "confianca": 0-1, "modelo_painel": string, "marca_veiculo": string|null}'
 
 const PROMPT_CUPOM =
   'Leia este cupom fiscal de abastecimento de diesel. Extraia nome do posto, volume em litros, ' +
@@ -86,20 +88,43 @@ export class OcrService {
       await this.prisma.integracaoLog.create({
         data: { fonte: `ocr_${this.provedor}`, status: 'OK', detalhes: `hodômetro, confiança ${confianca}` },
       })
+      const veiculosSugeridos = await this.sugerirVeiculosPorMarca(r.marca_veiculo ?? null)
       return {
         odometroKm: typeof r.odometro_km === 'number' ? r.odometro_km : null,
         confianca,
         modeloPainel: r.modelo_painel ?? null,
         precisaConfirmacaoHumana: confianca < LIMIAR_CONFIANCA,
         fonte: this.provedor,
+        veiculosSugeridos,
       }
     } catch (e) {
       this.logger.error(`Falha na leitura do hodômetro via ${this.provedor}`, e)
       await this.prisma.integracaoLog.create({
         data: { fonte: `ocr_${this.provedor}`, status: 'ERRO', erro: (e as Error).message },
       })
-      return { odometroKm: null, confianca: 0, modeloPainel: null, precisaConfirmacaoHumana: true, fonte: this.provedor }
+      return {
+        odometroKm: null,
+        confianca: 0,
+        modeloPainel: null,
+        precisaConfirmacaoHumana: true,
+        fonte: this.provedor,
+        veiculosSugeridos: [],
+      }
     }
+  }
+
+  // Identificação de veículo pelo painel — NÃO substitui a seleção manual do
+  // motorista/operador, é só sugestão pra reduzir erro quando esquecem de
+  // selecionar o veículo certo. Casa por marca (única info confiável que a
+  // IA consegue inferir do design do painel); desempata mostrando todos os
+  // veículos ativos daquela marca pro humano escolher.
+  private async sugerirVeiculosPorMarca(marca: string | null) {
+    if (!marca) return []
+    const veiculos = await this.prisma.veiculo.findMany({
+      where: { ativo: true, marca: { contains: marca, mode: 'insensitive' } },
+      select: { id: true, placa: true, marca: true, modelo: true },
+    })
+    return veiculos
   }
 
   // ── Confirma a leitura do hodômetro e grava como km oficial do veículo ──
@@ -164,7 +189,14 @@ export class OcrService {
 
   private mockHodometro(): LeituraHodometro {
     this.logger.debug('OCR_MODE!=live — hodômetro precisa de confirmação manual')
-    return { odometroKm: null, confianca: 0, modeloPainel: null, precisaConfirmacaoHumana: true, fonte: 'mock' }
+    return {
+      odometroKm: null,
+      confianca: 0,
+      modeloPainel: null,
+      precisaConfirmacaoHumana: true,
+      fonte: 'mock',
+      veiculosSugeridos: [],
+    }
   }
 
   private mockCupom(): LeituraCupom {

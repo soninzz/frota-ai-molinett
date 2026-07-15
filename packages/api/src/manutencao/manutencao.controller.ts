@@ -54,4 +54,22 @@ export class ManutencaoController {
   analisePreditiva(@Param('id') id: string) {
     return this.manutencaoService.analisePreditiva(id)
   }
+
+  @Get('fornecedores/comparador')
+  @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  comparadorFornecedores(@Query('subsistema') subsistema?: string) {
+    return this.manutencaoService.comparadorFornecedores(subsistema)
+  }
+
+  @Get('diagnostico-assistido')
+  @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.OPERACIONAL)
+  diagnosticoAssistido(@Query('descricao') descricao: string, @Query('veiculoId') veiculoId?: string) {
+    return this.manutencaoService.diagnosticoAssistido(descricao, veiculoId)
+  }
+
+  @Get('pecas/orcamento')
+  @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  orcamentoPeca(@Query('descricao') descricao: string, @Query('meses') meses?: string) {
+    return this.manutencaoService.orcamentoPeca(descricao, Number(meses) || 18)
+  }
 }

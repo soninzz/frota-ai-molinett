@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from '../database/prisma.service'
 import { LoginDto } from './dto/login.dto'
 import * as bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
 
 @Injectable()
 export class AuthService {
@@ -98,6 +99,55 @@ export class AuthService {
       },
       usuario,
       motorista,
+    }
+  }
+
+  // Direito de correção (LGPD art. 18, III) — só campos de contato, que são
+  // autodeclarados. Nome/documento de identidade (CPF/CNH) fica com o
+  // Gestor/Administrador porque são dado verificado, não autodeclarado.
+  async corrigirMeusDados(userId: string, dados: { nome?: string; whatsappNumero?: string }) {
+    if (!dados.nome && !dados.whatsappNumero) {
+      throw new BadRequestException('Informe ao menos um campo pra corrigir')
+    }
+    return this.prisma.usuario.update({
+      where: { id: userId },
+      data: {
+        ...(dados.nome && { nome: dados.nome }),
+        ...(dados.whatsappNumero !== undefined && { whatsappNumero: dados.whatsappNumero }),
+      },
+      select: { id: true, nome: true, email: true, whatsappNumero: true },
+    })
+  }
+
+  // Direito de eliminação (LGPD art. 18, VI) — anonimiza em vez de apagar
+  // linha: o usuário tem histórico com FK em cotações/viagens/comissões que
+  // precisa ser preservado por obrigação legal/contábil (art. 16, I e II —
+  // cumprimento de obrigação legal e uso pela administração pública/estudo).
+  // CPF/CNH do Motorista NÃO são apagados pelo mesmo motivo (registro
+  // trabalhista) — só os dados de contato/identificação direta.
+  async eliminarMeusDados(userId: string) {
+    const usuario = await this.prisma.usuario.findUnique({ where: { id: userId } })
+    if (!usuario) throw new BadRequestException('Usuário não encontrado')
+
+    const senhaAleatoria = await bcrypt.hash(randomBytes(32).toString('hex'), 10)
+
+    await this.prisma.usuario.update({
+      where: { id: userId },
+      data: {
+        nome: 'Usuário removido (LGPD)',
+        email: `removido-${userId}@anonimizado.local`,
+        whatsappNumero: null,
+        senhaHash: senhaAleatoria,
+        ativo: false,
+      },
+    })
+
+    return {
+      eliminadoEm: new Date().toISOString(),
+      observacao:
+        'Dados de contato/identificação anonimizados. CPF/CNH (se motorista) e histórico ' +
+        'de operações preservados por obrigação legal (LGPD art. 16, I) — registro ' +
+        'trabalhista e contábil não pode ser eliminado enquanto a obrigação vigorar.',
     }
   }
 }
