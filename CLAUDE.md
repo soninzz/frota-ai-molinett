@@ -40,8 +40,14 @@ baseado no "Escopo Técnico v3" (documento anexo ao contrato). 5 sistemas integr
   `rastreador.service.ts` implementa o fluxo real com resposta tipada; `rastreador.scheduler.ts`
   roda a cada 5 min (só em TRACKER_MODE=live). Atenção: `/integracao/posicoes` NÃO é
   idempotente — cada chamada consome a fila de posições novas (janela 48h, lotes de 400).
-- **Rastreador MegaSat/STC**: autenticação confirmada (MD5, chave de integração), mas a
-  documentação de endpoints (`ap2.stc.srv.br/docs/`) está dando 404 — aguardando suporte STC.
+- **Rastreador MegaSat/STC**: **FUNCIONANDO EM MODO LIVE** (2026-07-14). A doc oficial
+  (`ap2.stc.srv.br/docs/`) nunca respondeu — em vez disso, capturei a auth real via
+  engenharia reversa da SPA em `ap3.stc.srv.br/webcliente/megasatrastreamento/` (DevTools):
+  `POST /integration/prod/sys/api/user/login` com JSON `{key,user,pass}` devolve um JWT;
+  `POST /integration/prod/sys/grid/loadGridTracker` (com o token no header `Authorization`
+  e reaproveitando o `variables` devolvido no login, senão quebra com "Undefined index")
+  devolve as posições. `RastreadorService.buscarPosicoesNovas()` agora combina Assemilsat +
+  MegaSat (frotas parcialmente sobrepostas), dedup por placa pela posição mais recente.
 - **WhatsApp via Evolution API** (não é a API oficial da Meta — decisão do cliente, registrada
   e aceita apesar do risco de banimento). Instância `Diga3` criada, mas travada: WhatsApp recusa
   conectar novo dispositivo ("não é possível conectar no momento") — provável versão desatualizada
@@ -55,12 +61,11 @@ por ID externo). Já aplicado no banco (2026-07-10):
 - MHG → MHG-1A49 ✅
 - IFF → IFF-3I63 ✅
 - MLC → MLC-1A51 ✅
-- AAW, IQU, RLI → **ainda pendentes** (código curto no banco), pegar via endpoint `listarVeiculos`
-  do Assemilsat. Nota: o fluxo de autenticação real (form-data `usuario`/`senha`) mencionado aqui
-  não está implementado em nenhum lugar do repo — `rastreador.service.ts` só tem uma chamada
-  Basic Auth contra `/integracao/posicoes` marcada no próprio código como suposição não
-  confirmada. Precisa validar o endpoint/auth de verdade (Postman ou com quem confirmou
-  originalmente) antes de buscar essas 3 placas.
+- AAW → AAW-8J03 ✅ (via MegaSat, 2026-07-14)
+- IQU → IQU-3C12 ✅ (via MegaSat, 2026-07-14)
+- RLI → **ainda pendente** — não apareceu nos 3 veículos retornados pelo MegaSat (só AAW, IQU
+  e um veículo "MJZ0693" sem label, aparentemente de outra frota do mesmo cliente STC). Tentar
+  via `listarVeiculos` do Assemilsat, ou confirmar com o cliente se RLI tem device MegaSat.
 
 ### Concluído em 2026-07-10
 - **Scheduler/cron**: `@nestjs/schedule` instalado; `RastreadorScheduler` sincroniza posições
