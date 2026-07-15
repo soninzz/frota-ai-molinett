@@ -21,6 +21,26 @@ interface AssemilsatPosicoesResponse {
   posicoes?: AssemilsatPosicao[]
 }
 
+interface MegasatLoginResponse {
+  success: boolean
+  token?: string
+  data?: { id: number; variables?: Record<string, unknown> }
+}
+
+interface MegasatTracker {
+  licensePlate: string
+  latitude: string
+  longitude: string
+  speed: number
+  ign: boolean
+  date: string
+}
+
+interface MegasatGridResponse {
+  success: boolean
+  data?: { data: MegasatTracker[] }
+}
+
 @Injectable()
 export class RastreadorService {
   private readonly logger = new Logger(RastreadorService.name)
@@ -34,11 +54,23 @@ export class RastreadorService {
   }
  
   // ── Ponto único de entrada — troca sozinho entre mock e real ──
+  // Em live, combina Assemilsat + MegaSat/STC (frotas parcialmente sobrepostas,
+  // cada rastreador cobre um subconjunto de veículos) — dedup por placa,
+  // mantendo a posição mais recente entre as duas fontes.
   async buscarPosicoesNovas(): Promise<PosicaoVeiculo[]> {
-    if (this.modo === 'live') {
-      return this.buscarPosicoesReais()
+    if (this.modo !== 'live') return this.buscarPosicoesMock()
+
+    const [assemilsat, megasat] = await Promise.all([
+      this.buscarPosicoesReais(),
+      this.buscarPosicoesMegasat(),
+    ])
+
+    const porPlaca = new Map<string, PosicaoVeiculo>()
+    for (const p of [...assemilsat, ...megasat]) {
+      const atual = porPlaca.get(p.placa)
+      if (!atual || p.timestamp > atual.timestamp) porPlaca.set(p.placa, p)
     }
-    return this.buscarPosicoesMock()
+    return [...porPlaca.values()]
   }
  
   // ── MODO MOCK — usado até a autenticação real ser validada ──
@@ -124,6 +156,87 @@ export class RastreadorService {
     }
   }
  
+  // ── MODO LIVE — chamada real ao MegaSat/STC ──
+  // Auth confirmada em 2026-07-14 via engenharia reversa da SPA (portal não
+  // documentado): POST /integration/prod/sys/api/user/login com
+  // {key, user, pass} devolve um JWT; o grid de veículos exige esse token
+  // via header Authorization. "key" é o slug do cliente na URL do portal
+  // (não é a "chave de acesso" MSR informada — essa não é usada aqui).
+  private async buscarPosicoesMegasat(): Promise<PosicaoVeiculo[]> {
+    const baseUrl = this.config.get<string>('MEGASAT_API_URL')
+    const key = this.config.get<string>('MEGASAT_KEY')
+    const usuario = this.config.get<string>('MEGASAT_LOGIN')
+    const senha = this.config.get<string>('MEGASAT_SENHA')
+
+    try {
+      const loginResp = await fetch(`${baseUrl}/integration/prod/sys/api/user/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, user: usuario, pass: senha, locale: 'pt', variables: {} }),
+      })
+      const loginDados = (await loginResp.json()) as MegasatLoginResponse
+      if (!loginResp.ok || !loginDados.success || !loginDados.token) {
+        this.logger.error('MegaSat: falha no login')
+        await this.prisma.integracaoLog.create({
+          data: { fonte: 'rastreador_megasat', status: 'ERRO', erro: 'Falha no login' },
+        })
+        return []
+      }
+
+      const gridResp = await fetch(`${baseUrl}/integration/prod/sys/grid/loadGridTracker`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${loginDados.token}`,
+        },
+        body: JSON.stringify({
+          userId: loginDados.data?.id,
+          search: null,
+          sort: {},
+          perPage: 100,
+          page: 1,
+          fields: [],
+          locale: 'pt',
+          key,
+          // servidor exige as mesmas "variables" de configuração devolvidas no
+          // login (ex: hourmeter) — sem isso quebra com "Undefined index"
+          variables: loginDados.data?.variables ?? {},
+        }),
+      })
+      const gridDados = (await gridResp.json()) as MegasatGridResponse
+      if (!gridResp.ok || !gridDados.success) {
+        this.logger.error('MegaSat: falha ao buscar posições')
+        await this.prisma.integracaoLog.create({
+          data: { fonte: 'rastreador_megasat', status: 'ERRO', erro: 'Falha no grid de trackers' },
+        })
+        return []
+      }
+
+      const trackers = gridDados.data?.data ?? []
+      await this.prisma.integracaoLog.create({
+        data: { fonte: 'rastreador_megasat', status: 'OK', detalhes: `${trackers.length} veículos recebidos` },
+      })
+
+      return trackers.map((t) => ({
+        veiculoIdExterno: t.licensePlate,
+        // MegaSat devolve sem hífen (ex: AAW8J03) — banco usa formato Mercosul
+        // com hífen (AAW-8J03), igual ao Assemilsat. Normaliza pra casar.
+        placa: /^[A-Z]{3}\d/.test(t.licensePlate) ? t.licensePlate.replace(/^([A-Z]{3})/, '$1-') : t.licensePlate,
+        latitude: parseFloat(t.latitude),
+        longitude: parseFloat(t.longitude),
+        velocidade: t.speed || 0,
+        motorLigado: t.ign,
+        timestamp: new Date(t.date.replace(' ', 'T')),
+      }))
+    } catch (e) {
+      this.logger.error('Falha ao conectar com MegaSat/STC', e)
+      await this.prisma.integracaoLog.create({
+        data: { fonte: 'rastreador_megasat', status: 'ERRO', erro: (e as Error).message },
+      })
+      return []
+    }
+  }
+
   // Abaixo da qual consideramos o veículo "parado" mesmo com motor ligado
   // (tráfego, semáforo). Acima disso conta como direção efetiva.
   private static readonly VELOCIDADE_PARADO_KMH = 5
