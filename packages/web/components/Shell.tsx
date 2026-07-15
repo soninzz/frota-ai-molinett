@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken } from "@/lib/api";
@@ -64,7 +65,7 @@ const NAV_GROUPS = [
   },
 ];
 
-export function Sidebar() {
+function SidebarConteudo({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -74,8 +75,8 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-zinc-200 bg-white">
-      <div className="flex items-center gap-2 px-5 h-16 border-b border-zinc-200">
+    <>
+      <div className="flex items-center gap-2 px-5 h-16 border-b border-zinc-200 shrink-0">
         <div className="h-7 w-7 rounded-md bg-[#1E4C8C] flex items-center justify-center">
           <span className="text-white text-xs font-bold tracking-tight">FA</span>
         </div>
@@ -95,6 +96,7 @@ export function Sidebar() {
                   <Link
                     key={it.href}
                     href={it.href}
+                    onClick={onNavigate}
                     className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                       active
                         ? "bg-[#1E4C8C]/8 text-[#1E4C8C] font-medium"
@@ -111,7 +113,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-3 border-t border-zinc-200">
+      <div className="p-3 border-t border-zinc-200 shrink-0">
         <div className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-zinc-50 cursor-pointer group">
           <div className="h-8 w-8 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-600">
             AM
@@ -128,18 +130,57 @@ export function Sidebar() {
           </button>
         </div>
       </div>
-    </aside>
+    </>
   );
 }
 
-export function Topbar({ title, subtitle }: { title: string; subtitle: string }) {
+// Desktop/tablet largo: fixa na lateral. Abaixo de md: vira gaveta (drawer)
+// aberta pelo botão de menu na Topbar — antes disso a sidebar simplesmente
+// desaparecia sem nenhum jeito de navegar em celular/tablet retrato.
+export function Sidebar({ aberta, onFechar }: { aberta: boolean; onFechar: () => void }) {
   return (
-    <header className="h-16 border-b border-zinc-200 bg-white flex items-center justify-between px-6">
-      <div>
-        <h1 className="text-[15px] font-semibold text-zinc-900 tracking-tight">{title}</h1>
-        <p className="text-[12px] text-zinc-500">{subtitle}</p>
+    <>
+      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-zinc-200 bg-white h-full">
+        <SidebarConteudo />
+      </aside>
+
+      {aberta && (
+        <div className="md:hidden fixed inset-0 z-40 flex">
+          <div className="fixed inset-0 bg-black/30" onClick={onFechar} />
+          <aside className="relative w-72 max-w-[80vw] flex flex-col bg-white h-full shadow-xl">
+            <SidebarConteudo onNavigate={onFechar} />
+          </aside>
+        </div>
+      )}
+    </>
+  );
+}
+
+export function Topbar({
+  title,
+  subtitle,
+  onAbrirMenu,
+}: {
+  title: string;
+  subtitle: string;
+  onAbrirMenu: () => void;
+}) {
+  return (
+    <header className="h-16 border-b border-zinc-200 bg-white flex items-center justify-between px-4 sm:px-6 shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <button
+          onClick={onAbrirMenu}
+          className="md:hidden shrink-0 h-9 w-9 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-50"
+          aria-label="Abrir menu"
+        >
+          <span className="text-[18px]">☰</span>
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-[15px] font-semibold text-zinc-900 tracking-tight truncate">{title}</h1>
+          <p className="text-[12px] text-zinc-500 truncate">{subtitle}</p>
+        </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-[12px] font-medium">
           <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
           Meta do mês: 62% atingida
@@ -158,16 +199,18 @@ export function Shell({
   subtitle: string;
   children: React.ReactNode;
 }) {
+  const [menuAberto, setMenuAberto] = useState(false);
+
   return (
     <div
       className="h-screen w-full bg-[#FAFAF9] text-zinc-900 overflow-hidden"
       style={{ fontFamily: "'Inter Tight', Inter, system-ui, sans-serif" }}
     >
       <div className="flex h-full">
-        <Sidebar />
+        <Sidebar aberta={menuAberto} onFechar={() => setMenuAberto(false)} />
         <div className="flex-1 flex flex-col min-w-0 h-full">
-          <Topbar title={title} subtitle={subtitle} />
-          <main className="flex-1 overflow-y-auto px-6 py-6">
+          <Topbar title={title} subtitle={subtitle} onAbrirMenu={() => setMenuAberto(true)} />
+          <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <div className="max-w-6xl w-full mx-auto">{children}</div>
           </main>
         </div>
