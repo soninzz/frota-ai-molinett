@@ -229,23 +229,27 @@ export default function SimuladorPage() {
 
         {baseline && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Receita média/mês (90d)</p>
-              <span className="font-mono tabular-nums text-[20px] font-semibold text-zinc-900">{fmt(baseline.receitaMensal)}</span>
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Receita média/mês (90d)</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">{fmt(baseline.receitaMensal)}</span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Despesa média/mês (90d)</p>
-              <span className="font-mono tabular-nums text-[20px] font-semibold text-zinc-900">{fmt(baseline.despesaMensal)}</span>
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Despesa média/mês (90d)</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">{fmt(baseline.despesaMensal)}</span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Diesel médio (R$/L)</p>
-              <span className="font-mono tabular-nums text-[20px] font-semibold text-zinc-900">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#D97706]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Diesel médio (R$/L)</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">
                 R$ {baseline.precoMedioDiesel.toFixed(2)}
               </span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Km médio/mês</p>
-              <span className="font-mono tabular-nums text-[20px] font-semibold text-zinc-900">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Km médio/mês</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">
                 {Math.round(baseline.kmMensal).toLocaleString("pt-BR")}
               </span>
             </div>

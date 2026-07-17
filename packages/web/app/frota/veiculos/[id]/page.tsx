@@ -134,15 +134,17 @@ export default function DetalheVeiculoPage() {
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Custo/km atual</p>
-            <span className="font-mono tabular-nums text-[22px] font-semibold text-zinc-900">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Custo/km atual</p>
+            <span className="font-mono tabular-nums text-[26px] font-bold text-zinc-900">
               {veiculo.custoKmAtual ? fmt(veiculo.custoKmAtual) : "—"}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Custo/hora atual</p>
-            <span className="font-mono tabular-nums text-[22px] font-semibold text-zinc-900">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Custo/hora atual</p>
+            <span className="font-mono tabular-nums text-[26px] font-bold text-zinc-900">
               {veiculo.custoHoraAtual ? fmt(veiculo.custoHoraAtual) : "—"}
             </span>
           </div>
