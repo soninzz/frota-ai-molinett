@@ -182,8 +182,8 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-[#E63A1F]/30 blur-3xl" />
-              <div className="absolute left-1/3 bottom-0 h-24 w-24 rounded-full bg-[#E63A1F]/10 blur-2xl" />
+              <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-[#E63A1F]/30 dark:bg-[#E63A1F]/45 blur-3xl" />
+              <div className="absolute left-1/3 bottom-0 h-24 w-24 rounded-full bg-[#E63A1F]/10 dark:bg-[#E63A1F]/20 blur-2xl" />
               <p className="relative text-[12px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide mb-2">
                 Faltam para a meta do mês
               </p>

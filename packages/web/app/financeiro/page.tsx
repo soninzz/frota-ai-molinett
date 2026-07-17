@@ -90,7 +90,7 @@ export default function FinanceiroPage() {
           <>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-7 relative overflow-hidden lg:col-span-2">
-                <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#16A34A]/20 blur-3xl" />
+                <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#16A34A]/20 dark:bg-[#16A34A]/35 blur-3xl" />
                 <p className="relative text-[12px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide mb-2">Saldo projetado — próximos 30 dias</p>
                 <div className="relative flex items-end gap-3 flex-wrap">
                   <span className="font-mono tabular-nums text-[36px] sm:text-[44px] leading-none font-bold text-white tracking-tight">

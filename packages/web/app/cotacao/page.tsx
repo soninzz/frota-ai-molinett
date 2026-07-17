@@ -251,7 +251,7 @@ export default function CotacaoPage() {
           {resultado && !confirmado && (
             <>
               <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-7 relative overflow-hidden">
-                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#E63A1F]/25 blur-3xl" />
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#E63A1F]/25 dark:bg-[#E63A1F]/40 blur-3xl" />
                 <p className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide mb-1.5">
                   Valor sugerido (margem {margemCustomAtiva ? margemCustom || 0 : margemSel}%)
                 </p>
