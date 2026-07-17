@@ -53,8 +53,12 @@ export class JornadaController {
     return this.leiMotoristaService.horasExtraPorClasse(dataInicio, dataFim)
   }
 
+  // Exportação em massa (CSV) fica de fora do OPERACIONAL de propósito —
+  // guardrail dos critérios de sucesso: "exportação em massa bloqueada p/
+  // perfis operacionais". A consulta normal (por-classe, acima) continua
+  // liberada pra esse perfil, só o download em lote é que é restrito.
   @Get('jornada/horas-extra/exportar')
-  @Roles(Perfil.OPERACIONAL, Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   async exportarHorasExtra(
     @Query('dataInicio') dataInicio: string | undefined,
     @Query('dataFim')    dataFim:    string | undefined,
