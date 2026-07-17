@@ -25,7 +25,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Textura de grid sutil — identidade visual Frota AI/Molinett */
+/* Textura de grid sutil — identidade visual Molinett */
 .bg-grid {
   background-image:
     linear-gradient(to right, rgba(23, 20, 18, 0.035) 1px, transparent 1px),

@@ -52,7 +52,7 @@ export default function LoginPage() {
         <div className="relative">
           <p className="text-[13px] font-medium text-[#16A34A] mb-3">Custo/km atualizado a cada abastecimento</p>
           <p className="text-[22px] leading-snug font-semibold text-white tracking-tight max-w-sm mb-4">
-            Frota AI — a plataforma operacional da Molinett
+            A plataforma operacional da Molinett
           </p>
           <p className="text-[14px] text-zinc-400 leading-relaxed max-w-sm">
             Cada cotação já nasce com o custo real da frota — sem planilha, sem defasagem,

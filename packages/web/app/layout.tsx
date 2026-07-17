@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Frota AI · Transportes Molinett",
+  title: "Transportes Molinett",
   description: "Painel operacional da Transportes Molinett — cotação, frota, jornada e financeiro em uma plataforma só.",
   icons: { icon: "/logo-molinett.png" },
 };
