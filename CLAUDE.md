@@ -171,9 +171,11 @@ por ID externo). Já aplicado no banco (2026-07-10):
    pergunta que falta responder é *por que* ele quer Supabase Auth especificamente (SSO entre
    domínios? magic link?). Não migrar sem confirmar o motivo real.
 
-2. **JWT_SECRET**: o valor no `.env` era um placeholder óbvio
-   (`"...trocar-em-producao"`) — **precisa ser trocado por um valor aleatório real antes do
-   deploy**. Gerar com: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+2. ~~**JWT_SECRET**~~ — **resolvido em 2026-07-17**. O `.env` já tinha um valor aleatório real
+   (essa nota estava desatualizada — não era mais o placeholder óbvio). Rotacionado mesmo assim
+   por precaução (valor antigo passou por mais mãos), sincronizado com a Vercel (`molinett-api`,
+   ambientes Production e Preview) e a API foi redeployada. Login verificado ao vivo depois da
+   rotação.
 
 ## Erros recorrentes ao colar código (ficar atento)
 
