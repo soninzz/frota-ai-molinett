@@ -75,7 +75,7 @@ export default function ComissoesPage() {
               <button
                 onClick={() => setFiltro("pendentes")}
                 className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors ${
-                  filtro === "pendentes" ? "bg-[#1E4C8C] text-white" : "bg-zinc-100 text-zinc-600"
+                  filtro === "pendentes" ? "bg-[#E63A1F] text-white" : "bg-zinc-100 text-zinc-600"
                 }`}
               >
                 Pendentes
@@ -83,7 +83,7 @@ export default function ComissoesPage() {
               <button
                 onClick={() => setFiltro("todas")}
                 className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors ${
-                  filtro === "todas" ? "bg-[#1E4C8C] text-white" : "bg-zinc-100 text-zinc-600"
+                  filtro === "todas" ? "bg-[#E63A1F] text-white" : "bg-zinc-100 text-zinc-600"
                 }`}
               >
                 Todas
@@ -150,7 +150,7 @@ export default function ComissoesPage() {
                       <button
                         onClick={() => pagar(c.id)}
                         disabled={pagando === c.id}
-                        className="text-[12px] font-medium text-[#1E4C8C] hover:underline disabled:opacity-50"
+                        className="text-[12px] font-medium text-[#E63A1F] hover:underline disabled:opacity-50"
                       >
                         {pagando === c.id ? "Pagando..." : "Marcar como paga"}
                       </button>

@@ -22,7 +22,7 @@ type Viagem = {
 
 const STATUS_COLOR: Record<string, string> = {
   AGUARDANDO: "#71717A",
-  EM_ANDAMENTO: "#1E4C8C",
+  EM_ANDAMENTO: "#E63A1F",
   CONCLUIDA: "#16A34A",
   CANCELADA: "#C0392B",
 };

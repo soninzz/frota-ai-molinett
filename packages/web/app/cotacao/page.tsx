@@ -34,7 +34,7 @@ type ResultadoConfirmacao = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -148,7 +148,7 @@ export default function CotacaoPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
         <section className="bg-white rounded-2xl border border-zinc-200 p-5">
           <h2 className="text-[13px] font-semibold text-zinc-900 mb-4 flex items-center gap-2">
-            <span className="text-[#1E4C8C]">◆</span> Detalhes da viagem
+            <span className="text-[#E63A1F]">◆</span> Detalhes da viagem
           </h2>
 
           <div className="space-y-4">
@@ -210,7 +210,7 @@ export default function CotacaoPage() {
             <button
               onClick={calcular}
               disabled={calculando || !veiculoId || !clienteId}
-              className="w-full rounded-xl bg-[#1E4C8C] text-white text-[14px] font-medium py-3 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+              className="w-full rounded-xl bg-[#E63A1F] text-white text-[14px] font-medium py-3 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
             >
               {calculando ? "Calculando..." : "Calcular cotação"}
             </button>
@@ -230,8 +230,8 @@ export default function CotacaoPage() {
                   </span>
                 </div>
                 {resultado.tabelaMinima && (
-                  <div className="mt-2 rounded-lg bg-[#1E4C8C]/6 px-3 py-2">
-                    <p className="text-[11px] font-medium text-[#1E4C8C]">
+                  <div className="mt-2 rounded-lg bg-[#E63A1F]/6 px-3 py-2">
+                    <p className="text-[11px] font-medium text-[#E63A1F]">
                       Piso desse cliente: {fmt(resultado.tabelaMinima.valorSaida)} · média {resultado.tabelaMinima.mediaKm.toFixed(2)} R$/km
                     </p>
                   </div>
@@ -251,7 +251,7 @@ export default function CotacaoPage() {
           {resultado && !confirmado && (
             <>
               <div className="bg-zinc-900 rounded-2xl p-6 relative overflow-hidden">
-                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#1E4C8C]/25 blur-2xl" />
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#E63A1F]/25 blur-2xl" />
                 <p className="text-[12px] font-medium text-zinc-400 mb-1">
                   Valor sugerido (margem {margemCustomAtiva ? margemCustom || 0 : margemSel}%)
                 </p>
@@ -283,7 +283,7 @@ export default function CotacaoPage() {
                       }}
                       className={`rounded-xl border p-3 text-left transition-all ${
                         !margemCustomAtiva && margemSel === c.margem
-                          ? "border-[#1E4C8C] bg-[#1E4C8C]/6 ring-2 ring-[#1E4C8C]/15"
+                          ? "border-[#E63A1F] bg-[#E63A1F]/6 ring-2 ring-[#E63A1F]/15"
                           : "border-zinc-200 bg-white hover:border-zinc-300"
                       }`}
                     >
@@ -345,9 +345,9 @@ export default function CotacaoPage() {
               )}
 
               {pendenteAprovacao ? (
-                <div className="bg-white rounded-2xl border border-[#1E4C8C]/30 p-6 text-center">
-                  <div className="h-12 w-12 rounded-full bg-[#1E4C8C]/10 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-[#1E4C8C] text-[20px]">◈</span>
+                <div className="bg-white rounded-2xl border border-[#E63A1F]/30 p-6 text-center">
+                  <div className="h-12 w-12 rounded-full bg-[#E63A1F]/10 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-[#E63A1F] text-[20px]">◈</span>
                   </div>
                   <h3 className="text-[15px] font-semibold text-zinc-900 mb-1">
                     Cotação enviada para aprovação do gestor
@@ -357,7 +357,7 @@ export default function CotacaoPage() {
                   </p>
                   <a
                     href="/aprovacoes"
-                    className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors inline-block"
+                    className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors inline-block"
                   >
                     Ver fila de aprovações
                   </a>
@@ -366,7 +366,7 @@ export default function CotacaoPage() {
                 <button
                   onClick={confirmar}
                   disabled={confirmando}
-                  className="w-full rounded-xl bg-[#1E4C8C] text-white text-[14px] font-medium py-3 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+                  className="w-full rounded-xl bg-[#E63A1F] text-white text-[14px] font-medium py-3 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
                 >
                   {confirmando ? "Confirmando..." : "Confirmar cotação e gerar OS"}
                 </button>
@@ -401,7 +401,7 @@ export default function CotacaoPage() {
               </button>
               <a
                 href={`/os/${confirmado.os.id}`}
-                className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors inline-block"
+                className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors inline-block"
               >
                 Ver detalhes da OS
               </a>

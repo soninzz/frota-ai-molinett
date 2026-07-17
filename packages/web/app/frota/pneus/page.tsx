@@ -49,7 +49,7 @@ const POSICOES = [
 ];
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -166,7 +166,7 @@ export default function PneusPage() {
           </div>
           <button
             onClick={() => setShowFormPneu((s) => !s)}
-            className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors"
+            className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors"
           >
             {showFormPneu ? "Cancelar" : "+ Novo pneu"}
           </button>
@@ -210,7 +210,7 @@ export default function PneusPage() {
             <button
               type="submit"
               disabled={salvandoPneu}
-              className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+              className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
             >
               {salvandoPneu ? "Salvando..." : "Salvar pneu"}
             </button>
@@ -218,7 +218,7 @@ export default function PneusPage() {
         )}
 
         {pneuMovimentando && (
-          <form onSubmit={salvarMovimentacao} className="bg-white rounded-2xl border border-[#1E4C8C]/30 p-5 space-y-4">
+          <form onSubmit={salvarMovimentacao} className="bg-white rounded-2xl border border-[#E63A1F]/30 p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-[13px] font-semibold text-zinc-900">
                 Movimentar pneu <span className="font-mono">{pneuMovimentando.codigo}</span>
@@ -263,7 +263,7 @@ export default function PneusPage() {
             <button
               type="submit"
               disabled={salvandoMov}
-              className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+              className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
             >
               {salvandoMov ? "Registrando..." : "Registrar movimentação"}
             </button>
@@ -316,7 +316,7 @@ export default function PneusPage() {
                   <td className="px-5 py-3.5 text-right">
                     <button
                       onClick={() => setPneuMovimentando(p)}
-                      className="text-[12px] font-medium text-[#1E4C8C] hover:underline"
+                      className="text-[12px] font-medium text-[#E63A1F] hover:underline"
                     >
                       Movimentar
                     </button>

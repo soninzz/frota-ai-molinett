@@ -25,7 +25,7 @@ type Cotacao = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  ABERTA: "#1E4C8C",
+  ABERTA: "#E63A1F",
   CONVERTIDA: "#16A34A",
   CANCELADA: "#C0392B",
 };
@@ -116,7 +116,7 @@ export default function HistoricoCotacoesPage() {
                 <tr
                   key={c.id}
                   className={`border-b border-zinc-50 last:border-0 transition-colors ${
-                    c.ordemServico ? "hover:bg-[#1E4C8C]/5 cursor-pointer" : "hover:bg-zinc-50/50"
+                    c.ordemServico ? "hover:bg-[#E63A1F]/5 cursor-pointer" : "hover:bg-zinc-50/50"
                   }`}
                   onClick={() => {
                     if (c.ordemServico) window.location.href = `/os/${c.ordemServico.id}`;
@@ -124,7 +124,7 @@ export default function HistoricoCotacoesPage() {
                 >
                   <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900">
                     #{c.numero}
-                    {c.ordemServico && <span className="text-[#1E4C8C] ml-1">→</span>}
+                    {c.ordemServico && <span className="text-[#E63A1F] ml-1">→</span>}
                   </td>
                   <td className="px-5 py-3.5 text-zinc-700">{c.cliente.nome}</td>
                   <td className="px-5 py-3.5 text-zinc-600">

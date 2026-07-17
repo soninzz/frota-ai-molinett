@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import type { PosicaoVeiculo } from "./page";
+import { dataHoraCompleta, type PosicaoVeiculo } from "./page";
 
 function corPorStatus(v: PosicaoVeiculo): string {
   if (!v.motorLigado) return "#A1A1AA";
@@ -79,7 +79,10 @@ export default function MapaVeiculos({
                   <br />
                   {v.motorLigado ? `${Math.round(Number(v.velocidade) || 0)} km/h` : "motor desligado"}
                   <br />
-                  <span style={{ color: "#71717A" }}>{v.fonte}</span>
+                  <span style={{ color: "#71717A" }}>
+                    Atualizado em {dataHoraCompleta(v.atualizadoEm)}
+                    {v.fonte && ` · ${v.fonte}`}
+                  </span>
                 </div>
               </Popup>
             </CircleMarker>

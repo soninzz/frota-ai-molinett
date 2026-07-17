@@ -43,11 +43,11 @@ type Disponibilidade = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 const STATUS_COLOR: Record<string, string> = {
   AGUARDANDO: "#71717A",
-  EM_ANDAMENTO: "#1E4C8C",
+  EM_ANDAMENTO: "#E63A1F",
   CONCLUIDA: "#16A34A",
   CANCELADA: "#C0392B",
 };
@@ -235,7 +235,7 @@ export default function DetalheOsPage() {
               <button
                 onClick={iniciar}
                 disabled={processando || kmInicio === "" || (!os.snapshot.motorista && !motoristaEscolhido)}
-                className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+                className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
               >
                 {processando ? "Iniciando..." : "Iniciar viagem"}
               </button>
@@ -260,7 +260,7 @@ export default function DetalheOsPage() {
               <button
                 onClick={finalizar}
                 disabled={processando || kmFim === ""}
-                className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+                className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
               >
                 {processando ? "Finalizando..." : "Finalizar viagem"}
               </button>

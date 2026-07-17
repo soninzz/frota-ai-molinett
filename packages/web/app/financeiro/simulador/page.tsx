@@ -9,7 +9,7 @@ import { api, toList } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 type Baseline = {
   receitaMensal: number;
@@ -278,7 +278,7 @@ export default function SimuladorPage() {
             <button
               type="submit"
               disabled={simulando}
-              className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+              className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
             >
               {simulando ? "Simulando..." : "Simular"}
             </button>
@@ -286,7 +286,7 @@ export default function SimuladorPage() {
             <button
               type="button"
               onClick={salvarCenario}
-              className="rounded-xl border border-[#1E4C8C] text-[#1E4C8C] text-[13px] font-medium px-4 py-2.5 hover:bg-[#1E4C8C]/5 transition-colors"
+              className="rounded-xl border border-[#E63A1F] text-[#E63A1F] text-[13px] font-medium px-4 py-2.5 hover:bg-[#E63A1F]/5 transition-colors"
             >
               Salvar como cenário
             </button>
@@ -340,7 +340,7 @@ export default function SimuladorPage() {
             <h2 className="text-[13px] font-semibold text-zinc-900">Cenários salvos</h2>
             <button
               onClick={comparar}
-              className="rounded-xl bg-[#1E4C8C] text-white text-[12px] font-medium px-3.5 py-2 hover:bg-[#173d70] transition-colors"
+              className="rounded-xl bg-[#E63A1F] text-white text-[12px] font-medium px-3.5 py-2 hover:bg-[#BC2F19] transition-colors"
             >
               Comparar selecionados ({selecionados.length})
             </button>
@@ -357,7 +357,7 @@ export default function SimuladorPage() {
                     onChange={(e) =>
                       setSelecionados((s) => (e.target.checked ? [...s, c.id] : s.filter((x) => x !== c.id)))
                     }
-                    className="h-4 w-4 accent-[#1E4C8C]"
+                    className="h-4 w-4 accent-[#E63A1F]"
                   />
                   <span className="text-[13px] font-medium text-zinc-900 flex-1">{c.nome}</span>
                   <button onClick={() => excluirCenario(c.id)} className="text-[12px] text-[#C0392B] hover:underline">
@@ -417,7 +417,7 @@ export default function SimuladorPage() {
                 <input type="number" min={1} max={120} className={inputCls + " font-mono tabular-nums"} value={numParcelas} onChange={(e) => setNumParcelas(Number(e.target.value))} />
               </Field>
             </div>
-            <button type="submit" className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors">
+            <button type="submit" className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors">
               Simular financiamento
             </button>
             {resFinanciamento && (
@@ -468,7 +468,7 @@ export default function SimuladorPage() {
                 <input type="number" step="0.1" className={inputCls + " font-mono tabular-nums"} value={invRetorno} onChange={(e) => setInvRetorno(e.target.value)} placeholder="opcional" />
               </Field>
             </div>
-            <button type="submit" className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors">
+            <button type="submit" className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors">
               Comparar cenários
             </button>
             {resInvestimento && (

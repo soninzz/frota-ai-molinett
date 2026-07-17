@@ -44,6 +44,17 @@ function tempoRelativo(iso: string | null): string {
   return `há ${Math.round(h / 24)}d`;
 }
 
+export function dataHoraCompleta(iso: string | null): string {
+  if (!iso) return "sem dado";
+  return new Date(iso).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function MapaFrotaPage() {
   const [veiculos, setVeiculos] = useState<PosicaoVeiculo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +111,7 @@ export default function MapaFrotaPage() {
                   key={v.id}
                   onClick={() => setSelecionado(v.id)}
                   className={`w-full text-left px-4 py-3 border-b border-zinc-50 last:border-0 transition-colors ${
-                    selecionado === v.id ? "bg-[#1E4C8C]/6" : "hover:bg-zinc-50"
+                    selecionado === v.id ? "bg-[#E63A1F]/6" : "hover:bg-zinc-50"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -119,6 +130,7 @@ export default function MapaFrotaPage() {
                     {tempoRelativo(v.atualizadoEm)}
                     {v.fonte && ` · ${v.fonte}`}
                   </p>
+                  <p className="text-[10px] text-zinc-300 mt-0.5">{dataHoraCompleta(v.atualizadoEm)}</p>
                 </button>
               ))}
             </div>

@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Textura de grid sutil — identidade visual Frota AI/Molinett */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(23, 20, 18, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(23, 20, 18, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-grid-dark {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}

@@ -224,7 +224,7 @@ export default function FinanceiroPage() {
             <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
                 <h2 className="text-[13px] font-semibold text-zinc-900">Próximos lançamentos</h2>
-                <a href="/financeiro/lancamentos" className="text-[12px] font-medium text-[#1E4C8C] hover:underline">
+                <a href="/financeiro/lancamentos" className="text-[12px] font-medium text-[#E63A1F] hover:underline">
                   Ver todos
                 </a>
               </div>

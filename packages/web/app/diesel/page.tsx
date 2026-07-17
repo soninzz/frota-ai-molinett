@@ -36,7 +36,7 @@ type PostoSugerido = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -166,7 +166,7 @@ export default function DieselPage() {
           </div>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors"
+            className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors"
           >
             {showForm ? "Cancelar" : "+ Registrar abastecimento"}
           </button>
@@ -280,7 +280,7 @@ export default function DieselPage() {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+              className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
             >
               {saving ? "Salvando..." : "Registrar"}
             </button>

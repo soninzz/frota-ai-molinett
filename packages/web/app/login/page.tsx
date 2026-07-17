@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { api, setToken } from "@/lib/api";
 
@@ -10,7 +11,7 @@ import { api, setToken } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,23 +42,18 @@ export default function LoginPage() {
       style={{ fontFamily: "'Inter Tight', Inter, system-ui, sans-serif" }}
     >
       <div className="hidden lg:flex lg:w-[46%] bg-zinc-900 relative overflow-hidden flex-col justify-between p-12">
-        <div className="absolute -left-16 -top-16 h-72 w-72 rounded-full bg-[#1E4C8C]/25 blur-3xl" />
+        <div className="absolute -left-16 -top-16 h-72 w-72 rounded-full bg-[#E63A1F]/25 blur-3xl" />
         <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-[#C0392B]/10 blur-3xl" />
 
-        <div className="relative flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-[#1E4C8C] flex items-center justify-center">
-            <span className="text-white text-xs font-bold tracking-tight">FA</span>
-          </div>
-          <span className="font-semibold text-white tracking-tight text-[16px]">Frota AI</span>
+        <div className="relative flex items-center">
+          <Image src="/logo-molinett.png" alt="Auto Socorro Molinett" width={150} height={38} className="h-9 w-auto object-contain" priority />
         </div>
 
         <div className="relative">
           <p className="text-[13px] font-medium text-[#16A34A] mb-3">Custo/km atualizado a cada abastecimento</p>
-          <div className="flex items-baseline gap-3 mb-6">
-            <span className="font-mono tabular-nums text-[40px] leading-none font-semibold text-white tracking-tight">
-              Frota AI
-            </span>
-          </div>
+          <p className="text-[22px] leading-snug font-semibold text-white tracking-tight max-w-sm mb-4">
+            Frota AI — a plataforma operacional da Molinett
+          </p>
           <p className="text-[14px] text-zinc-400 leading-relaxed max-w-sm">
             Cada cotação já nasce com o custo real da frota — sem planilha, sem defasagem,
             sem margem perdida por dado desatualizado.
@@ -73,11 +69,8 @@ export default function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[380px]">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="h-8 w-8 rounded-md bg-[#1E4C8C] flex items-center justify-center">
-              <span className="text-white text-xs font-bold tracking-tight">FA</span>
-            </div>
-            <span className="font-semibold text-zinc-900 tracking-tight text-[16px]">Frota AI</span>
+          <div className="lg:hidden flex items-center mb-8">
+            <Image src="/logo-molinett.png" alt="Auto Socorro Molinett" width={150} height={38} className="h-9 w-auto object-contain" priority />
           </div>
 
           <h1 className="text-[22px] font-semibold text-zinc-900 tracking-tight mb-1.5">
@@ -108,7 +101,7 @@ export default function LoginPage() {
             <label className="block">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-[12px] font-medium text-zinc-500">Senha</span>
-                <a href="#" className="text-[12px] font-medium text-[#1E4C8C] hover:underline">
+                <a href="#" className="text-[12px] font-medium text-[#E63A1F] hover:underline">
                   Esqueceu a senha?
                 </a>
               </div>
@@ -134,7 +127,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#1E4C8C] text-white text-[14px] font-medium py-3 hover:bg-[#173d70] transition-colors mt-2 disabled:opacity-50"
+              className="w-full rounded-xl bg-[#E63A1F] text-white text-[14px] font-medium py-3 hover:bg-[#BC2F19] transition-colors mt-2 disabled:opacity-50"
             >
               {loading ? "Entrando..." : "Entrar"}
             </button>

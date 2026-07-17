@@ -48,15 +48,15 @@ function GraficoFluxoCaixa({ pontos }: { pontos: PontoFluxo[] }) {
         <div className="flex items-center gap-4 text-[11px] text-zinc-500">
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#16A34A]" />Entradas</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#C0392B]" />Saídas</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#1E4C8C]" />Saldo acumulado</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#E63A1F]" />Saldo acumulado</span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={240}>
         <AreaChart data={dados} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="corSaldo" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1E4C8C" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#1E4C8C" stopOpacity={0} />
+              <stop offset="5%" stopColor="#E63A1F" stopOpacity={0.25} />
+              <stop offset="95%" stopColor="#E63A1F" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#F4F4F5" vertical={false} />
@@ -73,23 +73,36 @@ function GraficoFluxoCaixa({ pontos }: { pontos: PontoFluxo[] }) {
           />
           <Area type="monotone" dataKey="entradas" stroke="#16A34A" fill="#16A34A" fillOpacity={0.08} strokeWidth={2} />
           <Area type="monotone" dataKey="saidas" stroke="#C0392B" fill="#C0392B" fillOpacity={0.08} strokeWidth={2} />
-          <Area type="monotone" dataKey="saldoAcumulado" stroke="#1E4C8C" fill="url(#corSaldo)" strokeWidth={2.5} />
+          <Area type="monotone" dataKey="saldoAcumulado" stroke="#E63A1F" fill="url(#corSaldo)" strokeWidth={2.5} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-function StatCard({ label, value, delta, deltaPositive = true }: { label: string; value: string; delta?: string; deltaPositive?: boolean }) {
+function StatCard({
+  label,
+  value,
+  delta,
+  deltaPositive = true,
+  accent = "#E63A1F",
+}: {
+  label: string;
+  value: string;
+  delta?: string;
+  deltaPositive?: boolean;
+  accent?: string;
+}) {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-      <p className="text-[12px] font-medium text-zinc-500 mb-2">{label}</p>
+    <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: accent }} />
+      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">{label}</p>
       <div className="flex items-baseline gap-2">
-        <span className="text-[26px] font-semibold text-zinc-900 tracking-tight leading-none font-mono tabular-nums">
+        <span className="text-[28px] font-bold text-zinc-900 tracking-tight leading-none font-mono tabular-nums">
           {value}
         </span>
         {delta && (
-          <span className={`text-[12px] font-medium ${deltaPositive ? "text-[#16A34A]" : "text-[#C0392B]"}`}>
+          <span className={`text-[12px] font-semibold ${deltaPositive ? "text-[#16A34A]" : "text-[#C0392B]"}`}>
             {delta}
           </span>
         )}
@@ -102,18 +115,19 @@ function ModuleCard({ href, icon, title, desc, metric }: { href: string; icon: s
   return (
     <Link
       href={href}
-      className="group bg-white rounded-2xl border border-zinc-200 p-5 hover:border-[#1E4C8C]/40 hover:shadow-sm transition-all"
+      className="group relative bg-white rounded-2xl border border-zinc-200 p-5 hover:border-[#E63A1F]/50 hover:shadow-[0_4px_20px_-4px_rgba(230,58,31,0.15)] transition-all overflow-hidden"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="h-9 w-9 rounded-lg bg-[#1E4C8C]/8 flex items-center justify-center text-[#1E4C8C] text-[15px]">
+      <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-[#E63A1F]/0 group-hover:bg-[#E63A1F]/[0.06] blur-xl transition-colors" />
+      <div className="relative flex items-start justify-between mb-3">
+        <div className="h-9 w-9 rounded-lg bg-[#E63A1F]/[0.08] flex items-center justify-center text-[#E63A1F] text-[15px] group-hover:bg-[#E63A1F] group-hover:text-white transition-colors">
           {icon}
         </div>
-        <span className="text-[11px] font-mono tabular-nums text-zinc-400 group-hover:text-[#1E4C8C] transition-colors">
+        <span className="text-[10px] font-bold font-mono tabular-nums text-zinc-400 group-hover:text-[#E63A1F] transition-colors tracking-wide">
           {metric}
         </span>
       </div>
-      <h3 className="text-[14px] font-semibold text-zinc-900 mb-1">{title}</h3>
-      <p className="text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
+      <h3 className="relative text-[14px] font-bold text-zinc-900 mb-1">{title}</h3>
+      <p className="relative text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
     </Link>
   );
 }
@@ -167,35 +181,40 @@ export default function DashboardPage() {
           <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
         ) : (
           <>
-            <div className="bg-zinc-900 rounded-2xl p-6 relative overflow-hidden">
-              <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#1E4C8C]/25 blur-2xl" />
-              <p className="text-[12px] font-medium text-zinc-400 mb-1">Faltam para a meta do mês</p>
-              <div className="flex items-end gap-3">
-                <span className="font-mono tabular-nums text-[42px] leading-none font-semibold text-white tracking-tight">
+            <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+              <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-[#E63A1F]/30 blur-3xl" />
+              <div className="absolute left-1/3 bottom-0 h-24 w-24 rounded-full bg-[#E63A1F]/10 blur-2xl" />
+              <p className="relative text-[12px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">
+                Faltam para a meta do mês
+              </p>
+              <div className="relative flex items-end gap-3 flex-wrap">
+                <span className="font-mono tabular-nums text-[36px] sm:text-[48px] leading-none font-bold text-white tracking-tight">
                   {fmt(faltaMeta)}
                 </span>
-                <span className="text-[13px] text-[#16A34A] font-medium pb-1.5">{pctMeta}% já atingido</span>
+                <span className="text-[13px] text-[#16A34A] font-semibold pb-1.5 sm:pb-2">{pctMeta}% já atingido</span>
               </div>
-              <p className="text-[12px] text-zinc-400 mt-3">
+              <p className="relative text-[12px] text-zinc-400 mt-4">
                 {cotacoesAbertas} cotações em aberto · {comissoesPendentes} comissões pendentes de pagamento
               </p>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="Cotações em aberto" value={String(cotacoesAbertas)} />
+              <StatCard label="Cotações em aberto" value={String(cotacoesAbertas)} accent="#E63A1F" />
               <StatCard
                 label="Saldo a recuperar"
                 value={fmt(financeiro?.saldoARecuperar ?? 0)}
                 delta="pendente"
                 deltaPositive={false}
+                accent="#C0392B"
               />
               <StatCard
                 label="Veículos com alerta"
                 value={`${veiculosComAlerta}/${veiculos.length}`}
                 deltaPositive={veiculosComAlerta === 0}
                 delta={veiculosComAlerta > 0 ? "revisar" : "tudo em dia"}
+                accent={veiculosComAlerta > 0 ? "#D97706" : "#16A34A"}
               />
-              <StatCard label="Viagens registradas" value={String(viagensCount)} />
+              <StatCard label="Viagens registradas" value={String(viagensCount)} accent="#71717A" />
             </div>
 
             {financeiro && financeiro.alertas.atrasados.total > 0 && (
@@ -213,7 +232,7 @@ export default function DashboardPage() {
             <GraficoFluxoCaixa pontos={fluxo?.curva ?? []} />
 
             <div>
-              <h2 className="text-[12px] font-semibold text-zinc-500 mb-3 uppercase tracking-wide">Módulos</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900 mb-3 tracking-tight">Módulos</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <ModuleCard
                   href="/cotacao"

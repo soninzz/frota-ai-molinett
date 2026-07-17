@@ -108,7 +108,7 @@ export default function FrotaPage() {
                 return (
                   <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                     <td className="px-5 py-3.5">
-                      <a href={`/frota/veiculos/${v.id}`} className="font-mono tabular-nums font-semibold text-zinc-900 hover:text-[#1E4C8C] hover:underline">
+                      <a href={`/frota/veiculos/${v.id}`} className="font-mono tabular-nums font-semibold text-zinc-900 hover:text-[#E63A1F] hover:underline">
                         {v.placa}
                       </a>
                     </td>

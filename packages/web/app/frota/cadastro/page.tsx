@@ -10,7 +10,7 @@ import { api, toList, Veiculo } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#1E4C8C] focus:ring-2 focus:ring-[#1E4C8C]/15";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -74,7 +74,7 @@ export default function CadastroVeiculosPage() {
         <div className="flex justify-end">
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors"
+            className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors"
           >
             {showForm ? "Cancelar" : "+ Novo veículo"}
           </button>
@@ -120,7 +120,7 @@ export default function CadastroVeiculosPage() {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#1E4C8C] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#173d70] transition-colors disabled:opacity-50"
+              className="rounded-xl bg-[#E63A1F] text-white text-[13px] font-medium px-4 py-2.5 hover:bg-[#BC2F19] transition-colors disabled:opacity-50"
             >
               {saving ? "Salvando..." : "Salvar veículo"}
             </button>
@@ -156,7 +156,7 @@ export default function CadastroVeiculosPage() {
               {veiculos.map((v) => (
                 <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                   <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900">
-                    <a href={`/frota/veiculos/${v.id}`} className="hover:text-[#1E4C8C] hover:underline">{v.placa}</a>
+                    <a href={`/frota/veiculos/${v.id}`} className="hover:text-[#E63A1F] hover:underline">{v.placa}</a>
                   </td>
                   <td className="px-5 py-3.5 text-zinc-600">
                     {v.marca} — {v.modelo}

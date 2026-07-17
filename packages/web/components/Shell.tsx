@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken } from "@/lib/api";
@@ -76,11 +77,8 @@ function SidebarConteudo({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <div className="flex items-center gap-2 px-5 h-16 border-b border-zinc-200 shrink-0">
-        <div className="h-7 w-7 rounded-md bg-[#1E4C8C] flex items-center justify-center">
-          <span className="text-white text-xs font-bold tracking-tight">FA</span>
-        </div>
-        <span className="font-semibold text-zinc-900 tracking-tight text-[15px]">Frota AI</span>
+      <div className="flex items-center px-5 h-16 border-b border-zinc-200 shrink-0">
+        <Image src="/logo-molinett.png" alt="Auto Socorro Molinett" width={140} height={36} className="h-8 w-auto object-contain" priority />
       </div>
 
       <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto">
@@ -97,13 +95,14 @@ function SidebarConteudo({ onNavigate }: { onNavigate?: () => void }) {
                     key={it.href}
                     href={it.href}
                     onClick={onNavigate}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`relative flex items-center gap-3 pl-3 pr-3 py-2 rounded-lg text-[13px] transition-colors ${
                       active
-                        ? "bg-[#1E4C8C]/8 text-[#1E4C8C] font-medium"
-                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                        ? "bg-[#E63A1F]/[0.07] text-[#E63A1F] font-semibold"
+                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 font-medium"
                     }`}
                   >
-                    <span className="text-[13px] w-4 text-center opacity-70">{it.icon}</span>
+                    {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[#E63A1F]" />}
+                    <span className="text-[13px] w-4 text-center opacity-80">{it.icon}</span>
                     {it.label}
                   </Link>
                 );
@@ -166,7 +165,7 @@ export function Topbar({
   onAbrirMenu: () => void;
 }) {
   return (
-    <header className="h-16 border-b border-zinc-200 bg-white flex items-center justify-between px-4 sm:px-6 shrink-0">
+    <header className="h-16 border-b border-zinc-200 bg-white/90 backdrop-blur-sm flex items-center justify-between px-4 sm:px-6 shrink-0">
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onAbrirMenu}
@@ -176,13 +175,13 @@ export function Topbar({
           <span className="text-[18px]">☰</span>
         </button>
         <div className="min-w-0">
-          <h1 className="text-[15px] font-semibold text-zinc-900 tracking-tight truncate">{title}</h1>
+          <h1 className="text-[16px] font-bold text-zinc-900 tracking-tight truncate">{title}</h1>
           <p className="text-[12px] text-zinc-500 truncate">{subtitle}</p>
         </div>
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-[12px] font-medium">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-[12px] font-semibold">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A] animate-pulse" />
           Meta do mês: 62% atingida
         </div>
       </div>
@@ -203,14 +202,14 @@ export function Shell({
 
   return (
     <div
-      className="h-screen w-full bg-[#FAFAF9] text-zinc-900 overflow-hidden"
+      className="h-screen w-full bg-[#FAF8F5] text-zinc-900 overflow-hidden"
       style={{ fontFamily: "'Inter Tight', Inter, system-ui, sans-serif" }}
     >
       <div className="flex h-full">
         <Sidebar aberta={menuAberto} onFechar={() => setMenuAberto(false)} />
         <div className="flex-1 flex flex-col min-w-0 h-full">
           <Topbar title={title} subtitle={subtitle} onAbrirMenu={() => setMenuAberto(true)} />
-          <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+          <main className="bg-grid flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <div className="max-w-6xl w-full mx-auto">{children}</div>
           </main>
         </div>

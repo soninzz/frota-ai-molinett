@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise de Requisitos — Molinett · Techxap Systems</title>
+<style>
+  :root{
+    --bg:#0c0c0e; --panel:#151519; --panel2:#1b1b21; --line:#2a2a32;
+    --ink:#ededee; --muted:#9a9aa4; --soft:#c7c7cd;
+    --yellow:#e9e81c; --yellow-dim:#c2c118; --yellow-soft:rgba(233,232,28,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+    line-height:1.6; font-size:15px; padding:0 18px 90px;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+  code,.mono{font-family:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+    font-size:.85em; background:#0f0f12; border:1px solid var(--line);
+    border-radius:5px; padding:1px 6px; color:#d7d7b3;}
+
+  /* ---- header ---- */
+  header{padding:30px 0 18px; border-bottom:2px solid var(--yellow); margin-bottom:26px;}
+  .brandbar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;}
+  .brandbar img{height:50px; display:block;}
+  .docmeta{text-align:right; font-size:.74rem; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; line-height:1.7;}
+  .docmeta b{color:var(--soft); font-weight:600;}
+  .eyebrow{margin-top:26px; font-size:.74rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--yellow-dim);}
+  h1{font-size:2rem; line-height:1.12; margin-top:6px; letter-spacing:-.01em; color:#fff;}
+  .lead-sub{margin-top:6px; color:var(--muted); font-size:1.02rem;}
+
+  /* ---- sections ---- */
+  section{margin-top:34px;}
+  h2{display:flex; align-items:center; gap:12px; font-size:1.22rem; color:#fff; letter-spacing:.01em; margin-bottom:14px;}
+  h2 .n{flex:none; min-width:30px; height:30px; padding:0 8px; border-radius:7px; background:var(--yellow); color:#111;
+        font-size:.95rem; font-weight:800; display:flex; align-items:center; justify-content:center;}
+  p.body{color:var(--soft); margin-bottom:10px;}
+
+  /* meta table */
+  table.meta{width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  table.meta td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top;}
+  table.meta tr:last-child td{border-bottom:none;}
+  table.meta td.k{width:230px; color:var(--muted); font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; background:#101013;}
+  table.meta td.v{color:var(--ink);}
+
+  /* module card */
+  .mod{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--yellow);
+       border-radius:10px; padding:16px 18px 14px; margin-bottom:14px;}
+  .mod-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .mod-title{font-size:1.06rem; font-weight:700; color:#fff;}
+  .chip{font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 8px; border-radius:20px;
+        background:var(--yellow-soft); color:var(--yellow); border:1px solid rgba(233,232,28,.35);}
+  .chip.b{background:rgba(255,255,255,.06); color:var(--soft); border-color:var(--line);}
+  .field{margin-top:10px;}
+  .field .lbl{font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--yellow-dim); margin-bottom:4px;}
+  .field p{color:var(--soft);}
+  ul{list-style:none; margin:2px 0 0;}
+  ul li{position:relative; padding-left:18px; margin-bottom:4px; color:var(--soft);}
+  ul li::before{content:""; position:absolute; left:2px; top:.62em; width:6px; height:6px; background:var(--yellow); border-radius:1px; transform:rotate(45deg);}
+  ul.check li::before{content:"✓"; background:none; color:var(--yellow); transform:none; left:0; top:0; font-weight:800; font-size:.9em;}
+
+  .stack-line{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; color:var(--soft); font-size:.95rem;}
+  .stack-line b{color:var(--yellow-dim);}
+  .note{background:#14130a; border:1px solid rgba(233,232,28,.3); border-radius:10px; padding:12px 16px; color:var(--soft); font-size:.92rem;}
+
+  table.req{width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:.9rem;}
+  table.req th{background:#101013; color:var(--yellow-dim); text-align:left; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; padding:9px 12px; border-bottom:1px solid var(--line);}
+  table.req td{padding:9px 12px; border-bottom:1px solid var(--line); color:var(--soft); vertical-align:top;}
+  table.req tr:last-child td{border-bottom:none;}
+  .grp{margin:16px 0 7px; font-size:.72rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--yellow);}
+  .st{display:inline-block; font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:2px 7px; border-radius:5px; white-space:nowrap;}
+  .st.p{background:rgba(233,232,28,.16); color:var(--yellow); border:1px solid rgba(233,232,28,.4);}
+  .st.m{background:rgba(255,255,255,.05); color:var(--muted); border:1px solid var(--line);}
+  footer{margin-top:44px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:.8rem; line-height:1.6;}
+  footer b{color:var(--soft);}
+
+  @media (max-width:620px){
+    body{font-size:14px;} h1{font-size:1.6rem;}
+    .docmeta{text-align:left;} table.meta td.k{width:120px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brandbar">
+      <img src="data:image/png;base64,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" alt="Techxap Systems">
+      <div class="docmeta">
+        Documento de Engenharia<br>
+        <b>Análise de Requisitos</b><br>
+        Versão 1.0 · 08/06/2026
+      </div>
+    </div>
+    <div class="eyebrow">Análise de Requisitos · Projeto Molinett</div>
+    <h1>Plataforma Operacional ERP de Transporte</h1>
+    <div class="lead-sub">Cinco módulos de IA sobre uma base de dados única, integrados em tempo real.</div>
+  </header>
+
+  <!-- 1 -->
+  <section>
+    <h2><span class="n">1</span> Identificação</h2>
+    <table class="meta">
+      <tr><td class="k">Projeto</td><td class="v">Molinett — Plataforma ERP de Transporte</td></tr>
+      <tr><td class="k">Tipo</td><td class="v">Plataforma operacional única (ERP) com 5 módulos de IA + camada transversal</td></tr>
+      <tr><td class="k">Modelo de entrega</td><td class="v">Aceite incremental por bloco (A, B e C) · desenvolvimento por 2 devs em paralelo</td></tr>
+      <tr><td class="k">Canais</td><td class="v">Interface web responsiva (análise/configuração) + WhatsApp (operação, texto e voz)</td></tr>
+      <tr><td class="k">Cliente final</td><td class="v">Referenciado como “o Cliente” — confidencial (ver rodapé)</td></tr>
+      <tr><td class="k">Status</td><td class="v">Pré-kickoff — parametrizações e acessos em definição</td></tr>
+    </table>
+    <div class="note" style="margin-top:14px;"><b>Atenção:</b> o início do desenvolvimento depende de acessos, integrações e dados ainda não recebidos. Os pré-requisitos e o que cada um bloqueia estão na <b>seção 9</b>. Enquanto não entregues, o prazo dos módulos dependentes não começa a contar.</div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <h2><span class="n">2</span> Visão geral</h2>
+    <p class="body">A plataforma integra, em uma única base de dados, o que hoje vive em planilhas separadas, substituindo-as por uma única versão da realidade — consultável a qualquer momento por qualquer pessoa autorizada. Os módulos se alimentam em tempo real: uma cotação fechada atualiza o caixa projetado; um abastecimento registrado recalcula o custo por quilômetro usado nas próximas cotações; uma manutenção pesada agendada eleva a meta de faturamento mínimo do mês.</p>
+    <p class="body">A operação do dia a dia acontece pelo WhatsApp (o canal já usado pela equipe); o computador é reservado para visões consolidadas e configuração. A unidade da base é a diferença entre planilhas isoladas e uma plataforma operacional.</p>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <h2><span class="n">3</span> Arquitetura e decisões técnicas</h2>
+    <div class="stack-line">
+      <b>Base:</b> base de dados única &nbsp;·&nbsp; módulos integrados em tempo real (matriz de interoperabilidade) &nbsp;·&nbsp; web responsiva + WhatsApp &nbsp;·&nbsp; OCR (painel e cupom fiscal) &nbsp;·&nbsp; IA para análise preditiva e linguagem natural &nbsp;·&nbsp; telemetria (rastreador) &nbsp;·&nbsp; integrações financeiras (Open Finance / OFX, emissor de NF).
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <div class="lbl">Decisões que valem para toda a plataforma</div>
+      <ul>
+        <li><b>Fonte de KM:</b> o quilômetro rodado tem como fonte primária o hodômetro lido por OCR de painel; o rastreador é fonte de posição, estado do motor, paradas e velocidade — <em>não</em> de KM.</li>
+        <li><b>Auditoria:</b> toda OS, cotação, lançamento financeiro e movimento de estoque preserva a versão anterior antes de qualquer edição — não existe edição silenciosa.</li>
+        <li><b>Metas dinâmicas:</b> as metas operacionais (faturamento mínimo e KM máximo) são recalculadas continuamente conforme novas despesas e receitas são lançadas.</li>
+        <li><b>Aceite por bloco:</b> cada módulo é validado contra seus critérios; o aceite integral do bloco é o marco de avanço.</li>
+      </ul>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <div class="lbl">Escopo de integrações</div>
+      <ul>
+        <li><b>No escopo (responsabilidade do desenvolvimento):</b> WhatsApp Business API, API de rastreador, OCR (painel e cupom) e os mecanismos de IA (análise preditiva, auxiliar de orçamento, sugestão de postos, leitura de notas de oficina).</li>
+        <li><b>Futuras / opcionais (fora do escopo atual, sob orçamento à parte):</b> sistema de gestão de multas, sistema de RH, APIs bancárias avançadas / Open Finance completo, cartão de crédito empresarial e emissão de Nota Fiscal Nacional (quando liberada para o setor).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <h2><span class="n">4</span> Especificação por módulo</h2>
+
+    <!-- Camada Transversal -->
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">Camada Transversal</span>
+        <span class="chip b">Base · Bloco A</span>
+        <span class="chip">Complexidade Média</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>Conjunto de regras que atravessa todos os módulos, sobre o qual cada um é construído.</p></div>
+      <div class="field"><div class="lbl">Funcionalidades-chave</div>
+        <ul>
+          <li><b>Controle de acesso (RBAC):</b> matriz de 7 perfis (Atendimento, Motorista, Operacional, Gestor de Manutenção, Financeiro, Gestor Principal, Administrador) com permissões granulares de leitura/escrita/aprovação/configuração, <b>configurável pelo Administrador</b> sem alteração técnica.</li>
+          <li><b>Trilha de auditoria e versionamento</b> de todos os registros: quem alterou o quê, quando e por quê.</li>
+          <li><b>Offboarding:</b> desativação imediata de acesso (telas, WhatsApp, dispositivos), preservando histórico e bloqueando exportação em massa por perfis operacionais.</li>
+          <li><b>Notificação ao gestor principal</b> em toda ação sensível (cancelamento de OS, cotação abaixo da meta, alteração de margem, lançamento fora do plano de contas).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S01 -->
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">S01 · Calculadora de Cotação Conversacional</span>
+        <span class="chip b">Bloco A</span>
+        <span class="chip">Complexidade Alta</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>Cotar uma viagem em menos de 30 segundos (web ou WhatsApp), com a margem real sobre o custo atualizado por veículo, gerando a Ordem de Serviço automaticamente quando confirmada.</p></div>
+      <div class="field"><div class="lbl">Funcionalidades-chave</div>
+        <ul>
+          <li>Cotação por linguagem natural; <b>5 cenários de margem</b> (0/5/10/15/20%) lado a lado, com custo/km explícito para apoio à venda.</li>
+          <li>Custo real por placa atualizado diariamente pelo S03 (combustível, manutenção, pneus, depreciação, documentação).</li>
+          <li>Tributos parametrizáveis pelo gestor, com preparação para a reforma tributária (CBS/IBS).</li>
+          <li><b>Tabela mínima por companhia</b> (piso de R$/km) e salvamento de todas as cotações para análise.</li>
+          <li><b>Regra de bloqueio:</b> cotação com margem &lt; 0% não converte em OS (exige renegociação, cancelamento ou aprovação do gestor com motivo).</li>
+          <li><b>Metas inteligentes:</b> cotação que fere a meta de faturamento/KM exige aprovação do gestor; <b>conta global de saldo a recuperar</b> sugere margem ajustada nas próximas.</li>
+          <li><b>OS imutável</b> após geração; alterações vão à fila do gestor; cancelamento dispara notificação.</li>
+        </ul>
+      </div>
+      <div class="field"><div class="lbl">Cruzamentos</div><p>Recebe custo/km e custo/hora do S03 e as metas + saldo do S05; envia a OS ao S04, a receita projetada ao S05 e alertas ao S02.</p></div>
+      <div class="field"><div class="lbl">Critérios de aceite</div>
+        <ul class="check">
+          <li>Cotação criada em &lt; 30s (web e WhatsApp), com 5 margens e custo/km visíveis.</li>
+          <li>Bloqueio efetivo de conversão em OS quando margem &lt; 0%.</li>
+          <li>Tabela mínima por companhia funcional; OS automática imutável; painel de metas atualizado a cada OS.</li>
+          <li>Saldo a recuperar com sugestão de margem; alteração de OS roteada ao gestor com registro em auditoria.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S02 -->
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">S02 · Plataforma Proativa via WhatsApp</span>
+        <span class="chip b">Bloco A</span>
+        <span class="chip">Complexidade Média-Alta</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>Inverter a lógica: a informação vai até a equipe pelo canal que ela já usa. É a camada de comunicação dos demais módulos (sem dados próprios).</p></div>
+      <div class="field"><div class="lbl">Funcionalidades-chave</div>
+        <ul>
+          <li>WhatsApp Business API oficial com número dedicado; todas as mensagens auditadas.</li>
+          <li>Resumos diários e semanais por perfil + aviso um dia antes dos vencimentos com caixa projetado.</li>
+          <li>Alertas críticos por evento; <b>comandos por texto e voz</b> (consulta e ação) em linguagem natural.</li>
+          <li>Aprovações via WhatsApp; <b>captura por palavra-chave</b> em grupo (abre registro automaticamente).</li>
+          <li><b>Leitura de notas/orçamentos de oficina</b> recebidos por WhatsApp (identifica placa, abre OS de manutenção).</li>
+          <li>Roteamento de alertas por perfil (não por pessoa).</li>
+        </ul>
+      </div>
+      <div class="field"><div class="lbl">Critérios de aceite</div>
+        <ul class="check">
+          <li>API conectada com número dedicado; ≥ 10 categorias de alerta configuráveis pelo painel.</li>
+          <li>Resumo diário + semanal + aviso de vencimento entregues por perfil.</li>
+          <li>≥ 8 comandos funcionais por texto E áudio (transcrição); captura por palavra-chave em ≥ 1 grupo.</li>
+          <li>Leitura automatizada de nota de oficina com identificação de placa e abertura de OS.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S03 -->
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">S03 · Gestão de Frota, Manutenção e Diesel</span>
+        <span class="chip b">Bloco B</span>
+        <span class="chip">Complexidade Alta</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>Módulo mais robusto da plataforma. Visibilidade total e antecipada de cada veículo: o caminhão só roda se a manutenção estiver em dia.</p></div>
+      <div class="field"><div class="lbl">Funcionalidades-chave</div>
+        <ul>
+          <li>Painel de vencimentos por placa e por motorista; <b>centro de custo por caminhão</b>.</li>
+          <li><b>Revisões granulares por item</b> (vencimento por km E data, com recálculo individual quando uma peça é trocada fora de ciclo).</li>
+          <li><b>KM por OCR de painel</b> (foto do painel + cupom a cada abastecimento): identifica o veículo, lê o hodômetro e o cupom (volume, posto, valor) e calcula o consumo (km/L).</li>
+          <li>Sugestão inteligente de postos na rota; detecção de anomalia de consumo.</li>
+          <li><b>Controle de pneus individual por código</b> (troca / rodízio / virada + recapagens + posição por eixo).</li>
+          <li>Histórico de alinhamento/balanceamento/geometria; <b>auxiliar de orçamento de peças (IA)</b>.</li>
+          <li><b>Análise preditiva:</b> concentração de falhas por setor, vida útil por componente, reserva de caixa para manutenção pesada, diagnóstico assistido por histórico.</li>
+          <li>OS de manutenção (6 status); controle de estoque com baixa por WhatsApp; <b>agendamento cruzando a agenda do S04</b> (3 níveis de prioridade); custo por veículo em tempo real.</li>
+        </ul>
+      </div>
+      <div class="field"><div class="lbl">Cruzamentos</div><p>Envia custo/km e custo/hora ao S01 e lançamentos de despesa ao S05; troca disponibilidade do veículo com o S04; envia alertas ao S02.</p></div>
+      <div class="field"><div class="lbl">Critérios de aceite</div>
+        <ul class="check">
+          <li>Painel completo; KM capturado por OCR de painel como fonte primária.</li>
+          <li>Vencimentos por item com recálculo independente; sugestão de postos funcional.</li>
+          <li>Pneus por código com 3 operações e posição completa; preditiva por setor com reserva de caixa coordenada com o S05.</li>
+          <li>Agendamento cruzando o S04 respeitando 3 prioridades; custo por veículo em tempo real.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S04 -->
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">S04 · Análise Inteligente de Viagens e Jornada</span>
+        <span class="chip b">Bloco B</span>
+        <span class="chip">Complexidade Alta</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>Automatizar o controle de jornada: quem rodou o quê, quando, em quanto tempo e por qual valor — com informação confiável vinda dos rastreadores e da fila de OS do S01.</p></div>
+      <div class="field"><div class="lbl">Funcionalidades-chave</div>
+        <ul>
+          <li>Visão em tempo real (posição, estado do motor, paradas, velocidade) via rastreador.</li>
+          <li>Recebimento automático da OS do S01 (rota com link, valor visível só ao atendimento, comissão visível ao motorista).</li>
+          <li><b>Cálculo automático de comissão</b> por motorista e tipo de serviço; análise pós-serviço (HP/HT, custo de destombamento, positivo/negativo).</li>
+          <li>Painel por motorista e por placa; <b>Lei do Motorista</b> incorporada (sinaliza quando a OS excede a jornada permitida).</li>
+          <li><b>Relatórios de hora extra por classe</b> (diurna/noturna/feriado/domingo) para folha e tributos; aviso de troca de tacógrafo.</li>
+        </ul>
+      </div>
+      <div class="field"><div class="lbl">Cruzamentos</div><p>Recebe a OS do S01 e a disponibilidade do veículo do S03; envia ao S05 a receita realizada e a comissão a pagar. KM segue vindo do OCR (S03), não do rastreador.</p></div>
+      <div class="field"><div class="lbl">Depende de (kickoff)</div><p>Definição do provedor de rastreador e liberação da API — sem isso o módulo não inicia.</p></div>
+      <div class="field"><div class="lbl">Critérios de aceite</div>
+        <ul class="check">
+          <li>Integração funcional com ≥ 1 rastreador (posição/motor/paradas/velocidade); KM via OCR.</li>
+          <li>OS automática do S01 no painel do motorista; comissão paga só após conclusão.</li>
+          <li>Painéis por motorista e por placa; análise pós-serviço por OS; hora extra por classe.</li>
+          <li>Lei do Motorista verificada na atribuição, com sugestão alternativa em conflito.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S05 -->
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">S05 · Inteligência Financeira de Decisão</span>
+        <span class="chip b">Bloco C</span>
+        <span class="chip">Complexidade Alta</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>Substituir integralmente a planilha mestra de gestão financeira gerencial e responder, com modelagem real, perguntas como “posso assumir essa parcela?”, “vou pagar as contas do mês?”, “aplicar ou antecipar?”.</p></div>
+      <div class="field"><div class="lbl">Funcionalidades-chave</div>
+        <ul>
+          <li>Migração da estrutura contábil gerencial: <b>plano de contas, centros de custo, código de conta, DRE por veículo, imobilizado, depreciação automática, tributos, RH por CC, regime de competência</b>.</li>
+          <li><b>Fluxo de caixa projetado pela data real de recebimento</b> de cada cliente (reagendamento automático em atraso; antecipação quando o recebimento entra adiantado).</li>
+          <li>Contas a pagar/receber (tipos R/D/E/M/DP); empréstimos com geração de parcelas e <b>reformulação de juros em atraso &gt; 30 dias</b>.</li>
+          <li>Sugestão de forma de pagamento conforme o caixa; <b>simulador de financiamento</b>.</li>
+          <li><b>Comparador de cenários (TIR / VPL / payback)</b> alimentado por ofertas reais de investimento; previsão de impostos com calendário fiscal.</li>
+        </ul>
+      </div>
+      <div class="field"><div class="lbl">Cruzamentos</div><p>Recebe do S01 (receita projetada), S03 (despesas) e S04 (receita realizada e comissão); envia ao S01 as metas e o saldo a recuperar e ao S03 o orçamento de manutenção.</p></div>
+      <div class="field"><div class="lbl">Depende de (kickoff)</div><p>Acesso bancário (Open Finance/OFX) e conexão com o emissor de NF; na ausência, parte inicia com importação manual (OFX/XML).</p></div>
+      <div class="field"><div class="lbl">Critérios de aceite</div>
+        <ul class="check">
+          <li>Cadastro de clientes com regra de prazo configurável; fluxo de caixa projetado dia a dia.</li>
+          <li>Migração completa da estrutura contábil (plano de contas, CC, código, DRE, imobilizado, tributos, RH).</li>
+          <li>Cálculo diário das duas metas; conta bancária obrigatória em cada lançamento.</li>
+          <li>Geração de parcela com reformulação de juros em atraso; simulador e comparador funcionais.</li>
+        </ul>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <h2><span class="n">5</span> Integração entre módulos</h2>
+    <div class="mod">
+      <div class="mod-head">
+        <span class="mod-title">Matriz de Interoperabilidade</span>
+        <span class="chip b">Bloco C</span>
+        <span class="chip">Complexidade Alta</span>
+      </div>
+      <div class="field"><div class="lbl">Objetivo</div><p>A força da plataforma está nas pontes entre módulos. Os cinco módulos compartilham uma base e trocam dados em tempo real, gerando inteligência operacional concreta.</p></div>
+      <div class="field"><div class="lbl">Fluxos principais</div>
+        <ul>
+          <li>S03 → S01: custo por km/hora atualizado por veículo (cotação reflete o custo do dia).</li>
+          <li>S05 → S01: faturamento mínimo e KM máximo do mês + saldo a recuperar.</li>
+          <li>S01 → S04: OS gerada (rota, motorista, comissão); S04 → S05: receita realizada e comissão a pagar.</li>
+          <li>S03 ↔ S04: disponibilidade do veículo vs. agenda de manutenção (operação e manutenção não se atropelam).</li>
+          <li>OCR de painel (S03) → S03/S04/S05: KM rodado (fonte primária) para revisões, comissão e custo.</li>
+          <li>Todos → S02: eventos críticos viram comunicação proativa no WhatsApp.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 PAINEIS -->
+  <section>
+    <h2><span class="n">6</span> Painéis e indicadores de decisão</h2>
+    <p class="body">Além dos módulos, a plataforma entrega painéis que combinam dados de múltiplos módulos para decisão em tempo real, por perfil.</p>
+    <div class="mod">
+      <div class="field"><div class="lbl">Gestor principal</div><ul>
+        <li>Receita realizada × prevista × meta do mês; custo total × meta (semáforo verde/amarelo/vermelho).</li>
+        <li>Margem líquida média × ideal; saldo global a recuperar e taxa de recuperação.</li>
+        <li>OSs de maior e menor lucro; alertas críticos e aprovações em fila.</li>
+      </ul></div>
+      <div class="field"><div class="lbl">Gestor de manutenção</div><ul>
+        <li>Próximas revisões com custo estimado; veículos com consumo fora do esperado.</li>
+        <li>Concentração de OS por setor; pneus próximos do limite e candidatos a rodízio/virada.</li>
+        <li>Estoque crítico e orçamento do mês; documentação a vencer.</li>
+      </ul></div>
+      <div class="field"><div class="lbl">Atendimento</div><ul>
+        <li>Meta de faturamento e KM (realizado × restante); curva de entrada de caixa prevista.</li>
+        <li>Saldo a recuperar com sugestão de margem; veículos disponíveis em tempo real; taxa de fechamento de cotações.</li>
+      </ul></div>
+      <div class="field"><div class="lbl">Financeiro</div><ul>
+        <li>Fluxo de caixa projetado dia a dia (90 dias); contas a pagar/receber por vencimento e conta bancária.</li>
+        <li>Pontualidade por cliente; tributos a recolher; DRE consolidado e por veículo.</li>
+      </ul></div>
+      <div class="field"><div class="lbl">Por motorista e por placa</div><ul>
+        <li>Motorista: OSs do mês, total gerado e comissão, HT × limite legal, KM, multas, vencimentos pessoais, hora extra por classe.</li>
+        <li>Placa: custo × receita × margem, comparativo com mês anterior e mês de menor desempenho, ranking de rentabilidade.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- 7 MIGRACAO -->
+  <section>
+    <h2><span class="n">7</span> Migração de dados</h2>
+    <p class="body">A plataforma absorve os controles que hoje vivem em planilhas. Mapeamento por módulo de destino (os arquivos e cadastros serão fornecidos no kickoff):</p>
+    <div class="mod">
+      <ul>
+        <li><b>S01:</b> lógica de cálculo de preço de venda, cotação por mês e custos por veículo (vira parametrização nativa).</li>
+        <li><b>S03:</b> registro de combustível (passa a ser capturado por OCR), seguros (cobertura/franquia/responsável), revisões, pneus, alinhamento e fornecedores.</li>
+        <li><b>S04:</b> controle de jornada e comissões por funcionário (consolidação passa a ser automática).</li>
+        <li><b>S03 / S04 / S05:</b> multas, com cruzamento entre motorista, veículo e lançamento financeiro.</li>
+        <li><b>S05:</b> contas a pagar e receber, previsão de impostos e a <b>planilha mestra de gestão financeira</b> (plano de contas, centros de custo, código de conta, DRE, imobilizado, depreciação, tributos, RH e regime de competência) — substituição integral.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section>
+    <h2><span class="n">8</span> Critérios de aceite gerais</h2>
+    <div class="stack-line">
+      <ul class="check" style="margin:0;">
+        <li>Os 5 módulos funcionais, acessíveis e operando integrados.</li>
+        <li>Fluxos da matriz de interoperabilidade implementados e validados em casos reais simulados.</li>
+        <li>Perfis de acesso com permissões granulares ativas; trilha de auditoria ativa em todos os módulos.</li>
+        <li>Estrutura contábil gerencial migrada integralmente (plano de contas, CC, código, DRE, imobilizado, tributos, RH).</li>
+        <li>KM capturado por OCR de painel (fonte primária); rastreador como fonte de posição/motor/paradas/velocidade.</li>
+        <li>Alertas críticos disparando via WhatsApp para os perfis designados.</li>
+        <li>Dados históricos importados e consultáveis; equipe treinada por perfil com material escrito.</li>
+        <li>Painéis consolidados funcionando com dados reais; sem defeitos críticos abertos.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 9 PRE-REQUISITOS -->
+  <section>
+    <h2><span class="n">9</span> Pré-requisitos para início</h2>
+    <p class="body">Itens que precisam ser recebidos para o desenvolvimento começar. A contagem de prazo de cada módulo só inicia após a entrega dos itens que o bloqueiam.</p>
+
+    <div class="grp">Bloqueiam o início (ambiente e acessos de base)</div>
+    <table class="req">
+      <tr><th>Item a receber</th><th>Categoria</th><th>Bloqueia</th><th>Status</th></tr>
+      <tr><td>Repositório estruturado + schema do banco</td><td>Ambiente</td><td>Início geral</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>Banco de dados, ambientes (homologação/produção), domínio e SSL</td><td>Ambiente</td><td>Início geral</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>Cofre de credenciais (tokens e chaves de API) com instruções</td><td>Acessos</td><td>Início geral</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>WhatsApp Business API — número dedicado + credenciais</td><td>Integração</td><td>S01, S02 e notificações</td><td><span class="st p">Pendente</span></td></tr>
+    </table>
+
+    <div class="grp">Bloqueiam módulos específicos</div>
+    <table class="req">
+      <tr><th>Item a receber</th><th>Categoria</th><th>Bloqueia</th><th>Status</th></tr>
+      <tr><td>Provedor de rastreador + liberação da API</td><td>Integração</td><td>S04 (telemetria)</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>Acesso bancário (Open Finance / OFX)</td><td>Integração</td><td>S05 (fluxo e conciliação)</td><td><span class="st m">A definir</span></td></tr>
+      <tr><td>Conexão com emissor de NF (API ou XML)</td><td>Integração</td><td>S05 (receita × nota)</td><td><span class="st m">A definir</span></td></tr>
+      <tr><td>Cartão combustível + API</td><td>Integração</td><td>S03 (abastecimento)</td><td><span class="st m">Opcional</span></td></tr>
+      <tr><td>Chaves de IA / OCR (se providas pelo Cliente)</td><td>Acessos</td><td>S01–S05 (recursos de IA)</td><td><span class="st m">Confirmar</span></td></tr>
+    </table>
+
+    <div class="grp">Necessários no início da descoberta (dados)</div>
+    <table class="req">
+      <tr><th>Item a receber</th><th>Categoria</th><th>Bloqueia</th><th>Status</th></tr>
+      <tr><td>Planilhas atuais para migração</td><td>Dados</td><td>S01, S03, S04, S05</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>Cadastros iniciais (motoristas, veículos, fornecedores, oficinas, clientes com prazos)</td><td>Dados</td><td>Operação dos módulos</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>Dados históricos para importação</td><td>Dados</td><td>Migração e relatórios</td><td><span class="st p">Pendente</span></td></tr>
+      <tr><td>Ponto focal por área e participação na descoberta</td><td>Pessoas</td><td>Parametrização</td><td><span class="st p">Pendente</span></td></tr>
+    </table>
+  </section>
+
+  <!-- 10 PARAMETRIZACAO -->
+  <section>
+    <h2><span class="n">10</span> Parametrização e questões em aberto</h2>
+    <p class="body">Definições da fase de descoberta. O motor de cada funcionalidade já está no escopo; aqui se define a configuração. Não bloqueiam o início, mas precisam ser respondidas cedo.</p>
+    <div class="field">
+      <div class="lbl">Parametrização</div>
+      <ul>
+        <li>RBAC: mapeamento de papéis e matriz de permissões por tela/ação/módulo.</li>
+        <li>Lista exaustiva de alertas, por perfil destinatário, canal e frequência.</li>
+        <li>Parâmetros operacionais: antecedências de alerta, margem mínima, tolerância de consumo, limiar de falhas por setor, critério de comparação entre caminhões.</li>
+        <li>Regime financeiro consolidado: fluxo de caixa vs. competência.</li>
+        <li>Forma de acesso: aplicativo nativo, comportamento offline, tipo de conectividade; palavras-chave de captura no WhatsApp.</li>
+      </ul>
+    </div>
+    <div class="field">
+      <div class="lbl">Questões técnicas a esclarecer</div>
+      <ul>
+        <li><b>S01:</b> fluxo de alteração de rota depois da OS já criada (pedido do cliente ou aproveitamento de percurso).</li>
+        <li><b>S03:</b> motivo do ID do motorista no abastecimento (controle de desvios); critério de comparação de consumo entre caminhões "similares"; como mudar o status de OS de manutenção sem ação manual; método de cálculo do orçamento mensal de manutenção.</li>
+        <li><b>S04:</b> como identificar qual motorista está em cada viagem e o início/fim da jornada; como alterar uma OS em movimento ou pular trecho; cálculo de comissão para freelancer ou 2 motoristas na mesma OS.</li>
+        <li><b>S05:</b> como cruzar a receita realizada com a NF (API do emissor ou importação de XML); cadastro de cobertura dos seguros e responsável pelo acionamento em sinistro.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <b>Confidencial — Techxap Systems.</b> Documento de uso interno e da equipe de desenvolvimento designada. O cliente final é referenciado exclusivamente como “o Cliente”; é vedado inserir razão social, marcas, nomes de pessoas ou quaisquer dados identificáveis em código, commits, documentação ou comunicação. Especificação sujeita a parametrização na fase de descoberta.
+  </footer>
+
+</div>
+</body>
+</html>

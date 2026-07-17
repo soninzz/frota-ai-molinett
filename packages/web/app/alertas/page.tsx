@@ -30,9 +30,9 @@ type RegraAlerta = {
 
 const CATEGORIA_COLOR: Record<string, string> = {
   FINANCEIRO: "#16A34A",
-  OPERACIONAL: "#1E4C8C",
+  OPERACIONAL: "#E63A1F",
   MANUTENCAO: "#C0392B",
-  COMERCIAL: "#1E4C8C",
+  COMERCIAL: "#E63A1F",
   COMPLIANCE: "#C0392B",
 };
 
@@ -90,7 +90,7 @@ export default function AlertasPage() {
           <button
             onClick={() => setAba("recentes")}
             className={`text-[13px] font-medium px-4 py-2 rounded-full transition-colors ${
-              aba === "recentes" ? "bg-[#1E4C8C] text-white" : "bg-white border border-zinc-200 text-zinc-600"
+              aba === "recentes" ? "bg-[#E63A1F] text-white" : "bg-white border border-zinc-200 text-zinc-600"
             }`}
           >
             Recentes
@@ -98,7 +98,7 @@ export default function AlertasPage() {
           <button
             onClick={() => setAba("regras")}
             className={`text-[13px] font-medium px-4 py-2 rounded-full transition-colors ${
-              aba === "regras" ? "bg-[#1E4C8C] text-white" : "bg-white border border-zinc-200 text-zinc-600"
+              aba === "regras" ? "bg-[#E63A1F] text-white" : "bg-white border border-zinc-200 text-zinc-600"
             }`}
           >
             Regras cadastradas
