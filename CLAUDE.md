@@ -134,17 +134,11 @@ por ID externo). Já aplicado no banco (2026-07-10):
 
 ### Não iniciado / pendente
 - **Restante da planilha `GESTÃO VEÍCULOS TRANSPORTES.xlsx` — bloqueado, não é só rodar script**:
-  - **HABILITAÇÕES e TÓXICOS** (vencimento de CNH/toxicológico, 7 motoristas: Dionata, Michel,
-    João, Deivid, Patrick, Carlise, Karina): **não importado** — nenhum desses 7 nomes tem
-    `Motorista` cadastrado no banco hoje (os únicos motoristas existentes são contas de
-    teste/seed: "João Motorista", "Joao Pedro", "pedro silva", "luan teste"). Criar
-    `Motorista` exige CPF e número de CNH (campos únicos, obrigatórios) que não estão na
-    planilha — não dá pra inventar. Precisa que o cliente mande CPF + nº CNH + categoria de
-    cada um pra cadastrar de verdade (ou cadastrar manualmente pela tela `/jornada/cadastro`).
-    **Atenção**: a planilha tem datas de vencimento com ano digitado errado (3031, 3035 em vez
-    de 2031/2035 provavelmente) pro Dionata, Michel, Deivid, Patrick, Karina — confirmar a
-    data certa com cada motorista antes de cadastrar, senão o sistema nunca vai alertar
-    vencimento (data "no ano 3031" nunca é considerada vencida).
+  - **HABILITAÇÕES e TÓXICOS** — **descartado, não é dado real** (confirmado com o cliente em
+    2026-07-17): os 7 nomes (Dionata, Michel, João, Deivid, Patrick, Carlise, Karina) são dados
+    de teste da planilha, mesma categoria dos veículos de teste `AAC`/`OPG` já desativados no
+    banco. Datas com ano 3031/3035 também eram só teste/placeholder, não erro de digitação real.
+    Não importar nada dessa aba.
   - **PNEUS** (histórico de compra/rodagem por veículo): **não importado** — `MovimentacaoPneu`
     exige um `Pneu` mestre já cadastrado (marca, medida, posição) pra vincular o movimento; a
     planilha só tem o histórico de movimentação, não o cadastro dos pneus físicos em si. Precisa
