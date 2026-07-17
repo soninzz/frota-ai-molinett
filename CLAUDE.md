@@ -119,7 +119,45 @@ por ID externo). Já aplicado no banco (2026-07-10):
   estava desatualizada — não decidi migrar pra Railway sozinho, só corrigi o registro pra
   bater com o estado real observado.
 
+- **Import da planilha `GESTÃO VEÍCULOS TRANSPORTES.xlsx` (2026-07-17)** — parcial, ver
+  pendências abaixo. Aba **ORDEM** (243 pedidos de peça/serviço históricos) importada pra
+  `OsManutencao`: 234 registros criados, 11 puladas (sem veículo identificável — linhas
+  "USO COMUM" ou em branco). Placas da planilha vinham em formato antigo (3 letras + 4 dígitos)
+  pra 2 dos 5 veículos citados — convertidas manualmente pro Mercosul batendo com o que já
+  está no banco (ex: `IFF3863`→`IFF-3I63`, `MLC1051`→`MLC-1A51`, mesma tabela de conversão
+  oficial dígito→letra). Status da planilha (`SOLICITADO/ENCAMINHADO/ESTOQUE/EXPEDIDO/
+  FINALIZADO/DEVOLUÇÃO`) não bate 1:1 com o enum `StatusOsManutencao` — mapeados por
+  aproximação (`FINALIZADO/DEVOLUÇÃO`→`CONCLUIDO`, `ESTOQUE`→`EM_EXECUCAO`,
+  `EXPEDIDO`→`AGUARDANDO_PECA`, `ENCAMINHADO`→`EM_ABERTO`); cada registro importado carrega
+  a `observacao` com o status original da planilha e o solicitante, pra auditoria/correção
+  manual se o mapeamento não fizer sentido em algum caso.
+
 ### Não iniciado / pendente
+- **Restante da planilha `GESTÃO VEÍCULOS TRANSPORTES.xlsx` — bloqueado, não é só rodar script**:
+  - **HABILITAÇÕES e TÓXICOS** (vencimento de CNH/toxicológico, 7 motoristas: Dionata, Michel,
+    João, Deivid, Patrick, Carlise, Karina): **não importado** — nenhum desses 7 nomes tem
+    `Motorista` cadastrado no banco hoje (os únicos motoristas existentes são contas de
+    teste/seed: "João Motorista", "Joao Pedro", "pedro silva", "luan teste"). Criar
+    `Motorista` exige CPF e número de CNH (campos únicos, obrigatórios) que não estão na
+    planilha — não dá pra inventar. Precisa que o cliente mande CPF + nº CNH + categoria de
+    cada um pra cadastrar de verdade (ou cadastrar manualmente pela tela `/jornada/cadastro`).
+    **Atenção**: a planilha tem datas de vencimento com ano digitado errado (3031, 3035 em vez
+    de 2031/2035 provavelmente) pro Dionata, Michel, Deivid, Patrick, Karina — confirmar a
+    data certa com cada motorista antes de cadastrar, senão o sistema nunca vai alertar
+    vencimento (data "no ano 3031" nunca é considerada vencida).
+  - **PNEUS** (histórico de compra/rodagem por veículo): **não importado** — `MovimentacaoPneu`
+    exige um `Pneu` mestre já cadastrado (marca, medida, posição) pra vincular o movimento; a
+    planilha só tem o histórico de movimentação, não o cadastro dos pneus físicos em si. Precisa
+    decidir se cadastra os pneus atuais da frota do zero a partir da planilha (possível, mas é
+    outra rodada de mapeamento) ou se começa a rastrear só a partir de agora.
+  - **INFRAÇÕES** (multas por veículo): **não importado** — o model `Multa` exige `valor` e
+    `vencimento` (não opcionais), e a planilha não tem nenhum dos dois campos (só data da
+    infração, protocolo de defesa e situação). Precisaria consultar o valor da multa em algum
+    outro lugar (DETRAN-SC via o link de acompanhamento que já está na planilha) antes de
+    conseguir criar os registros.
+  - **REVISÕES**: não avaliado a fundo — a aba tem layout livre (tabelas lado a lado por
+    veículo, não uma lista normal), provavelmente dá pra extrair mas exige tratamento
+    caso a caso por veículo.
 - **Supabase Auth**: cliente confirmou que quer "supabase auth normal" pro plano multi-domínio
   (molinett.frotaai.com / franco.frotaai.com). Migração JWT→Supabase Auth planejada, ainda
   não iniciada — é refactor grande (auth module, guards, frontend, seeds).
