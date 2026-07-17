@@ -195,7 +195,7 @@ export default function DieselPage() {
 
         {showForm && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-3">
-            <h2 className="text-[13px] font-semibold text-zinc-900">
+            <h2 className="text-[13px] font-bold text-zinc-900">
               Conferir cupom fiscal (QR Code da NFC-e)
             </h2>
             <p className="text-[11px] text-zinc-400">
@@ -240,7 +240,7 @@ export default function DieselPage() {
 
         {showForm && (
           <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Novo abastecimento</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Novo abastecimento</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="KM do hodômetro">
                 <input
@@ -289,7 +289,7 @@ export default function DieselPage() {
 
         {postosSugeridos.length > 0 && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-semibold text-zinc-900 mb-1">Sugestão de postos (últimos 6 meses)</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 mb-1">Sugestão de postos (últimos 6 meses)</h2>
             <p className="text-[11px] text-zinc-400 mb-3">
               Ranking por preço médio real pago, com rendimento médio observado nos veículos que abasteceram lá.
             </p>
@@ -300,7 +300,7 @@ export default function DieselPage() {
                   className={`rounded-xl border p-3.5 ${i === 0 ? "border-[#16A34A]/30 bg-[#16A34A]/5" : "border-zinc-100"}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[13px] font-semibold text-zinc-900">{p.posto}</span>
+                    <span className="text-[13px] font-bold text-zinc-900">{p.posto}</span>
                     {i === 0 && (
                       <span className="text-[10px] font-medium text-[#16A34A] uppercase tracking-wide">Melhor preço</span>
                     )}

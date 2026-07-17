@@ -156,31 +156,36 @@ export default function SinistrosPage() {
 
         {resumo && (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Total de sinistros</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">{resumo.total}</span>
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total de sinistros</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">{resumo.total}</span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Em aberto</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-[#C0392B]">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Em aberto</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
                 {(resumo.porStatus.ABERTO ?? 0) + (resumo.porStatus.ACIONADO ?? 0) + (resumo.porStatus.EM_ANALISE ?? 0)}
               </span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Franquias a desembolsar</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Franquias a desembolsar</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
                 {fmt(resumo.franquiasTotal)}
               </span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Valor orçado</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Valor orçado</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
                 {fmt(resumo.valorOrcadoTotal)}
               </span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Indenizações recebidas</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-[#16A34A]">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Indenizações recebidas</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-[#16A34A]">
                 {fmt(resumo.valorIndenizadoTotal)}
               </span>
             </div>
@@ -204,7 +209,7 @@ export default function SinistrosPage() {
 
         {showForm && (
           <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Registrar sinistro</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Registrar sinistro</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Veículo">
                 <select className={inputCls} value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} required>

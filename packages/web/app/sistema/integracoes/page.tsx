@@ -90,7 +90,7 @@ export default function SaudeIntegracoesPage() {
             {dados.map((d) => (
               <div key={d.fonte} className="bg-white rounded-2xl border border-zinc-200 p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-[13px] font-semibold text-zinc-900">{NOME_FONTE[d.fonte] ?? d.fonte}</h3>
+                  <h3 className="text-[13px] font-bold text-zinc-900">{NOME_FONTE[d.fonte] ?? d.fonte}</h3>
                   <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
                     style={{ backgroundColor: `${COR[d.saude]}1A`, color: COR[d.saude] }}

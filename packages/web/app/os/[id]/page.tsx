@@ -154,7 +154,7 @@ export default function DetalheOsPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Cotação</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Cotação</h2>
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
               style={{
@@ -202,7 +202,7 @@ export default function DetalheOsPage() {
 
         {!os.viagem && os.status === "AGUARDANDO" && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-semibold text-zinc-900 mb-4">Iniciar viagem</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Iniciar viagem</h2>
             {!os.snapshot.motorista && (
               <div className="mb-4">
                 <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">
@@ -245,7 +245,7 @@ export default function DetalheOsPage() {
 
         {os.viagem && !os.viagem.concluidaEm && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-semibold text-zinc-900 mb-1">Viagem em andamento</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 mb-1">Viagem em andamento</h2>
             <p className="text-[12px] text-zinc-500 mb-4">KM início: {os.viagem.kmInicio}</p>
             <div className="flex items-end gap-3">
               <div className="flex-1">
@@ -270,7 +270,7 @@ export default function DetalheOsPage() {
 
         {os.viagem?.concluidaEm && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-semibold text-zinc-900 mb-4">Resultado da viagem</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Resultado da viagem</h2>
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div>
                 <p className="text-[11px] text-zinc-500">KM rodado</p>
@@ -300,7 +300,7 @@ export default function DetalheOsPage() {
 
         {os.comissao && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-semibold text-zinc-900 mb-3">Comissão do motorista</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 mb-3">Comissão do motorista</h2>
             <div className="flex items-baseline justify-between">
               <span className="text-[12px] text-zinc-500">{os.comissao.percentual}% sobre a receita</span>
               <span className="font-mono tabular-nums text-[18px] font-semibold text-zinc-900">

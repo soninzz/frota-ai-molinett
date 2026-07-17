@@ -163,7 +163,7 @@ export default function DetalheSinistroPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Ocorrência</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Ocorrência</h2>
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
               style={{ backgroundColor: st.cor + "1A", color: st.cor }}
@@ -206,7 +206,7 @@ export default function DetalheSinistroPage() {
 
         {sinistro.seguro && (
           <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-semibold text-zinc-900 mb-4">Seguradora</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Seguradora</h2>
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div>
                 <p className="text-[11px] text-zinc-500">Seguradora / Apólice</p>
@@ -230,7 +230,7 @@ export default function DetalheSinistroPage() {
         )}
 
         <form onSubmit={salvarValores} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-          <h2 className="text-[13px] font-semibold text-zinc-900">Valores e protocolo</h2>
+          <h2 className="text-[13px] font-bold text-zinc-900">Valores e protocolo</h2>
           <div className="grid grid-cols-3 gap-3">
             <label className="block">
               <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Protocolo</span>
@@ -255,7 +255,7 @@ export default function DetalheSinistroPage() {
         </form>
 
         <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-          <h2 className="text-[13px] font-semibold text-zinc-900 mb-4">Timeline</h2>
+          <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Timeline</h2>
           <ul className="space-y-3 mb-4">
             {sinistro.eventos.map((e) => (
               <li key={e.id} className="flex gap-3 text-[13px]">

@@ -147,7 +147,7 @@ export default function CotacaoPage() {
     <Shell title="Nova cotação" subtitle="Calcule margem em segundos">
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
         <section className="bg-white rounded-2xl border border-zinc-200 p-5">
-          <h2 className="text-[13px] font-semibold text-zinc-900 mb-4 flex items-center gap-2">
+          <h2 className="text-[13px] font-bold text-zinc-900 mb-4 flex items-center gap-2">
             <span className="text-[#E63A1F]">◆</span> Detalhes da viagem
           </h2>
 
@@ -219,13 +219,13 @@ export default function CotacaoPage() {
               <div className="pt-3 border-t border-zinc-100">
                 <div className="flex items-baseline justify-between">
                   <span className="text-[12px] font-medium text-zinc-500">Custo/km atual</span>
-                  <span className="font-mono tabular-nums text-[13px] font-semibold text-zinc-900">
+                  <span className="font-mono tabular-nums text-[13px] font-bold text-zinc-900">
                     {fmt(resultado.custoKm)}/km
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between mt-1.5">
                   <span className="text-[12px] font-medium text-zinc-500">Custo base da viagem</span>
-                  <span className="font-mono tabular-nums text-[13px] font-semibold text-zinc-900">
+                  <span className="font-mono tabular-nums text-[13px] font-bold text-zinc-900">
                     {fmt(resultado.custoBase)}
                   </span>
                 </div>
@@ -250,16 +250,16 @@ export default function CotacaoPage() {
 
           {resultado && !confirmado && (
             <>
-              <div className="bg-zinc-900 rounded-2xl p-6 relative overflow-hidden">
-                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#E63A1F]/25 blur-2xl" />
-                <p className="text-[12px] font-medium text-zinc-400 mb-1">
+              <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-7 relative overflow-hidden">
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#E63A1F]/25 blur-3xl" />
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-1.5">
                   Valor sugerido (margem {margemCustomAtiva ? margemCustom || 0 : margemSel}%)
                 </p>
                 <div className="flex items-end gap-3">
-                  <span className="font-mono tabular-nums text-[42px] leading-none font-semibold text-white tracking-tight">
+                  <span className="font-mono tabular-nums text-[36px] sm:text-[44px] leading-none font-bold text-white tracking-tight">
                     {fmt(cenarioSel?.valorFinal ?? 0)}
                   </span>
-                  <span className="text-[13px] text-[#16A34A] font-medium pb-1.5">
+                  <span className="text-[13px] text-[#16A34A] font-semibold pb-1.5">
                     +{fmt(cenarioSel?.lucro ?? 0)} lucro
                   </span>
                 </div>

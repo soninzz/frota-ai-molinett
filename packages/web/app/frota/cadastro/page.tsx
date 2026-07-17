@@ -88,7 +88,7 @@ export default function CadastroVeiculosPage() {
 
         {showForm && (
           <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Novo veículo</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Novo veículo</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Placa">
                 <input

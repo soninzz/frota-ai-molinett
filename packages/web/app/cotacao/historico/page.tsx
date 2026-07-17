@@ -58,21 +58,24 @@ export default function HistoricoCotacoesPage() {
     <Shell title="Histórico de Cotações" subtitle={`${cotacoes.length} cotações registradas`}>
       <div className="space-y-6">
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Total de cotações</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total de cotações</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
               {cotacoes.length}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Convertidas em OS</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-[#16A34A]">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Convertidas em OS</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-[#16A34A]">
               {totalConvertidas}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Taxa de fechamento</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Taxa de fechamento</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
               {taxaFechamento}%
             </span>
           </div>

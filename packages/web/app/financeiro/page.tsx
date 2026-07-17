@@ -89,29 +89,30 @@ export default function FinanceiroPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="bg-zinc-900 rounded-2xl p-6 relative overflow-hidden lg:col-span-2">
-                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#16A34A]/20 blur-2xl" />
-                <p className="text-[12px] font-medium text-zinc-400 mb-1">Saldo projetado — próximos 30 dias</p>
-                <div className="flex items-end gap-3">
-                  <span className="font-mono tabular-nums text-[42px] leading-none font-semibold text-white tracking-tight">
+              <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-7 relative overflow-hidden lg:col-span-2">
+                <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#16A34A]/20 blur-3xl" />
+                <p className="relative text-[12px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">Saldo projetado — próximos 30 dias</p>
+                <div className="relative flex items-end gap-3 flex-wrap">
+                  <span className="font-mono tabular-nums text-[36px] sm:text-[44px] leading-none font-bold text-white tracking-tight">
                     {fmt(saldoProjetado)}
                   </span>
                   <span
-                    className={`text-[13px] font-medium pb-1.5 ${
+                    className={`text-[13px] font-semibold pb-1.5 ${
                       saldoProjetado >= 0 ? "text-[#16A34A]" : "text-[#C0392B]"
                     }`}
                   >
                     {saldoProjetado >= 0 ? "saldo positivo" : "atenção — saldo negativo"}
                   </span>
                 </div>
-                <p className="text-[12px] text-zinc-400 mt-3">
+                <p className="relative text-[12px] text-zinc-400 mt-4">
                   {fmt(painel?.fluxo30dias.totais.entradas ?? 0)} a receber previstos ·{" "}
                   {fmt(painel?.fluxo30dias.totais.saidas ?? 0)} em despesas
                 </p>
               </div>
-              <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-                <p className="text-[12px] font-medium text-zinc-500 mb-1">Saldo a recuperar</p>
-                <span className="font-mono tabular-nums text-[26px] font-semibold text-[#C0392B]">
+              <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
+                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Saldo a recuperar</p>
+                <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
                   {fmt(painel?.saldoARecuperar ?? 0)}
                 </span>
                 <p className="text-[11px] text-zinc-400 mt-2">acumulado de margens negociadas</p>
@@ -119,7 +120,7 @@ export default function FinanceiroPage() {
             </div>
 
             <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <h2 className="text-[13px] font-semibold text-zinc-900 mb-4">Metas do mês</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Metas do mês</h2>
               <div>
                 <div className="flex items-baseline justify-between mb-1.5">
                   <span className="text-[12px] text-zinc-500">
@@ -137,21 +138,24 @@ export default function FinanceiroPage() {
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white rounded-2xl border border-zinc-200 p-4">
-                <p className="text-[11px] font-medium text-zinc-500 mb-1">A vencer em 7 dias</p>
-                <span className="font-mono tabular-nums text-[18px] font-semibold text-zinc-900">
+              <div className="relative bg-white rounded-2xl border border-zinc-200 p-4 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">A vencer em 7 dias</p>
+                <span className="font-mono tabular-nums text-[19px] font-bold text-zinc-900">
                   {fmt(painel?.alertas.aVencer7dias.valor ?? 0)}
                 </span>
               </div>
-              <div className="bg-white rounded-2xl border border-zinc-200 p-4">
-                <p className="text-[11px] font-medium text-zinc-500 mb-1">A vencer em 30 dias</p>
-                <span className="font-mono tabular-nums text-[18px] font-semibold text-zinc-900">
+              <div className="relative bg-white rounded-2xl border border-zinc-200 p-4 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#D97706]" />
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">A vencer em 30 dias</p>
+                <span className="font-mono tabular-nums text-[19px] font-bold text-zinc-900">
                   {fmt(painel?.alertas.aVencer30dias.valor ?? 0)}
                 </span>
               </div>
-              <div className="bg-white rounded-2xl border border-zinc-200 p-4">
-                <p className="text-[11px] font-medium text-zinc-500 mb-1">Atrasados</p>
-                <span className="font-mono tabular-nums text-[18px] font-semibold text-[#C0392B]">
+              <div className="relative bg-white rounded-2xl border border-zinc-200 p-4 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Atrasados</p>
+                <span className="font-mono tabular-nums text-[19px] font-bold text-[#C0392B]">
                   {fmt(painel?.alertas.atrasados.valor ?? 0)}
                 </span>
               </div>
@@ -160,7 +164,7 @@ export default function FinanceiroPage() {
             {dre && (
               <div className="bg-white rounded-2xl border border-zinc-200 p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[13px] font-semibold text-zinc-900">DRE — {dre.mes}</h2>
+                  <h2 className="text-[13px] font-bold text-zinc-900">DRE — {dre.mes}</h2>
                   <span
                     className="font-mono tabular-nums text-[13px] font-semibold"
                     style={{ color: dre.resultadoLiquido >= 0 ? "#16A34A" : "#C0392B" }}
@@ -187,7 +191,7 @@ export default function FinanceiroPage() {
             {fluxo && fluxo.curva.length > 0 && (
               <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
                 <div className="px-5 py-4 border-b border-zinc-100">
-                  <h2 className="text-[13px] font-semibold text-zinc-900">Fluxo de caixa projetado — próximos 90 dias</h2>
+                  <h2 className="text-[13px] font-bold text-zinc-900">Fluxo de caixa projetado — próximos 90 dias</h2>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-[13px]">
@@ -223,7 +227,7 @@ export default function FinanceiroPage() {
 
             <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-                <h2 className="text-[13px] font-semibold text-zinc-900">Próximos lançamentos</h2>
+                <h2 className="text-[13px] font-bold text-zinc-900">Próximos lançamentos</h2>
                 <a href="/financeiro/lancamentos" className="text-[12px] font-medium text-[#E63A1F] hover:underline">
                   Ver todos
                 </a>

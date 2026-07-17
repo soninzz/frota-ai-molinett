@@ -22,8 +22,9 @@ baseado no "Escopo Técnico v3" (documento anexo ao contrato). 5 sistemas integr
 - Banco: Supabase (PostgreSQL), pooler na porta 6543 pra runtime, direct na 5432 pra migrations
 - Auth: **JWT próprio** (bcrypt + NestJS Passport) — **NÃO é Supabase Auth**, decisão consciente
   confirmada com o time (ver seção "Decisões em aberto" abaixo)
-- Frontend: design system com paleta real da marca Molinett — azul `#1E4C8C`, vermelho `#C0392B`
-  (extraídos do logo real, não são cores genéricas)
+- Frontend: design system com paleta real da marca Molinett — laranja `#E63A1F` (medido por
+  pixel-sampling do logo real, o azul `#1E4C8C` documentado aqui antes era um placeholder
+  incorreto), vermelho `#C0392B` para estados de alerta/erro.
 
 ## Status atual (real, não otimista)
 

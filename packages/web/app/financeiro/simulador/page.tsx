@@ -253,7 +253,7 @@ export default function SimuladorPage() {
         )}
 
         <form onSubmit={simular} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-          <h2 className="text-[13px] font-semibold text-zinc-900">Premissas da simulação</h2>
+          <h2 className="text-[13px] font-bold text-zinc-900">Premissas da simulação</h2>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             <Field label="Meses de projeção">
               <input type="number" min={1} max={36} className={inputCls + " font-mono tabular-nums"} value={meses} onChange={(e) => setMeses(Number(e.target.value))} />
@@ -296,7 +296,7 @@ export default function SimuladorPage() {
         {resultado && (
           <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-              <h2 className="text-[13px] font-semibold text-zinc-900">Projeção — {resultado.meses.length} meses</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900">Projeção — {resultado.meses.length} meses</h2>
               <span
                 className="font-mono tabular-nums text-[13px] font-semibold"
                 style={{ color: resultado.totais.margem >= 0 ? "#16A34A" : "#C0392B" }}
@@ -337,7 +337,7 @@ export default function SimuladorPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Cenários salvos</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Cenários salvos</h2>
             <button
               onClick={comparar}
               className="rounded-xl bg-[#E63A1F] text-white text-[12px] font-medium px-3.5 py-2 hover:bg-[#BC2F19] transition-colors"
@@ -372,7 +372,7 @@ export default function SimuladorPage() {
         {comparacao.length > 0 && (
           <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-100">
-              <h2 className="text-[13px] font-semibold text-zinc-900">Comparador de cenários</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900">Comparador de cenários</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
@@ -408,7 +408,7 @@ export default function SimuladorPage() {
         )}
         <div className="grid lg:grid-cols-2 gap-6">
           <form onSubmit={simularFinanciamento} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Posso assumir essa parcela?</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Posso assumir essa parcela?</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Valor da parcela (R$)">
                 <input type="number" step="0.01" required className={inputCls + " font-mono tabular-nums"} value={valorParcela} onChange={(e) => setValorParcela(e.target.value)} />
@@ -447,7 +447,7 @@ export default function SimuladorPage() {
 
           <form onSubmit={compararInvestimento} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-[13px] font-semibold text-zinc-900">Aplicar × Antecipar × Reinvestir</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900">Aplicar × Antecipar × Reinvestir</h2>
               {taxas && (
                 <span className="text-[11px] text-zinc-400">
                   CDI {taxas.cdiAnualPct}% a.a. · {taxas.referencia}

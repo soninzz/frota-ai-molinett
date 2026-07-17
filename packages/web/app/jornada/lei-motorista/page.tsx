@@ -146,24 +146,30 @@ export default function LeiMotoristaPage() {
 
         {relatorio && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Motoristas analisados</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Motoristas analisados</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
                 {relatorio.motoristas.length}
               </span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Violações encontradas</p>
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div
+                className="absolute left-0 top-0 bottom-0 w-[3px]"
+                style={{ backgroundColor: relatorio.totalViolacoes > 0 ? "#C0392B" : "#16A34A" }}
+              />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Violações encontradas</p>
               <span
-                className="font-mono tabular-nums text-[24px] font-semibold"
+                className="font-mono tabular-nums text-[28px] font-bold"
                 style={{ color: relatorio.totalViolacoes > 0 ? "#C0392B" : "#16A34A" }}
               >
                 {relatorio.totalViolacoes}
               </span>
             </div>
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <p className="text-[12px] font-medium text-zinc-500 mb-1">Em conformidade</p>
-              <span className="font-mono tabular-nums text-[24px] font-semibold text-[#16A34A]">
+            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Em conformidade</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-[#16A34A]">
                 {relatorio.motoristas.filter((m) => m.conforme).length}/{relatorio.motoristas.length}
               </span>
             </div>
@@ -172,7 +178,7 @@ export default function LeiMotoristaPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Conformidade por motorista</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Conformidade por motorista</h2>
           </div>
           {loading && <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Carregando...</p>}
           {!loading && (!relatorio || relatorio.motoristas.length === 0) && (
@@ -183,7 +189,7 @@ export default function LeiMotoristaPage() {
               <div key={m.motoristaId} className="border-b border-zinc-50 last:border-0 px-5 py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[13px] font-semibold text-zinc-900">{m.motorista}</span>
+                    <span className="text-[13px] font-bold text-zinc-900">{m.motorista}</span>
                     <span className="ml-3 text-[12px] text-zinc-400">
                       {m.viagensAnalisadas} viagem(ns) · {m.horasDirecaoTotal}h de direção ·{" "}
                       {m.horasEsperaTotal}h de espera · {m.horasJornadaTotal}h de jornada total
@@ -219,7 +225,7 @@ export default function LeiMotoristaPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Hora extra por classe</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Hora extra por classe</h2>
             <button
               onClick={exportarCsv}
               disabled={exportando}
@@ -234,7 +240,7 @@ export default function LeiMotoristaPage() {
           {classes?.classes.map((c) => (
             <div key={c.classe} className="border-b border-zinc-50 last:border-0">
               <div className="px-5 py-3.5 flex items-center justify-between bg-zinc-50/50">
-                <span className="text-[13px] font-semibold text-zinc-900">{c.classe}</span>
+                <span className="text-[13px] font-bold text-zinc-900">{c.classe}</span>
                 <span className="font-mono tabular-nums text-[13px] text-zinc-600">
                   {c.horasTotal}h · R$ {c.valorTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </span>

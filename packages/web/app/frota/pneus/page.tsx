@@ -180,7 +180,7 @@ export default function PneusPage() {
 
         {showFormPneu && (
           <form onSubmit={salvarPneu} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Novo pneu</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Novo pneu</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Código identificador">
                 <input className={inputCls} value={codigo} onChange={(e) => setCodigo(e.target.value)} required />
@@ -220,7 +220,7 @@ export default function PneusPage() {
         {pneuMovimentando && (
           <form onSubmit={salvarMovimentacao} className="bg-white rounded-2xl border border-[#E63A1F]/30 p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-[13px] font-semibold text-zinc-900">
+              <h2 className="text-[13px] font-bold text-zinc-900">
                 Movimentar pneu <span className="font-mono">{pneuMovimentando.codigo}</span>
               </h2>
               <button type="button" onClick={() => setPneuMovimentando(null)} className="text-[12px] text-zinc-400 hover:text-zinc-600">

@@ -104,7 +104,7 @@ export default function MapaFrotaPage() {
 
             <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden max-h-[560px] overflow-y-auto">
               <div className="px-4 py-3 border-b border-zinc-100 sticky top-0 bg-white">
-                <h2 className="text-[13px] font-semibold text-zinc-900">Veículos ({comPosicao.length})</h2>
+                <h2 className="text-[13px] font-bold text-zinc-900">Veículos ({comPosicao.length})</h2>
               </div>
               {comPosicao.map((v) => (
                 <button
@@ -115,7 +115,7 @@ export default function MapaFrotaPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-semibold text-zinc-900">{v.placa}</span>
+                    <span className="text-[13px] font-bold text-zinc-900">{v.placa}</span>
                     <span
                       className="h-2 w-2 rounded-full"
                       style={{ backgroundColor: v.motorLigado ? (Number(v.velocidade) > 5 ? "#16A34A" : "#D97706") : "#A1A1AA" }}

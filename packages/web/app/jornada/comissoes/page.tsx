@@ -63,9 +63,10 @@ export default function ComissoesPage() {
     <Shell title="Comissões" subtitle={`${comissoes.length} registros`}>
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Total pendente de pagamento</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-[#C0392B]">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total pendente de pagamento</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
               {fmt(totalPendente)}
             </span>
           </div>

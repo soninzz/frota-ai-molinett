@@ -54,21 +54,24 @@ export default function FrotaPage() {
         )}
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Total de veículos</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total de veículos</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
               {veiculos.length}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Com alerta pendente</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-[#C0392B]">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: comAlerta > 0 ? "#C0392B" : "#16A34A" }} />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Com alerta pendente</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
               {comAlerta}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <p className="text-[12px] font-medium text-zinc-500 mb-1">Custo médio/km</p>
-            <span className="font-mono tabular-nums text-[24px] font-semibold text-zinc-900">
+          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Custo médio/km</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
               R$ {custoMedio.toFixed(2)}
             </span>
           </div>
@@ -76,7 +79,7 @@ export default function FrotaPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Veículos</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Veículos</h2>
           </div>
           <table className="w-full text-[13px]">
             <thead>

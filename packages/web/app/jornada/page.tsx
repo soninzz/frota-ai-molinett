@@ -61,7 +61,7 @@ export default function JornadaPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Viagens recentes</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Viagens recentes</h2>
           </div>
           <table className="w-full text-[13px]">
             <thead>
@@ -128,7 +128,7 @@ export default function JornadaPage() {
         </div>
 
         <div>
-          <h2 className="text-[12px] font-semibold text-zinc-500 mb-3 uppercase tracking-wide">
+          <h2 className="text-[13px] font-bold text-zinc-900 mb-3 tracking-tight">
             Painel por motorista
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -141,7 +141,7 @@ export default function JornadaPage() {
                   <div className="h-8 w-8 rounded-full bg-zinc-100 flex items-center justify-center text-[11px] font-medium text-zinc-600">
                     {m.nome.split(" ").map((n) => n[0]).join("")}
                   </div>
-                  <span className="text-[13px] font-semibold text-zinc-900">{m.nome}</span>
+                  <span className="text-[13px] font-bold text-zinc-900">{m.nome}</span>
                 </div>
                 <div className="flex items-baseline justify-between mt-3">
                   <span className="text-[12px] text-zinc-500">Viagens</span>

@@ -91,7 +91,7 @@ export default function AprovacoesPage() {
           <div key={c.id} className="bg-white rounded-2xl border border-[#C0392B]/20 p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-[13px] font-semibold text-zinc-900">
+                <p className="text-[13px] font-bold text-zinc-900">
                   Cotação #{c.numero} · {c.cliente.nome}
                 </p>
                 <p className="text-[12px] text-zinc-500">

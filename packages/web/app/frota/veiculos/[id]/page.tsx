@@ -159,7 +159,7 @@ export default function DetalheVeiculoPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Revisões por item</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Revisões por item</h2>
           </div>
           {trocandoItem && (
             <form onSubmit={registrarTroca} className="px-5 py-4 bg-zinc-50 border-b border-zinc-100 space-y-3">
@@ -245,7 +245,7 @@ export default function DetalheVeiculoPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-100">
-              <h2 className="text-[13px] font-semibold text-zinc-900">Pneus ({veiculo.pneus.length})</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900">Pneus ({veiculo.pneus.length})</h2>
             </div>
             <ul className="divide-y divide-zinc-50">
               {veiculo.pneus.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400">Nenhum pneu cadastrado</li>}
@@ -260,7 +260,7 @@ export default function DetalheVeiculoPage() {
 
           <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-zinc-100">
-              <h2 className="text-[13px] font-semibold text-zinc-900">Seguros</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900">Seguros</h2>
             </div>
             <ul className="divide-y divide-zinc-50">
               {veiculo.seguros.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400">Nenhum seguro cadastrado</li>}
@@ -278,7 +278,7 @@ export default function DetalheVeiculoPage() {
 
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-semibold text-zinc-900">Documentos</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900">Documentos</h2>
           </div>
           <ul className="divide-y divide-zinc-50">
             {veiculo.documentosVeiculo.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400">Nenhum documento cadastrado</li>}

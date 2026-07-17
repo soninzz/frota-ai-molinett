@@ -44,7 +44,7 @@ function GraficoFluxoCaixa({ pontos }: { pontos: PontoFluxo[] }) {
   return (
     <div className="bg-white rounded-2xl border border-zinc-200 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[13px] font-semibold text-zinc-900">Fluxo de caixa projetado (30 dias)</h2>
+        <h2 className="text-[13px] font-bold text-zinc-900">Fluxo de caixa projetado (30 dias)</h2>
         <div className="flex items-center gap-4 text-[11px] text-zinc-500">
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#16A34A]" />Entradas</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#C0392B]" />Saídas</span>
