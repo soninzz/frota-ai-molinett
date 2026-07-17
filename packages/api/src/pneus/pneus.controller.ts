@@ -6,6 +6,7 @@ import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Perfil, TipoMovimentacaoPneu, PosicaoPneu } from '@prisma/client'
 import { CriarPneuDto } from './dto/criar-pneu.dto'
+import { CurrentUser } from '../common/decorators/current-user.decorator'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Recurso('pneus')
@@ -30,14 +31,15 @@ export class PneusController {
     @Body('posicaoPara') posicaoPara: PosicaoPneu,
     @Body('valor') valor: number,
     @Body('fornecedor') fornecedor: string,
+    @CurrentUser() user: any,
   ) {
     return this.pneusService.registrarMovimentacao(
-      id, tipo, veiculoId, kmAtual, posicaoDe, posicaoPara, valor, fornecedor
+      id, tipo, veiculoId, kmAtual, posicaoDe, posicaoPara, valor, fornecedor, user.id
     )
   }
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Post()
-  criar(@Body() dto: CriarPneuDto) {
-    return this.pneusService.criar(dto)
+  criar(@Body() dto: CriarPneuDto, @CurrentUser() user: any) {
+    return this.pneusService.criar(dto, user.id)
   }
 }

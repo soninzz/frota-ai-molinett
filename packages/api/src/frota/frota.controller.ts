@@ -7,6 +7,7 @@ import { Roles } from '../common/decorators/roles.decorator'
 import { Perfil } from '@prisma/client'
 import { CriarVeiculoDto } from './dto/criar-veiculo.dto'
 import { Post, Body } from '@nestjs/common'
+import { CurrentUser } from '../common/decorators/current-user.decorator'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Recurso('frota')
@@ -39,7 +40,7 @@ export class FrotaController {
   }
   @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.GESTOR_MANUTENCAO)
   @Post('veiculos')
-  criar(@Body() dto: CriarVeiculoDto) {
-    return this.frotaService.criar(dto)
+  criar(@Body() dto: CriarVeiculoDto, @CurrentUser() user: any) {
+    return this.frotaService.criar(dto, user.id)
   }
 }

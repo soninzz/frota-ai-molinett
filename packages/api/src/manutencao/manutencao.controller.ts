@@ -28,8 +28,8 @@ export class ManutencaoController {
  
   @Patch('os/:id/status')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
-  atualizarStatus(@Param('id') id: string, @Body() dto: AtualizarStatusOsDto) {
-    return this.manutencaoService.atualizarStatus(id, dto)
+  atualizarStatus(@Param('id') id: string, @Body() dto: AtualizarStatusOsDto, @CurrentUser() user: any) {
+    return this.manutencaoService.atualizarStatus(id, dto, user.id)
   }
  
   @Get('veiculos/:id/revisoes')
@@ -45,8 +45,9 @@ export class ManutencaoController {
     @Body('kmAtual') kmAtual: number,
     @Body('fornecedor') fornecedor: string,
     @Body('valor') valor: number,
+    @CurrentUser() user: any,
   ) {
-    return this.manutencaoService.registrarTrocaItem(id, kmAtual, fornecedor, valor)
+    return this.manutencaoService.registrarTrocaItem(id, kmAtual, fornecedor, valor, user.id)
   }
  
   @Get('veiculos/:id/preditiva')

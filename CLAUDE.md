@@ -152,6 +152,20 @@ por ID externo). Já aplicado no banco (2026-07-10):
   - **REVISÕES**: não avaliado a fundo — a aba tem layout livre (tabelas lado a lado por
     veículo, não uma lista normal), provavelmente dá pra extrair mas exige tratamento
     caso a caso por veículo.
+### Concluído em 2026-07-17
+- **Trilha de auditoria em todos os módulos** (critério de aceite dos docs — auditoria fazia
+  best-effort só em cotação, financeiro e permissões). Estendida pro resto das ações de
+  usuário: `Frota` (criar veículo), `Manutenção` (criar OS, atualizar status, registrar troca de
+  item de revisão), `Pneus` (criar, registrar movimentação), `Sinistros` (criar, atualizar,
+  adicionar evento), `Jornada` (iniciar/finalizar viagem, adicionar hora extra, criar motorista,
+  pagar comissão) e `OCR` (confirmar hodômetro — grava km oficial do veículo). Mesmo padrão
+  já usado: `AuditoriaService.registrar()` best-effort (nunca derruba a ação de negócio se falhar),
+  `usuarioId` vindo de `@CurrentUser()`. **Não incluído de propósito**: sincronização automática
+  do rastreador (cron sem usuário associado — não é ação de usuário, não tem quem auditar) e leituras
+  puras de OCR (`lerHodometro`/`lerCupom` só analisam, não gravam nada — só a confirmação grava).
+  Testado ponta a ponta em produção (criei um veículo de teste, confirmei o registro em
+  `GET /auditoria/Veiculo/:id`, depois apaguei o veículo e o log de teste).
+
 - **Supabase Auth**: cliente confirmou que quer "supabase auth normal" pro plano multi-domínio
   (molinett.frotaai.com / franco.frotaai.com). Migração JWT→Supabase Auth planejada, ainda
   não iniciada — é refactor grande (auth module, guards, frontend, seeds).

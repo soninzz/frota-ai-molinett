@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { decodificarChaveNFCe, ChaveDecodificada } from './nfce-chave.util'
 import { fetchComRetry } from '../common/fetch-retry.util'
 import { PrismaService } from '../database/prisma.service'
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
 
 type Provedor = 'mock' | 'gemini' | 'anthropic'
 
@@ -50,6 +51,7 @@ export class OcrService {
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
+    private auditoria: AuditoriaService,
   ) {
     this.modoOcr = this.config.get<string>('OCR_MODE', 'mock')
     this.provedor = this.config.get<Provedor>('LLM_PROVIDER', 'gemini')
@@ -131,7 +133,7 @@ export class OcrService {
   // Guardrail 3: hodômetro (OCR ou correção manual) é a ÚNICA fonte de km
   // usada pra revisão/custo — o rastreador nunca escreve aqui. Km decrescente
   // vira BadRequestException (some/erro de leitura), nunca é aceito silencioso.
-  async confirmarHodometro(veiculoId: string, kmHodometro: number, confianca?: number, fonte?: string) {
+  async confirmarHodometro(veiculoId: string, kmHodometro: number, confianca?: number, fonte?: string, usuarioId?: string) {
     const veiculo = await this.prisma.veiculo.findUnique({ where: { id: veiculoId } })
     if (!veiculo) throw new NotFoundException('Veículo não encontrado')
 
@@ -141,7 +143,7 @@ export class OcrService {
       )
     }
 
-    return this.prisma.veiculo.update({
+    const atualizado = await this.prisma.veiculo.update({
       where: { id: veiculoId },
       data: {
         kmAtual: kmHodometro,
@@ -150,6 +152,19 @@ export class OcrService {
       },
       select: { id: true, placa: true, kmAtual: true, kmAtualEm: true },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Veiculo',
+        registroId: veiculoId,
+        acao: 'CONFIRMAR_HODOMETRO',
+        antes: { kmAtual: veiculo.kmAtual },
+        depois: { kmAtual: kmHodometro, confianca, fonte: fonte ?? this.provedor },
+      })
+    }
+
+    return atualizado
   }
 
   // ── OCR do cupom fiscal (fallback quando QR Code está ilegível/rasgado) ──

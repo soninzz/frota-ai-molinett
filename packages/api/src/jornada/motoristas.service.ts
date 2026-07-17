@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service'
 import { CriarMotoristaDto } from './dto/criar-motorista.dto'
 import * as bcrypt from 'bcryptjs'
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
 
 @Injectable()
 export class MotoristasService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditoria: AuditoriaService,
+  ) {}
 
   async listar() {
     return this.prisma.motorista.findMany({
@@ -16,7 +20,7 @@ export class MotoristasService {
     })
   }
 
-  async criar(dto: CriarMotoristaDto) {
+  async criar(dto: CriarMotoristaDto, usuarioIdAtor?: string) {
     const emailExistente = await this.prisma.usuario.findUnique({
       where: { email: dto.email },
     })
@@ -63,6 +67,16 @@ export class MotoristasService {
 
       return { usuario, motorista }
     })
+
+    if (usuarioIdAtor) {
+      await this.auditoria.registrar({
+        usuarioId: usuarioIdAtor,
+        entidade: 'Motorista',
+        registroId: resultado.motorista.id,
+        acao: 'CRIAR',
+        depois: { nome: dto.nome, cpf: dto.cpf, cnh: dto.cnh },
+      })
+    }
 
     return resultado.motorista
   }

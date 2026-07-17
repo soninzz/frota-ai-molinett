@@ -3,10 +3,14 @@ import { StatusSinistro } from '@prisma/client'
 import { PrismaService } from '../database/prisma.service'
 import { CriarSinistroDto } from './dto/criar-sinistro.dto'
 import { AtualizarSinistroDto } from './dto/atualizar-sinistro.dto'
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
 
 @Injectable()
 export class SinistrosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditoria: AuditoriaService,
+  ) {}
 
   async listar(status?: StatusSinistro) {
     return this.prisma.sinistro.findMany({
@@ -34,7 +38,7 @@ export class SinistrosService {
     return sinistro
   }
 
-  async criar(dto: CriarSinistroDto) {
+  async criar(dto: CriarSinistroDto, usuarioId?: string) {
     const sinistro = await this.prisma.sinistro.create({
       data: {
         ...dto,
@@ -42,10 +46,21 @@ export class SinistrosService {
         eventos: { create: { descricao: 'Sinistro registrado' } },
       },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Sinistro',
+        registroId: sinistro.id,
+        acao: 'CRIAR',
+        depois: { veiculoId: sinistro.veiculoId, tipo: sinistro.tipo, status: sinistro.status },
+      })
+    }
+
     return sinistro
   }
 
-  async atualizar(id: string, dto: AtualizarSinistroDto) {
+  async atualizar(id: string, dto: AtualizarSinistroDto, usuarioId?: string) {
     const atual = await this.prisma.sinistro.findUnique({ where: { id } })
     if (!atual) throw new NotFoundException('Sinistro não encontrado')
 
@@ -60,13 +75,36 @@ export class SinistrosService {
       })
     }
 
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Sinistro',
+        registroId: id,
+        acao: 'ATUALIZAR',
+        antes: { status: atual.status },
+        depois: { status: sinistro.status },
+      })
+    }
+
     return sinistro
   }
 
-  async adicionarEvento(id: string, descricao: string) {
+  async adicionarEvento(id: string, descricao: string, usuarioId?: string) {
     const sinistro = await this.prisma.sinistro.findUnique({ where: { id } })
     if (!sinistro) throw new NotFoundException('Sinistro não encontrado')
-    return this.prisma.sinistroEvento.create({ data: { sinistroId: id, descricao } })
+    const evento = await this.prisma.sinistroEvento.create({ data: { sinistroId: id, descricao } })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Sinistro',
+        registroId: id,
+        acao: 'ADICIONAR_EVENTO',
+        depois: { descricao },
+      })
+    }
+
+    return evento
   }
 
   // Painel-resumo: contagens por status e custo acumulado

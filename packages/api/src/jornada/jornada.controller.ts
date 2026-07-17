@@ -15,6 +15,7 @@ import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Perfil } from '@prisma/client'
 import { CriarMotoristaDto } from './dto/criar-motorista.dto'
+import { CurrentUser } from '../common/decorators/current-user.decorator'
  
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Recurso('jornada')
@@ -89,14 +90,14 @@ export class JornadaController {
   // ── Viagens ──
   @Roles(Perfil.OPERACIONAL, Perfil.MOTORISTA, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Post('viagens/iniciar')
-  iniciar(@Body() dto: IniciarViagemDto) {
-    return this.viagensService.iniciar(dto)
+  iniciar(@Body() dto: IniciarViagemDto, @CurrentUser() user: any) {
+    return this.viagensService.iniciar(dto, user.id)
   }
- 
+
   @Roles(Perfil.OPERACIONAL, Perfil.MOTORISTA, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Post('viagens/:id/finalizar')
-  finalizar(@Param('id') id: string, @Body() dto: FinalizarViagemDto) {
-    return this.viagensService.finalizar(id, dto)
+  finalizar(@Param('id') id: string, @Body() dto: FinalizarViagemDto, @CurrentUser() user: any) {
+    return this.viagensService.finalizar(id, dto, user.id)
   }
  
   @Get('viagens')
@@ -113,8 +114,8 @@ export class JornadaController {
   }
  
   @Post('viagens/:id/horas-extra')
-  adicionarHoraExtra(@Param('id') id: string, @Body() dto: CriarHoraExtraDto) {
-    return this.viagensService.adicionarHoraExtra(id, dto)
+  adicionarHoraExtra(@Param('id') id: string, @Body() dto: CriarHoraExtraDto, @CurrentUser() user: any) {
+    return this.viagensService.adicionarHoraExtra(id, dto, user.id)
   }
  
   // ── Comissões ──
@@ -129,13 +130,13 @@ export class JornadaController {
  
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Patch('comissoes/:id/pagar')
-  pagarComissao(@Param('id') id: string) {
-    return this.comissoesService.pagar(id)
+  pagarComissao(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.comissoesService.pagar(id, user.id)
   }
 
   @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Post('motoristas')
-  criarMotorista(@Body() dto: CriarMotoristaDto) {
-    return this.motoristasService.criar(dto)
+  criarMotorista(@Body() dto: CriarMotoristaDto, @CurrentUser() user: any) {
+    return this.motoristasService.criar(dto, user.id)
   }
 }

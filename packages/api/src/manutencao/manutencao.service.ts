@@ -2,13 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../database/prisma.service'
 import { CriarOsManutencaoDto, AtualizarStatusOsDto } from './dto/manutencao.dto'
 import { StatusOsManutencao } from '@prisma/client'
- 
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
+
 @Injectable()
 export class ManutencaoService {
-  constructor(private prisma: PrismaService) {}
- 
+  constructor(
+    private prisma: PrismaService,
+    private auditoria: AuditoriaService,
+  ) {}
+
   async criarOs(dto: CriarOsManutencaoDto, usuarioId: string) {
-    return this.prisma.osManutencao.create({
+    const criada = await this.prisma.osManutencao.create({
       data: {
         veiculoId:      dto.veiculoId,
         solicitanteId:  usuarioId,
@@ -22,6 +26,16 @@ export class ManutencaoService {
       },
       include: { veiculo: true },
     })
+
+    await this.auditoria.registrar({
+      usuarioId,
+      entidade: 'OsManutencao',
+      registroId: criada.id,
+      acao: 'CRIAR',
+      depois: { veiculoId: criada.veiculoId, descricao: criada.descricao, status: criada.status },
+    })
+
+    return criada
   }
  
   async listar(veiculoId?: string, status?: string) {
@@ -38,16 +52,29 @@ export class ManutencaoService {
     })
   }
  
-  async atualizarStatus(id: string, dto: AtualizarStatusOsDto) {
+  async atualizarStatus(id: string, dto: AtualizarStatusOsDto, usuarioId?: string) {
     const os = await this.prisma.osManutencao.findUnique({ where: { id } })
     if (!os) throw new NotFoundException('OS de manutenção não encontrada')
- 
+
     const data: any = { status: dto.status }
     if (dto.valorReal)   data.valorReal   = dto.valorReal
     if (dto.observacao)  data.observacao  = dto.observacao
     if (dto.status === 'CONCLUIDO') data.concluidoEm = new Date()
- 
-    return this.prisma.osManutencao.update({ where: { id }, data })
+
+    const atualizada = await this.prisma.osManutencao.update({ where: { id }, data })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'OsManutencao',
+        registroId: id,
+        acao: 'ATUALIZAR_STATUS',
+        antes: { status: os.status },
+        depois: { status: atualizada.status },
+      })
+    }
+
+    return atualizada
   }
  
   // Análise preditiva — detecta concentração de falhas por setor
@@ -92,7 +119,7 @@ export class ManutencaoService {
     }))
   }
  
-  async registrarTrocaItem(itemRevisaoId: string, kmAtual: number, fornecedor?: string, valor?: number) {
+  async registrarTrocaItem(itemRevisaoId: string, kmAtual: number, fornecedor?: string, valor?: number, usuarioId?: string) {
     const item = await this.prisma.itemRevisao.findUnique({
       where: { id: itemRevisaoId },
     })
@@ -118,10 +145,22 @@ export class ManutencaoService {
       updates.dataProxima = proxima
     }
  
-    return this.prisma.itemRevisao.update({
+    const atualizado = await this.prisma.itemRevisao.update({
       where: { id: itemRevisaoId },
       data:  updates,
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'ItemRevisao',
+        registroId: itemRevisaoId,
+        acao: 'REGISTRAR_TROCA',
+        depois: { kmAtual, fornecedor, valor, kmProximo: atualizado.kmProximo, dataProxima: atualizado.dataProxima },
+      })
+    }
+
+    return atualizado
   }
 
   // ── Comparador de fornecedor/oficina ──────────────────────

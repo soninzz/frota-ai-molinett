@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../database/prisma.service'
 import { CriarVeiculoDto } from './dto/criar-veiculo.dto'
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
 
 @Injectable()
 export class FrotaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditoria: AuditoriaService,
+  ) {}
 
   async listarVeiculos() {
     return this.prisma.veiculo.findMany({
@@ -97,7 +101,7 @@ export class FrotaService {
     })
   }
 
-  async criar(dto: CriarVeiculoDto) {
+  async criar(dto: CriarVeiculoDto, usuarioId?: string) {
     const existente = await this.prisma.veiculo.findUnique({
       where: { placa: dto.placa.toUpperCase() },
     })
@@ -105,7 +109,7 @@ export class FrotaService {
       throw new BadRequestException('Já existe um veículo com essa placa')
     }
 
-    return this.prisma.veiculo.create({
+    const criado = await this.prisma.veiculo.create({
       data: {
         placa: dto.placa.toUpperCase(),
         modelo: dto.modelo,
@@ -115,6 +119,18 @@ export class FrotaService {
         chassi: dto.chassi,
       },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Veiculo',
+        registroId: criado.id,
+        acao: 'CRIAR',
+        depois: { placa: criado.placa, modelo: criado.modelo, marca: criado.marca },
+      })
+    }
+
+    return criado
   }
 
   // Calcula custo/km real baseado nos dados do mês

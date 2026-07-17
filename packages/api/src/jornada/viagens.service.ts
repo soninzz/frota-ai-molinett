@@ -2,12 +2,16 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service'
 import { IniciarViagemDto } from './dto/iniciar-viagem.dto'
 import { FinalizarViagemDto } from './dto/finalizar-viagem.dto'
- 
+import { AuditoriaService } from '../common/auditoria/auditoria.service'
+
 @Injectable()
 export class ViagensService {
-  constructor(private prisma: PrismaService) {}
- 
-  async iniciar(dto: IniciarViagemDto) {
+  constructor(
+    private prisma: PrismaService,
+    private auditoria: AuditoriaService,
+  ) {}
+
+  async iniciar(dto: IniciarViagemDto, usuarioId?: string) {
     const os = await this.prisma.ordemServico.findUnique({
       where: { id: dto.osId },
       include: { cotacao: true, viagem: true },
@@ -42,11 +46,21 @@ export class ViagensService {
  
       return v
     })
- 
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Viagem',
+        registroId: viagem.id,
+        acao: 'INICIAR',
+        depois: { osId: viagem.osId, motoristaId: viagem.motoristaId, kmInicio: viagem.kmInicio },
+      })
+    }
+
     return viagem
   }
- 
-  async finalizar(id: string, dto: FinalizarViagemDto) {
+
+  async finalizar(id: string, dto: FinalizarViagemDto, usuarioId?: string) {
     const viagem = await this.prisma.viagem.findUnique({
       where: { id },
       include: {
@@ -107,7 +121,17 @@ export class ViagensService {
  
       return { viagem: viagemAtualizada, comissao }
     })
- 
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Viagem',
+        registroId: id,
+        acao: 'FINALIZAR',
+        depois: { kmFim: dto.kmFim, kmRodado, margemReal, positivo },
+      })
+    }
+
     return resultado
   }
  
@@ -143,11 +167,15 @@ export class ViagensService {
     return viagem
   }
  
-  async adicionarHoraExtra(viagemId: string, dto: { tipo: string; minutos: number; valorHora?: number }) {
+  async adicionarHoraExtra(
+    viagemId: string,
+    dto: { tipo: string; minutos: number; valorHora?: number },
+    usuarioId?: string,
+  ) {
     const viagem = await this.prisma.viagem.findUnique({ where: { id: viagemId } })
     if (!viagem) throw new NotFoundException('Viagem não encontrada')
- 
-    return this.prisma.horaExtra.create({
+
+    const criada = await this.prisma.horaExtra.create({
       data: {
         viagemId,
         tipo: dto.tipo,
@@ -155,5 +183,17 @@ export class ViagensService {
         valorHora: dto.valorHora,
       },
     })
+
+    if (usuarioId) {
+      await this.auditoria.registrar({
+        usuarioId,
+        entidade: 'Viagem',
+        registroId: viagemId,
+        acao: 'ADICIONAR_HORA_EXTRA',
+        depois: { tipo: dto.tipo, minutos: dto.minutos },
+      })
+    }
+
+    return criada
   }
 }
