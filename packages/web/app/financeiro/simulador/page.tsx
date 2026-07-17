@@ -9,7 +9,7 @@ import { api, toList } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 type Baseline = {
   receitaMensal: number;
@@ -79,7 +79,7 @@ const NOME_CENARIO: Record<string, string> = {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">{label}</span>
+      <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -229,35 +229,35 @@ export default function SimuladorPage() {
 
         {baseline && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Receita média/mês (90d)</p>
-              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">{fmt(baseline.receitaMensal)}</span>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Receita média/mês (90d)</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900 dark:text-white">{fmt(baseline.receitaMensal)}</span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Despesa média/mês (90d)</p>
-              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">{fmt(baseline.despesaMensal)}</span>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Despesa média/mês (90d)</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900 dark:text-white">{fmt(baseline.despesaMensal)}</span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#D97706]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Diesel médio (R$/L)</p>
-              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Diesel médio (R$/L)</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900 dark:text-white">
                 R$ {baseline.precoMedioDiesel.toFixed(2)}
               </span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Km médio/mês</p>
-              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900">
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Km médio/mês</p>
+              <span className="font-mono tabular-nums text-[24px] font-bold text-zinc-900 dark:text-white">
                 {Math.round(baseline.kmMensal).toLocaleString("pt-BR")}
               </span>
             </div>
           </div>
         )}
 
-        <form onSubmit={simular} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-          <h2 className="text-[13px] font-bold text-zinc-900">Premissas da simulação</h2>
+        <form onSubmit={simular} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+          <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Premissas da simulação</h2>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             <Field label="Meses de projeção">
               <input type="number" min={1} max={36} className={inputCls + " font-mono tabular-nums"} value={meses} onChange={(e) => setMeses(Number(e.target.value))} />
@@ -298,9 +298,9 @@ export default function SimuladorPage() {
         </form>
 
         {resultado && (
-          <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-              <h2 className="text-[13px] font-bold text-zinc-900">Projeção — {resultado.meses.length} meses</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Projeção — {resultado.meses.length} meses</h2>
               <span
                 className="font-mono tabular-nums text-[13px] font-semibold"
                 style={{ color: resultado.totais.margem >= 0 ? "#16A34A" : "#C0392B" }}
@@ -311,20 +311,20 @@ export default function SimuladorPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="border-b border-zinc-100 text-left">
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
                     {["Mês", "Receita", "Diesel", "Custo fixo", "Extra", "Margem", "Caixa acum."].map((h) => (
-                      <th key={h} className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">{h}</th>
+                      <th key={h} className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {resultado.meses.map((m) => (
-                    <tr key={m.mes} className="border-b border-zinc-50 last:border-0">
-                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-500">{m.mes}</td>
-                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-900">{fmt(m.receita)}</td>
-                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-600">{fmt(m.custoDiesel)}</td>
-                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-600">{fmt(m.custoFixo)}</td>
-                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-600">{fmt(m.custoExtra)}</td>
+                    <tr key={m.mes} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">{m.mes}</td>
+                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-900 dark:text-white">{fmt(m.receita)}</td>
+                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">{fmt(m.custoDiesel)}</td>
+                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">{fmt(m.custoFixo)}</td>
+                      <td className="px-5 py-3 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">{fmt(m.custoExtra)}</td>
                       <td className="px-5 py-3 font-mono tabular-nums font-semibold" style={{ color: m.margem >= 0 ? "#16A34A" : "#C0392B" }}>
                         {fmt(m.margem)}
                       </td>
@@ -339,9 +339,9 @@ export default function SimuladorPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-            <h2 className="text-[13px] font-bold text-zinc-900">Cenários salvos</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Cenários salvos</h2>
             <button
               onClick={comparar}
               className="rounded-xl bg-[#E63A1F] text-white text-[12px] font-medium px-3.5 py-2 hover:bg-[#BC2F19] transition-colors"
@@ -350,7 +350,7 @@ export default function SimuladorPage() {
             </button>
           </div>
           {cenarios.length === 0 ? (
-            <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhum cenário salvo ainda</p>
+            <p className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Nenhum cenário salvo ainda</p>
           ) : (
             <ul className="divide-y divide-zinc-50">
               {cenarios.map((c) => (
@@ -363,7 +363,7 @@ export default function SimuladorPage() {
                     }
                     className="h-4 w-4 accent-[#E63A1F]"
                   />
-                  <span className="text-[13px] font-medium text-zinc-900 flex-1">{c.nome}</span>
+                  <span className="text-[13px] font-medium text-zinc-900 dark:text-white flex-1">{c.nome}</span>
                   <button onClick={() => excluirCenario(c.id)} className="text-[12px] text-[#C0392B] hover:underline">
                     Excluir
                   </button>
@@ -374,17 +374,17 @@ export default function SimuladorPage() {
         </div>
 
         {comparacao.length > 0 && (
-          <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-zinc-100">
-              <h2 className="text-[13px] font-bold text-zinc-900">Comparador de cenários</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Comparador de cenários</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="border-b border-zinc-100 text-left">
-                    <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Indicador</th>
+                  <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                    <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Indicador</th>
                     {comparacao.map((c) => (
-                      <th key={c.id} className="px-5 py-3 font-semibold text-zinc-900 text-[12px]">{c.nome}</th>
+                      <th key={c.id} className="px-5 py-3 font-semibold text-zinc-900 dark:text-white text-[12px]">{c.nome}</th>
                     ))}
                   </tr>
                 </thead>
@@ -396,10 +396,10 @@ export default function SimuladorPage() {
                     { rot: "Margem %", get: (r: Resultado) => `${r.totais.margemPct.toFixed(1)}%` },
                     { rot: "Caixa final", get: (r: Resultado) => fmt(r.meses[r.meses.length - 1]?.caixaAcumulado ?? 0) },
                   ].map((linha) => (
-                    <tr key={linha.rot} className="border-b border-zinc-50 last:border-0">
-                      <td className="px-5 py-3 text-zinc-500">{linha.rot}</td>
+                    <tr key={linha.rot} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+                      <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400">{linha.rot}</td>
                       {comparacao.map((c) => (
-                        <td key={c.id} className="px-5 py-3 font-mono tabular-nums font-semibold text-zinc-900">
+                        <td key={c.id} className="px-5 py-3 font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
                           {linha.get(c.resultado)}
                         </td>
                       ))}
@@ -411,8 +411,8 @@ export default function SimuladorPage() {
           </div>
         )}
         <div className="grid lg:grid-cols-2 gap-6">
-          <form onSubmit={simularFinanciamento} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Posso assumir essa parcela?</h2>
+          <form onSubmit={simularFinanciamento} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Posso assumir essa parcela?</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Valor da parcela (R$)">
                 <input type="number" step="0.01" required className={inputCls + " font-mono tabular-nums"} value={valorParcela} onChange={(e) => setValorParcela(e.target.value)} />
@@ -425,18 +425,18 @@ export default function SimuladorPage() {
               Simular financiamento
             </button>
             {resFinanciamento && (
-              <div className="space-y-2 pt-2 border-t border-zinc-100">
+              <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <p className="text-[14px] font-semibold" style={{ color: resFinanciamento.viavel ? "#16A34A" : "#C0392B" }}>
                   {resFinanciamento.viavel
                     ? "✓ Parcela viável — nenhum mês em risco na projeção"
                     : `✗ ${resFinanciamento.mesesEmRisco.length} mês(es) em risco`}
                 </p>
-                <p className="text-[13px] text-zinc-600">
+                <p className="text-[13px] text-zinc-600 dark:text-zinc-300">
                   Custo total: <span className="font-mono">{fmt(resFinanciamento.custoTotalFinanciamento)}</span> ·
                   Caixa final: <span className="font-mono">{fmt(resFinanciamento.caixaFinalSemParcela)}</span> →{" "}
                   <span className="font-mono">{fmt(resFinanciamento.caixaFinalComParcela)}</span>
                 </p>
-                <p className="text-[13px] text-zinc-600">
+                <p className="text-[13px] text-zinc-600 dark:text-zinc-300">
                   Aumento de meta de faturamento necessário:{" "}
                   <span className="font-mono font-semibold">{fmt(resFinanciamento.aumentoMetaFaturamento)}/mês</span>
                 </p>
@@ -449,11 +449,11 @@ export default function SimuladorPage() {
             )}
           </form>
 
-          <form onSubmit={compararInvestimento} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
+          <form onSubmit={compararInvestimento} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-[13px] font-bold text-zinc-900">Aplicar × Antecipar × Reinvestir</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Aplicar × Antecipar × Reinvestir</h2>
               {taxas && (
-                <span className="text-[11px] text-zinc-400">
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
                   CDI {taxas.cdiAnualPct}% a.a. · {taxas.referencia}
                 </span>
               )}
@@ -476,18 +476,18 @@ export default function SimuladorPage() {
               Comparar cenários
             </button>
             {resInvestimento && (
-              <div className="pt-2 border-t border-zinc-100 space-y-2">
+              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
                 {resInvestimento.cenarios.map((c) => (
                   <div key={c.cenario} className="flex items-center justify-between text-[13px]">
-                    <span className={c.cenario === resInvestimento.recomendado ? "font-semibold text-[#16A34A]" : "text-zinc-600"}>
+                    <span className={c.cenario === resInvestimento.recomendado ? "font-semibold text-[#16A34A]" : "text-zinc-600 dark:text-zinc-300"}>
                       {c.cenario === resInvestimento.recomendado ? "★ " : ""}
                       {NOME_CENARIO[c.cenario] ?? c.cenario}
                       {c.tirAnualPct != null ? ` (TIR ${c.tirAnualPct}%)` : ""}
                       {c.paybackMeses != null ? ` · payback ${c.paybackMeses}m` : ""}
                     </span>
-                    <span className="font-mono tabular-nums text-zinc-900">
+                    <span className="font-mono tabular-nums text-zinc-900 dark:text-white">
                       {fmt(c.valorFinal)}
-                      {c.vpl !== 0 && <span className="text-[11px] text-zinc-400"> (VPL {fmt(c.vpl)})</span>}
+                      {c.vpl !== 0 && <span className="text-[11px] text-zinc-400 dark:text-zinc-500"> (VPL {fmt(c.vpl)})</span>}
                     </span>
                   </div>
                 ))}

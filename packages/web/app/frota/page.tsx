@@ -54,53 +54,53 @@ export default function FrotaPage() {
         )}
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total de veículos</p>
-            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Total de veículos</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900 dark:text-white">
               {veiculos.length}
             </span>
           </div>
-          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: comAlerta > 0 ? "#C0392B" : "#16A34A" }} />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Com alerta pendente</p>
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Com alerta pendente</p>
             <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
               {comAlerta}
             </span>
           </div>
-          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Custo médio/km</p>
-            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Custo médio/km</p>
+            <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900 dark:text-white">
               R$ {custoMedio.toFixed(2)}
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-bold text-zinc-900">Veículos</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Veículos</h2>
           </div>
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Placa</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Modelo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Custo/km</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Alertas</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Placa</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Modelo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Custo/km</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Alertas</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={4} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && veiculos.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={4} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhum veículo cadastrado
                   </td>
                 </tr>
@@ -109,16 +109,16 @@ export default function FrotaPage() {
                 const totalAlertas =
                   v.alertas.revisoesCriticas + v.alertas.documentosAVencer + v.alertas.segurosAVencer;
                 return (
-                  <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                  <tr key={v.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
                     <td className="px-5 py-3.5">
-                      <a href={`/frota/veiculos/${v.id}`} className="font-mono tabular-nums font-semibold text-zinc-900 hover:text-[#E63A1F] hover:underline">
+                      <a href={`/frota/veiculos/${v.id}`} className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white hover:text-[#E63A1F] hover:underline">
                         {v.placa}
                       </a>
                     </td>
-                    <td className="px-5 py-3.5 text-zinc-600">
+                    <td className="px-5 py-3.5 text-zinc-600 dark:text-zinc-300">
                       {v.marca} — {v.modelo}
                     </td>
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900 dark:text-white">
                       {v.custoKmAtual ? `R$ ${v.custoKmAtual.toFixed(2)}` : "—"}
                     </td>
                     <td className="px-5 py-3.5">
@@ -134,7 +134,7 @@ export default function FrotaPage() {
                         </span>
                       )}
                       {v.proximasRevisoes.length > 0 && (
-                        <span className="block text-[11px] text-zinc-400 mt-1">
+                        <span className="block text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">
                           {v.proximasRevisoes.map((r) => r.nome).join(", ")}
                         </span>
                       )}

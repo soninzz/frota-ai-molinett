@@ -10,7 +10,7 @@ import { api } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 const TIPOS: Record<string, string> = {
   COLISAO: "Colisão",
@@ -134,7 +134,7 @@ export default function DetalheSinistroPage() {
   if (loading) {
     return (
       <Shell title="Sinistro" subtitle="Carregando...">
-        <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+        <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
       </Shell>
     );
   }
@@ -142,7 +142,7 @@ export default function DetalheSinistroPage() {
   if (!sinistro) {
     return (
       <Shell title="Sinistro" subtitle="Não encontrado">
-        <div className="text-center text-zinc-400 text-[13px] py-8">Sinistro não encontrado</div>
+        <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Sinistro não encontrado</div>
       </Shell>
     );
   }
@@ -161,9 +161,9 @@ export default function DetalheSinistroPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Ocorrência</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Ocorrência</h2>
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
               style={{ backgroundColor: st.cor + "1A", color: st.cor }}
@@ -174,53 +174,53 @@ export default function DetalheSinistroPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 text-[13px]">
             <div>
-              <p className="text-[11px] text-zinc-500">Tipo</p>
-              <p className="text-zinc-900">{TIPOS[sinistro.tipo] ?? sinistro.tipo}</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Tipo</p>
+              <p className="text-zinc-900 dark:text-white">{TIPOS[sinistro.tipo] ?? sinistro.tipo}</p>
             </div>
             <div>
-              <p className="text-[11px] text-zinc-500">Data da ocorrência</p>
-              <p className="font-mono tabular-nums text-zinc-900">
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Data da ocorrência</p>
+              <p className="font-mono tabular-nums text-zinc-900 dark:text-white">
                 {new Date(sinistro.dataOcorrencia).toLocaleString("pt-BR")}
               </p>
             </div>
             <div>
-              <p className="text-[11px] text-zinc-500">Local</p>
-              <p className="text-zinc-900">{sinistro.local || "—"}</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Local</p>
+              <p className="text-zinc-900 dark:text-white">{sinistro.local || "—"}</p>
             </div>
             <div>
-              <p className="text-[11px] text-zinc-500">Motorista</p>
-              <p className="text-zinc-900">{sinistro.motorista?.usuario.nome || "—"}</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Motorista</p>
+              <p className="text-zinc-900 dark:text-white">{sinistro.motorista?.usuario.nome || "—"}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-[11px] text-zinc-500">Descrição</p>
-              <p className="text-zinc-900">{sinistro.descricao}</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Descrição</p>
+              <p className="text-zinc-900 dark:text-white">{sinistro.descricao}</p>
             </div>
             {sinistro.terceiroEnvolvido && (
               <div className="col-span-2">
-                <p className="text-[11px] text-zinc-500">Terceiro envolvido</p>
-                <p className="text-zinc-900">{sinistro.terceiroDados || "Sim, sem dados registrados"}</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Terceiro envolvido</p>
+                <p className="text-zinc-900 dark:text-white">{sinistro.terceiroDados || "Sim, sem dados registrados"}</p>
               </div>
             )}
           </div>
         </div>
 
         {sinistro.seguro && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Seguradora</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-4">Seguradora</h2>
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div>
-                <p className="text-[11px] text-zinc-500">Seguradora / Apólice</p>
-                <p className="text-zinc-900">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Seguradora / Apólice</p>
+                <p className="text-zinc-900 dark:text-white">
                   {sinistro.seguro.seguradora} {sinistro.seguro.apolice ? `· ${sinistro.seguro.apolice}` : ""}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-zinc-500">Franquia</p>
-                <p className="font-mono tabular-nums text-zinc-900">{fmt(sinistro.seguro.franquia)}</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Franquia</p>
+                <p className="font-mono tabular-nums text-zinc-900 dark:text-white">{fmt(sinistro.seguro.franquia)}</p>
               </div>
               <div className="col-span-2">
-                <p className="text-[11px] text-zinc-500">Responsável pelo acionamento</p>
-                <p className="text-zinc-900">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Responsável pelo acionamento</p>
+                <p className="text-zinc-900 dark:text-white">
                   {sinistro.seguro.responsavelAcionamento || "—"}
                   {sinistro.seguro.contatoResponsavel ? ` · ${sinistro.seguro.contatoResponsavel}` : ""}
                 </p>
@@ -229,19 +229,19 @@ export default function DetalheSinistroPage() {
           </div>
         )}
 
-        <form onSubmit={salvarValores} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-          <h2 className="text-[13px] font-bold text-zinc-900">Valores e protocolo</h2>
+        <form onSubmit={salvarValores} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+          <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Valores e protocolo</h2>
           <div className="grid grid-cols-3 gap-3">
             <label className="block">
-              <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Protocolo</span>
+              <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Protocolo</span>
               <input className={inputCls} value={protocolo} onChange={(e) => setProtocolo(e.target.value)} />
             </label>
             <label className="block">
-              <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Valor orçado (R$)</span>
+              <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Valor orçado (R$)</span>
               <input type="number" step="0.01" className={inputCls + " font-mono tabular-nums"} value={valorOrcado} onChange={(e) => setValorOrcado(e.target.value)} />
             </label>
             <label className="block">
-              <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Valor indenizado (R$)</span>
+              <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Valor indenizado (R$)</span>
               <input type="number" step="0.01" className={inputCls + " font-mono tabular-nums"} value={valorIndenizado} onChange={(e) => setValorIndenizado(e.target.value)} />
             </label>
           </div>
@@ -254,21 +254,21 @@ export default function DetalheSinistroPage() {
           </button>
         </form>
 
-        <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-          <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Timeline</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+          <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-4">Timeline</h2>
           <ul className="space-y-3 mb-4">
             {sinistro.eventos.map((e) => (
               <li key={e.id} className="flex gap-3 text-[13px]">
-                <span className="font-mono tabular-nums text-[11px] text-zinc-400 shrink-0 w-32">
+                <span className="font-mono tabular-nums text-[11px] text-zinc-400 dark:text-zinc-500 shrink-0 w-32">
                   {new Date(e.criadoEm).toLocaleString("pt-BR")}
                 </span>
-                <span className="text-zinc-700">{e.descricao}</span>
+                <span className="text-zinc-700 dark:text-zinc-300">{e.descricao}</span>
               </li>
             ))}
           </ul>
-          <form onSubmit={adicionarEvento} className="flex items-end gap-3 pt-3 border-t border-zinc-100">
+          <form onSubmit={adicionarEvento} className="flex items-end gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
             <div className="flex-1">
-              <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Novo evento</span>
+              <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Novo evento</span>
               <input
                 className={inputCls}
                 placeholder="Ex: orçamento enviado à seguradora"

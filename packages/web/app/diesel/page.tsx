@@ -36,12 +36,12 @@ type PostoSugerido = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">{label}</span>
+      <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -183,10 +183,10 @@ export default function DieselPage() {
             <p className="text-[13px] font-semibold text-[#C0392B] mb-1">
               Consumo anômalo detectado — queda de {anomalia.variacaoPct}%
             </p>
-            <p className="text-[12px] text-zinc-600">{anomalia.mensagem}</p>
+            <p className="text-[12px] text-zinc-600 dark:text-zinc-300">{anomalia.mensagem}</p>
             <button
               onClick={() => setAnomalia(null)}
-              className="text-[11px] font-medium text-zinc-400 hover:text-zinc-600 mt-2"
+              className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 mt-2"
             >
               Dispensar
             </button>
@@ -194,11 +194,11 @@ export default function DieselPage() {
         )}
 
         {showForm && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-3">
-            <h2 className="text-[13px] font-bold text-zinc-900">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-3">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">
               Conferir cupom fiscal (QR Code da NFC-e)
             </h2>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
               Cole o conteúdo do QR Code do cupom — confirma CNPJ do posto e data de emissão direto
               da chave de acesso, sem precisar de OCR.
             </p>
@@ -215,7 +215,7 @@ export default function DieselPage() {
                 type="button"
                 onClick={lerQrCode}
                 disabled={lendoQrCode || !qrCode.trim()}
-                className="rounded-xl border border-zinc-200 text-zinc-700 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                className="rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors disabled:opacity-50"
               >
                 {lendoQrCode ? "Lendo..." : "Conferir"}
               </button>
@@ -232,15 +232,15 @@ export default function DieselPage() {
                     {String(infoQrCode.chaveDecodificada.mesEmissao).padStart(2, "0")}/{infoQrCode.chaveDecodificada.anoEmissao}
                   </p>
                 )}
-                <p className="text-zinc-600">{infoQrCode.mensagem}</p>
+                <p className="text-zinc-600 dark:text-zinc-300">{infoQrCode.mensagem}</p>
               </div>
             )}
           </div>
         )}
 
         {showForm && (
-          <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Novo abastecimento</h2>
+          <form onSubmit={salvar} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Novo abastecimento</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="KM do hodômetro">
                 <input
@@ -288,24 +288,24 @@ export default function DieselPage() {
         )}
 
         {postosSugeridos.length > 0 && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-bold text-zinc-900 mb-1">Sugestão de postos (últimos 6 meses)</h2>
-            <p className="text-[11px] text-zinc-400 mb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-1">Sugestão de postos (últimos 6 meses)</h2>
+            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-3">
               Ranking por preço médio real pago, com rendimento médio observado nos veículos que abasteceram lá.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {postosSugeridos.slice(0, 6).map((p, i) => (
                 <div
                   key={p.posto}
-                  className={`rounded-xl border p-3.5 ${i === 0 ? "border-[#16A34A]/30 bg-[#16A34A]/5" : "border-zinc-100"}`}
+                  className={`rounded-xl border p-3.5 ${i === 0 ? "border-[#16A34A]/30 bg-[#16A34A]/5" : "border-zinc-100 dark:border-zinc-800"}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[13px] font-bold text-zinc-900">{p.posto}</span>
+                    <span className="text-[13px] font-bold text-zinc-900 dark:text-white">{p.posto}</span>
                     {i === 0 && (
                       <span className="text-[10px] font-medium text-[#16A34A] uppercase tracking-wide">Melhor preço</span>
                     )}
                   </div>
-                  <p className="text-[12px] text-zinc-500">
+                  <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
                     R$ {p.precoMedioLitro.toFixed(2)}/L
                     {p.rendimentoMedioKmL && ` · ${p.rendimentoMedioKmL} km/L`}
                   </p>
@@ -316,49 +316,49 @@ export default function DieselPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Data</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">KM</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Litros</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">R$/L</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Consumo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Posto</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Total</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Data</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">KM</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Litros</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">R$/L</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Consumo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Posto</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Total</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && abastecimentos.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhum abastecimento registrado para esse veículo
                   </td>
                 </tr>
               )}
               {abastecimentos.map((a) => (
-                <tr key={a.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                <tr key={a.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                     {new Date(a.timestamp).toLocaleDateString("pt-BR")}
                   </td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">{a.kmHodometro}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">{a.volumeLitros}L</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900 dark:text-white">{a.kmHodometro}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">{a.volumeLitros}L</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">
                     {fmt(a.precoPorLitro)}
                   </td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">
                     {a.consumoKmL ? `${a.consumoKmL} km/L` : "—"}
                   </td>
-                  <td className="px-5 py-3.5 text-zinc-500">{a.postoNome || "—"}</td>
-                  <td className="px-5 py-3.5 text-right font-mono tabular-nums font-medium text-zinc-900">
+                  <td className="px-5 py-3.5 text-zinc-500 dark:text-zinc-400">{a.postoNome || "—"}</td>
+                  <td className="px-5 py-3.5 text-right font-mono tabular-nums font-medium text-zinc-900 dark:text-white">
                     {fmt(a.valorTotal)}
                   </td>
                 </tr>

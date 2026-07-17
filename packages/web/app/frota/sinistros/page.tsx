@@ -9,7 +9,7 @@ import { api, toList, Veiculo } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 const TIPOS: Record<string, string> = {
   COLISAO: "Colisão",
@@ -57,7 +57,7 @@ type Resumo = {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">{label}</span>
+      <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -156,35 +156,35 @@ export default function SinistrosPage() {
 
         {resumo && (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total de sinistros</p>
-              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">{resumo.total}</span>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Total de sinistros</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900 dark:text-white">{resumo.total}</span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Em aberto</p>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Em aberto</p>
               <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
                 {(resumo.porStatus.ABERTO ?? 0) + (resumo.porStatus.ACIONADO ?? 0) + (resumo.porStatus.EM_ANALISE ?? 0)}
               </span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Franquias a desembolsar</p>
-              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Franquias a desembolsar</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900 dark:text-white">
                 {fmt(resumo.franquiasTotal)}
               </span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Valor orçado</p>
-              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Valor orçado</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900 dark:text-white">
                 {fmt(resumo.valorOrcadoTotal)}
               </span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Indenizações recebidas</p>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Indenizações recebidas</p>
               <span className="font-mono tabular-nums text-[28px] font-bold text-[#16A34A]">
                 {fmt(resumo.valorIndenizadoTotal)}
               </span>
@@ -208,8 +208,8 @@ export default function SinistrosPage() {
         </div>
 
         {showForm && (
-          <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Registrar sinistro</h2>
+          <form onSubmit={salvar} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Registrar sinistro</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Veículo">
                 <select className={inputCls} value={veiculoId} onChange={(e) => setVeiculoId(e.target.value)} required>
@@ -253,49 +253,49 @@ export default function SinistrosPage() {
           </form>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Nº</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Veículo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Tipo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Data</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Orçado</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Indenizado</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Nº</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Veículo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Tipo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Data</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Orçado</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Indenizado</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Status</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 text-[13px]">Carregando...</td>
+                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Carregando...</td>
                 </tr>
               )}
               {!loading && sinistros.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhum sinistro registrado</td>
+                  <td colSpan={7} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Nenhum sinistro registrado</td>
                 </tr>
               )}
               {sinistros.map((s) => {
                 const st = STATUS[s.status] ?? { label: s.status, cor: "#71717A" };
                 return (
-                  <tr key={s.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                  <tr key={s.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                       <a href={`/frota/sinistros/${s.id}`} className="hover:text-[#E63A1F] hover:underline">
                         #{s.numero}
                       </a>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="font-mono tabular-nums font-semibold text-zinc-900">{s.veiculo.placa}</span>
-                      <span className="block text-[11px] text-zinc-400">{s.veiculo.marca} — {s.veiculo.modelo}</span>
+                      <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">{s.veiculo.placa}</span>
+                      <span className="block text-[11px] text-zinc-400 dark:text-zinc-500">{s.veiculo.marca} — {s.veiculo.modelo}</span>
                     </td>
-                    <td className="px-5 py-3.5 text-zinc-600">{TIPOS[s.tipo] ?? s.tipo}</td>
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                    <td className="px-5 py-3.5 text-zinc-600 dark:text-zinc-300">{TIPOS[s.tipo] ?? s.tipo}</td>
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                       {new Date(s.dataOcorrencia).toLocaleDateString("pt-BR")}
                     </td>
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">{fmt(s.valorOrcado)}</td>
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">{fmt(s.valorIndenizado)}</td>
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900 dark:text-white">{fmt(s.valorOrcado)}</td>
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900 dark:text-white">{fmt(s.valorIndenizado)}</td>
                     <td className="px-5 py-3.5">
                       <select
                         value={s.status}

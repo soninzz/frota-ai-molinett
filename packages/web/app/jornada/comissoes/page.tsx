@@ -63,20 +63,20 @@ export default function ComissoesPage() {
     <Shell title="Comissões" subtitle={`${comissoes.length} registros`}>
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Total pendente de pagamento</p>
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Total pendente de pagamento</p>
             <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
               {fmt(totalPendente)}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5 flex items-center justify-between">
-            <span className="text-[12px] font-medium text-zinc-500">Filtro</span>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 flex items-center justify-between">
+            <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">Filtro</span>
             <div className="flex gap-2">
               <button
                 onClick={() => setFiltro("pendentes")}
                 className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors ${
-                  filtro === "pendentes" ? "bg-[#E63A1F] text-white" : "bg-zinc-100 text-zinc-600"
+                  filtro === "pendentes" ? "bg-[#E63A1F] text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
                 }`}
               >
                 Pendentes
@@ -84,7 +84,7 @@ export default function ComissoesPage() {
               <button
                 onClick={() => setFiltro("todas")}
                 className={`text-[12px] font-medium px-3 py-1.5 rounded-full transition-colors ${
-                  filtro === "todas" ? "bg-[#E63A1F] text-white" : "bg-zinc-100 text-zinc-600"
+                  filtro === "todas" ? "bg-[#E63A1F] text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
                 }`}
               >
                 Todas
@@ -99,38 +99,38 @@ export default function ComissoesPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Motorista</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">OS</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">%</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Valor</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Ação</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Motorista</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">OS</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">%</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Status</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Valor</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Ação</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && comissoes.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhuma comissão encontrada
                   </td>
                 </tr>
               )}
               {comissoes.map((c) => (
-                <tr key={c.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-5 py-3.5 text-zinc-900 font-medium">{c.motorista.usuario.nome}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">#{c.os.numero}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">{c.percentual}%</td>
+                <tr key={c.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
+                  <td className="px-5 py-3.5 text-zinc-900 dark:text-white font-medium">{c.motorista.usuario.nome}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">#{c.os.numero}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">{c.percentual}%</td>
                   <td className="px-5 py-3.5">
                     <span
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
@@ -143,7 +143,7 @@ export default function ComissoesPage() {
                       {c.pago ? "Pago" : "Pendente"}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 text-right font-mono tabular-nums font-medium text-zinc-900">
+                  <td className="px-5 py-3.5 text-right font-mono tabular-nums font-medium text-zinc-900 dark:text-white">
                     {fmt(c.valor)}
                   </td>
                   <td className="px-5 py-3.5 text-right">

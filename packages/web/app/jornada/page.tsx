@@ -59,44 +59,44 @@ export default function JornadaPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-bold text-zinc-900">Viagens recentes</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Viagens recentes</h2>
           </div>
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">OS</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Motorista</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Veículo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">KM rodado</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Margem</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">OS</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Motorista</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Veículo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">KM rodado</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Margem</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Status</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && viagens.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhuma viagem registrada
                   </td>
                 </tr>
               )}
               {viagens.map((v) => (
-                <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900">
+                <tr key={v.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
+                  <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
                     #{v.os.numero}
                   </td>
-                  <td className="px-5 py-3.5 text-zinc-700">{v.motorista.usuario.nome}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">{v.veiculo.placa}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600">
+                  <td className="px-5 py-3.5 text-zinc-700 dark:text-zinc-300">{v.motorista.usuario.nome}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">{v.veiculo.placa}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-600 dark:text-zinc-300">
                     {v.kmRodado ? `${v.kmRodado} km` : "—"}
                   </td>
                   <td className="px-5 py-3.5 font-mono tabular-nums">
@@ -128,24 +128,24 @@ export default function JornadaPage() {
         </div>
 
         <div>
-          <h2 className="text-[13px] font-bold text-zinc-900 mb-3 tracking-tight">
+          <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-3 tracking-tight">
             Painel por motorista
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {Object.values(porMotorista).length === 0 && (
-              <p className="text-zinc-400 text-[13px]">Sem dados ainda</p>
+              <p className="text-zinc-400 dark:text-zinc-500 text-[13px]">Sem dados ainda</p>
             )}
             {Object.values(porMotorista).map((m) => (
-              <div key={m.nome} className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <div key={m.nome} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-full bg-zinc-100 flex items-center justify-center text-[11px] font-medium text-zinc-600">
+                  <div className="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
                     {m.nome.split(" ").map((n) => n[0]).join("")}
                   </div>
-                  <span className="text-[13px] font-bold text-zinc-900">{m.nome}</span>
+                  <span className="text-[13px] font-bold text-zinc-900 dark:text-white">{m.nome}</span>
                 </div>
                 <div className="flex items-baseline justify-between mt-3">
-                  <span className="text-[12px] text-zinc-500">Viagens</span>
-                  <span className="font-mono tabular-nums text-[14px] font-semibold text-zinc-900">
+                  <span className="text-[12px] text-zinc-500 dark:text-zinc-400">Viagens</span>
+                  <span className="font-mono tabular-nums text-[14px] font-semibold text-zinc-900 dark:text-white">
                     {m.viagens}
                   </span>
                 </div>

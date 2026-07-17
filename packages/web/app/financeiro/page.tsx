@@ -85,13 +85,13 @@ export default function FinanceiroPage() {
         )}
 
         {loading ? (
-          <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+          <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-7 relative overflow-hidden lg:col-span-2">
                 <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#16A34A]/20 blur-3xl" />
-                <p className="relative text-[12px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">Saldo projetado — próximos 30 dias</p>
+                <p className="relative text-[12px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide mb-2">Saldo projetado — próximos 30 dias</p>
                 <div className="relative flex items-end gap-3 flex-wrap">
                   <span className="font-mono tabular-nums text-[36px] sm:text-[44px] leading-none font-bold text-white tracking-tight">
                     {fmt(saldoProjetado)}
@@ -104,57 +104,57 @@ export default function FinanceiroPage() {
                     {saldoProjetado >= 0 ? "saldo positivo" : "atenção — saldo negativo"}
                   </span>
                 </div>
-                <p className="relative text-[12px] text-zinc-400 mt-4">
+                <p className="relative text-[12px] text-zinc-400 dark:text-zinc-500 mt-4">
                   {fmt(painel?.fluxo30dias.totais.entradas ?? 0)} a receber previstos ·{" "}
                   {fmt(painel?.fluxo30dias.totais.saidas ?? 0)} em despesas
                 </p>
               </div>
-              <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+              <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
-                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Saldo a recuperar</p>
+                <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Saldo a recuperar</p>
                 <span className="font-mono tabular-nums text-[28px] font-bold text-[#C0392B]">
                   {fmt(painel?.saldoARecuperar ?? 0)}
                 </span>
-                <p className="text-[11px] text-zinc-400 mt-2">acumulado de margens negociadas</p>
+                <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-2">acumulado de margens negociadas</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-              <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Metas do mês</h2>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-4">Metas do mês</h2>
               <div>
                 <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-[12px] text-zinc-500">
+                  <span className="text-[12px] text-zinc-500 dark:text-zinc-400">
                     Faturamento mínimo — {fmt(painel?.fluxo30dias.totais.entradas ?? 0)} /{" "}
                     {fmt(painel?.metas.faturamentoMinimo ?? 0)}
                   </span>
-                  <span className="font-mono tabular-nums text-[12px] font-medium text-zinc-900">
+                  <span className="font-mono tabular-nums text-[12px] font-medium text-zinc-900 dark:text-white">
                     {pctFaturamento}%
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-zinc-100 overflow-hidden">
+                <div className="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                   <div className="h-full rounded-full bg-[#16A34A]" style={{ width: `${pctFaturamento}%` }} />
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <div className="relative bg-white rounded-2xl border border-zinc-200 p-4 overflow-hidden">
+              <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">A vencer em 7 dias</p>
-                <span className="font-mono tabular-nums text-[19px] font-bold text-zinc-900">
+                <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">A vencer em 7 dias</p>
+                <span className="font-mono tabular-nums text-[19px] font-bold text-zinc-900 dark:text-white">
                   {fmt(painel?.alertas.aVencer7dias.valor ?? 0)}
                 </span>
               </div>
-              <div className="relative bg-white rounded-2xl border border-zinc-200 p-4 overflow-hidden">
+              <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#D97706]" />
-                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">A vencer em 30 dias</p>
-                <span className="font-mono tabular-nums text-[19px] font-bold text-zinc-900">
+                <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">A vencer em 30 dias</p>
+                <span className="font-mono tabular-nums text-[19px] font-bold text-zinc-900 dark:text-white">
                   {fmt(painel?.alertas.aVencer30dias.valor ?? 0)}
                 </span>
               </div>
-              <div className="relative bg-white rounded-2xl border border-zinc-200 p-4 overflow-hidden">
+              <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#C0392B]" />
-                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide mb-1.5">Atrasados</p>
+                <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">Atrasados</p>
                 <span className="font-mono tabular-nums text-[19px] font-bold text-[#C0392B]">
                   {fmt(painel?.alertas.atrasados.valor ?? 0)}
                 </span>
@@ -162,9 +162,9 @@ export default function FinanceiroPage() {
             </div>
 
             {dre && (
-              <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[13px] font-bold text-zinc-900">DRE — {dre.mes}</h2>
+                  <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">DRE — {dre.mes}</h2>
                   <span
                     className="font-mono tabular-nums text-[13px] font-semibold"
                     style={{ color: dre.resultadoLiquido >= 0 ? "#16A34A" : "#C0392B" }}
@@ -174,43 +174,43 @@ export default function FinanceiroPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-[13px]">
                   {Object.entries(dre.grupos).map(([grupo, v]) => (
-                    <div key={grupo} className="flex items-center justify-between border-b border-zinc-50 pb-1.5">
-                      <span className="text-zinc-500">{grupo}</span>
-                      <span className="font-mono tabular-nums text-zinc-900">
+                    <div key={grupo} className="flex items-center justify-between border-b border-zinc-50 dark:border-zinc-800/50 pb-1.5">
+                      <span className="text-zinc-500 dark:text-zinc-400">{grupo}</span>
+                      <span className="font-mono tabular-nums text-zinc-900 dark:text-white">
                         {fmt(v.receita - v.despesa)}
                       </span>
                     </div>
                   ))}
                   {Object.keys(dre.grupos).length === 0 && (
-                    <p className="text-zinc-400 col-span-2">Sem lançamentos classificados por grupo contábil este mês</p>
+                    <p className="text-zinc-400 dark:text-zinc-500 col-span-2">Sem lançamentos classificados por grupo contábil este mês</p>
                   )}
                 </div>
               </div>
             )}
 
             {fluxo && fluxo.curva.length > 0 && (
-              <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-                <div className="px-5 py-4 border-b border-zinc-100">
-                  <h2 className="text-[13px] font-bold text-zinc-900">Fluxo de caixa projetado — próximos 90 dias</h2>
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                  <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Fluxo de caixa projetado — próximos 90 dias</h2>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-[13px]">
                     <thead>
-                      <tr className="border-b border-zinc-100 text-left">
-                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Dia</th>
-                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Entradas</th>
-                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Saídas</th>
-                        <th className="px-5 py-2.5 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Saldo acumulado</th>
+                      <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Dia</th>
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Entradas</th>
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Saídas</th>
+                        <th className="px-5 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Saldo acumulado</th>
                       </tr>
                     </thead>
                     <tbody>
                       {fluxo.curva.slice(0, 10).map((d) => (
-                        <tr key={d.dia} className="border-b border-zinc-50 last:border-0">
-                          <td className="px-5 py-2 font-mono tabular-nums text-zinc-500">
+                        <tr key={d.dia} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+                          <td className="px-5 py-2 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                             {new Date(d.dia).toLocaleDateString("pt-BR")}
                           </td>
                           <td className="px-5 py-2 font-mono tabular-nums text-[#16A34A] text-right">{fmt(d.entradas)}</td>
-                          <td className="px-5 py-2 font-mono tabular-nums text-zinc-600 text-right">{fmt(d.saidas)}</td>
+                          <td className="px-5 py-2 font-mono tabular-nums text-zinc-600 dark:text-zinc-300 text-right">{fmt(d.saidas)}</td>
                           <td
                             className="px-5 py-2 font-mono tabular-nums font-medium text-right"
                             style={{ color: d.saldoAcumulado >= 0 ? "#16A34A" : "#C0392B" }}
@@ -225,9 +225,9 @@ export default function FinanceiroPage() {
               </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-              <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-                <h2 className="text-[13px] font-bold text-zinc-900">Próximos lançamentos</h2>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+              <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Próximos lançamentos</h2>
                 <a href="/financeiro/lancamentos" className="text-[12px] font-medium text-[#E63A1F] hover:underline">
                   Ver todos
                 </a>
@@ -236,18 +236,18 @@ export default function FinanceiroPage() {
                 <tbody>
                   {proximos.length === 0 && (
                     <tr>
-                      <td className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhum lançamento</td>
+                      <td className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Nenhum lançamento</td>
                     </tr>
                   )}
                   {proximos.map((l) => (
-                    <tr key={l.id} className="border-b border-zinc-50 last:border-0">
-                      <td className="px-5 py-3.5 text-zinc-700">{l.descricao}</td>
-                      <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                    <tr key={l.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+                      <td className="px-5 py-3.5 text-zinc-700 dark:text-zinc-300">{l.descricao}</td>
+                      <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                         {new Date(l.vencimento).toLocaleDateString("pt-BR")}
                       </td>
                       <td
                         className={`px-5 py-3.5 text-right font-mono tabular-nums font-medium ${
-                          l.tipo === "R" ? "text-[#16A34A]" : "text-zinc-900"
+                          l.tipo === "R" ? "text-[#16A34A]" : "text-zinc-900 dark:text-white"
                         }`}
                       >
                         {l.tipo === "R" ? "+" : ""}

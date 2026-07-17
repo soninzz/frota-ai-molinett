@@ -27,7 +27,7 @@ export type PosicaoVeiculo = {
 const MapaVeiculos = dynamic(() => import("./MapaVeiculos"), {
   ssr: false,
   loading: () => (
-    <div className="h-[560px] rounded-2xl border border-zinc-200 bg-zinc-50 flex items-center justify-center text-[13px] text-zinc-400">
+    <div className="h-[560px] rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 flex items-center justify-center text-[13px] text-zinc-400 dark:text-zinc-500">
       Carregando mapa...
     </div>
   ),
@@ -92,9 +92,9 @@ export default function MapaFrotaPage() {
         )}
 
         {loading ? (
-          <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+          <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
         ) : comPosicao.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-8 text-center text-[13px] text-zinc-400">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-8 text-center text-[13px] text-zinc-400 dark:text-zinc-500">
             Nenhum veículo com posição registrada ainda — o cron de sincronização roda a cada 5 min
             quando TRACKER_MODE=live.
           </div>
@@ -102,29 +102,29 @@ export default function MapaFrotaPage() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
             <MapaVeiculos veiculos={comPosicao} selecionado={selecionado} onSelecionar={setSelecionado} />
 
-            <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden max-h-[560px] overflow-y-auto">
-              <div className="px-4 py-3 border-b border-zinc-100 sticky top-0 bg-white">
-                <h2 className="text-[13px] font-bold text-zinc-900">Veículos ({comPosicao.length})</h2>
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden max-h-[560px] overflow-y-auto">
+              <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900">
+                <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Veículos ({comPosicao.length})</h2>
               </div>
               {comPosicao.map((v) => (
                 <button
                   key={v.id}
                   onClick={() => setSelecionado(v.id)}
-                  className={`w-full text-left px-4 py-3 border-b border-zinc-50 last:border-0 transition-colors ${
-                    selecionado === v.id ? "bg-[#E63A1F]/6" : "hover:bg-zinc-50"
+                  className={`w-full text-left px-4 py-3 border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 transition-colors ${
+                    selecionado === v.id ? "bg-[#E63A1F]/6" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-bold text-zinc-900">{v.placa}</span>
+                    <span className="text-[13px] font-bold text-zinc-900 dark:text-white">{v.placa}</span>
                     <span
                       className="h-2 w-2 rounded-full"
                       style={{ backgroundColor: v.motorLigado ? (Number(v.velocidade) > 5 ? "#16A34A" : "#D97706") : "#A1A1AA" }}
                     />
                   </div>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                     {v.marca} {v.modelo}
                   </p>
-                  <p className="text-[11px] text-zinc-400 mt-1">
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">
                     {v.motorLigado ? (Number(v.velocidade) > 5 ? `${Math.round(Number(v.velocidade))} km/h` : "parado, motor ligado") : "motor desligado"}
                     {" · "}
                     {tempoRelativo(v.atualizadoEm)}
@@ -138,8 +138,8 @@ export default function MapaFrotaPage() {
         )}
 
         {!loading && semPosicao.length > 0 && (
-          <div className="rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-3 text-[12px] text-zinc-500">
-            <span className="font-medium text-zinc-700">{semPosicao.length} veículo(s) sem posição ainda:</span>{" "}
+          <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 px-4 py-3 text-[12px] text-zinc-500 dark:text-zinc-400">
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">{semPosicao.length} veículo(s) sem posição ainda:</span>{" "}
             {semPosicao.map((v) => v.placa).join(", ")}
           </div>
         )}

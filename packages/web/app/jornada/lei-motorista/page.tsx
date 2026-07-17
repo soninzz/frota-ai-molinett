@@ -9,7 +9,7 @@ import { api, downloadFile } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 type Violacao = { tipo: string; viagemId: string; detalhe: string };
 
@@ -118,11 +118,11 @@ export default function LeiMotoristaPage() {
 
         <div className="flex items-end gap-3">
           <label className="block">
-            <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">De</span>
+            <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">De</span>
             <input type="date" className={inputCls} value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
           </label>
           <label className="block">
-            <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">Até</span>
+            <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Até</span>
             <input type="date" className={inputCls} value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
           </label>
           <button
@@ -134,31 +134,31 @@ export default function LeiMotoristaPage() {
         </div>
 
         {relatorio && (
-          <div className="rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-3 text-[12px] text-zinc-500 flex flex-wrap gap-x-5 gap-y-1.5">
-            <span><b className="text-zinc-700">{relatorio.parametros.limiteDirecaoContinuaHoras}h</b> direção contínua máx. (CTB art. 67-C)</span>
-            <span><b className="text-zinc-700">{relatorio.parametros.pausaDirecaoMinutos}min</b> pausa de direção</span>
-            <span><b className="text-zinc-700">{relatorio.parametros.intrajornadaRefeicaoMinutos}min</b> refeição obrigatória (CLT 235-C §2º)</span>
-            <span><b className="text-zinc-700">{relatorio.parametros.limiteDirecaoDiariaHoras}h</b> direção/dia</span>
-            <span><b className="text-zinc-700">{relatorio.parametros.descansoInterjornadaHoras}h</b> interjornada</span>
-            <span><b className="text-zinc-700">{relatorio.parametros.descansoSemanalHoras}h</b> descanso semanal</span>
+          <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 px-4 py-3 text-[12px] text-zinc-500 dark:text-zinc-400 flex flex-wrap gap-x-5 gap-y-1.5">
+            <span><b className="text-zinc-700 dark:text-zinc-300">{relatorio.parametros.limiteDirecaoContinuaHoras}h</b> direção contínua máx. (CTB art. 67-C)</span>
+            <span><b className="text-zinc-700 dark:text-zinc-300">{relatorio.parametros.pausaDirecaoMinutos}min</b> pausa de direção</span>
+            <span><b className="text-zinc-700 dark:text-zinc-300">{relatorio.parametros.intrajornadaRefeicaoMinutos}min</b> refeição obrigatória (CLT 235-C §2º)</span>
+            <span><b className="text-zinc-700 dark:text-zinc-300">{relatorio.parametros.limiteDirecaoDiariaHoras}h</b> direção/dia</span>
+            <span><b className="text-zinc-700 dark:text-zinc-300">{relatorio.parametros.descansoInterjornadaHoras}h</b> interjornada</span>
+            <span><b className="text-zinc-700 dark:text-zinc-300">{relatorio.parametros.descansoSemanalHoras}h</b> descanso semanal</span>
           </div>
         )}
 
         {relatorio && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Motoristas analisados</p>
-              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900">
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Motoristas analisados</p>
+              <span className="font-mono tabular-nums text-[28px] font-bold text-zinc-900 dark:text-white">
                 {relatorio.motoristas.length}
               </span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div
                 className="absolute left-0 top-0 bottom-0 w-[3px]"
                 style={{ backgroundColor: relatorio.totalViolacoes > 0 ? "#C0392B" : "#16A34A" }}
               />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Violações encontradas</p>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Violações encontradas</p>
               <span
                 className="font-mono tabular-nums text-[28px] font-bold"
                 style={{ color: relatorio.totalViolacoes > 0 ? "#C0392B" : "#16A34A" }}
@@ -166,9 +166,9 @@ export default function LeiMotoristaPage() {
                 {relatorio.totalViolacoes}
               </span>
             </div>
-            <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
               <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#16A34A]" />
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Em conformidade</p>
+              <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Em conformidade</p>
               <span className="font-mono tabular-nums text-[28px] font-bold text-[#16A34A]">
                 {relatorio.motoristas.filter((m) => m.conforme).length}/{relatorio.motoristas.length}
               </span>
@@ -176,21 +176,21 @@ export default function LeiMotoristaPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-bold text-zinc-900">Conformidade por motorista</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Conformidade por motorista</h2>
           </div>
-          {loading && <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Carregando...</p>}
+          {loading && <p className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Carregando...</p>}
           {!loading && (!relatorio || relatorio.motoristas.length === 0) && (
-            <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhuma viagem no período</p>
+            <p className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Nenhuma viagem no período</p>
           )}
           {!loading &&
             relatorio?.motoristas.map((m) => (
-              <div key={m.motoristaId} className="border-b border-zinc-50 last:border-0 px-5 py-4">
+              <div key={m.motoristaId} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 px-5 py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[13px] font-bold text-zinc-900">{m.motorista}</span>
-                    <span className="ml-3 text-[12px] text-zinc-400">
+                    <span className="text-[13px] font-bold text-zinc-900 dark:text-white">{m.motorista}</span>
+                    <span className="ml-3 text-[12px] text-zinc-400 dark:text-zinc-500">
                       {m.viagensAnalisadas} viagem(ns) · {m.horasDirecaoTotal}h de direção ·{" "}
                       {m.horasEsperaTotal}h de espera · {m.horasJornadaTotal}h de jornada total
                     </span>
@@ -210,7 +210,7 @@ export default function LeiMotoristaPage() {
                 {m.violacoes.length > 0 && (
                   <ul className="mt-3 space-y-1.5">
                     {m.violacoes.map((v, i) => (
-                      <li key={i} className="text-[12px] text-zinc-600 flex gap-2">
+                      <li key={i} className="text-[12px] text-zinc-600 dark:text-zinc-300 flex gap-2">
                         <span className="font-medium text-[#C0392B] shrink-0">
                           {TIPO_VIOLACAO[v.tipo] ?? v.tipo}:
                         </span>
@@ -223,35 +223,35 @@ export default function LeiMotoristaPage() {
             ))}
         </div>
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-            <h2 className="text-[13px] font-bold text-zinc-900">Hora extra por classe</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Hora extra por classe</h2>
             <button
               onClick={exportarCsv}
               disabled={exportando}
-              className="rounded-lg border border-zinc-200 bg-white text-zinc-700 text-[12px] font-medium px-3 py-1.5 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 text-[12px] font-medium px-3 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors disabled:opacity-50"
             >
               {exportando ? "Exportando..." : "Exportar CSV (folha de pagamento)"}
             </button>
           </div>
           {!loading && (!classes || classes.classes.length === 0) && (
-            <p className="px-5 py-8 text-center text-zinc-400 text-[13px]">Nenhuma hora extra registrada no período</p>
+            <p className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">Nenhuma hora extra registrada no período</p>
           )}
           {classes?.classes.map((c) => (
-            <div key={c.classe} className="border-b border-zinc-50 last:border-0">
-              <div className="px-5 py-3.5 flex items-center justify-between bg-zinc-50/50">
-                <span className="text-[13px] font-bold text-zinc-900">{c.classe}</span>
-                <span className="font-mono tabular-nums text-[13px] text-zinc-600">
+            <div key={c.classe} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+              <div className="px-5 py-3.5 flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/60/50">
+                <span className="text-[13px] font-bold text-zinc-900 dark:text-white">{c.classe}</span>
+                <span className="font-mono tabular-nums text-[13px] text-zinc-600 dark:text-zinc-300">
                   {c.horasTotal}h · R$ {c.valorTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <table className="w-full text-[13px]">
                 <tbody>
                   {c.motoristas.map((m) => (
-                    <tr key={m.nome} className="border-t border-zinc-50">
-                      <td className="px-5 py-2.5 text-zinc-600">{m.nome}</td>
-                      <td className="px-5 py-2.5 font-mono tabular-nums text-zinc-500 text-right">{m.horas}h</td>
-                      <td className="px-5 py-2.5 font-mono tabular-nums text-zinc-900 text-right">
+                    <tr key={m.nome} className="border-t border-zinc-50 dark:border-zinc-800/50">
+                      <td className="px-5 py-2.5 text-zinc-600 dark:text-zinc-300">{m.nome}</td>
+                      <td className="px-5 py-2.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400 text-right">{m.horas}h</td>
+                      <td className="px-5 py-2.5 font-mono tabular-nums text-zinc-900 dark:text-white text-right">
                         R$ {m.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </td>
                     </tr>

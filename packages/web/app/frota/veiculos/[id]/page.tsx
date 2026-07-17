@@ -11,7 +11,7 @@ import { api, toList } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 type VeiculoDetalhe = {
   id: string;
@@ -111,7 +111,7 @@ export default function DetalheVeiculoPage() {
   if (loading) {
     return (
       <Shell title="Veículo" subtitle="Carregando...">
-        <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+        <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
       </Shell>
     );
   }
@@ -119,7 +119,7 @@ export default function DetalheVeiculoPage() {
   if (!veiculo) {
     return (
       <Shell title="Veículo" subtitle="Não encontrado">
-        <div className="text-center text-zinc-400 text-[13px] py-8">Veículo não encontrado</div>
+        <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Veículo não encontrado</div>
       </Shell>
     );
   }
@@ -134,17 +134,17 @@ export default function DetalheVeiculoPage() {
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E63A1F]" />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Custo/km atual</p>
-            <span className="font-mono tabular-nums text-[26px] font-bold text-zinc-900">
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Custo/km atual</p>
+            <span className="font-mono tabular-nums text-[26px] font-bold text-zinc-900 dark:text-white">
               {veiculo.custoKmAtual ? fmt(veiculo.custoKmAtual) : "—"}
             </span>
           </div>
-          <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-zinc-400" />
-            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">Custo/hora atual</p>
-            <span className="font-mono tabular-nums text-[26px] font-bold text-zinc-900">
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">Custo/hora atual</p>
+            <span className="font-mono tabular-nums text-[26px] font-bold text-zinc-900 dark:text-white">
               {veiculo.custoHoraAtual ? fmt(veiculo.custoHoraAtual) : "—"}
             </span>
           </div>
@@ -154,36 +154,36 @@ export default function DetalheVeiculoPage() {
           <div className="rounded-xl bg-[#C0392B]/8 border border-[#C0392B]/20 px-4 py-3 space-y-1.5">
             <p className="text-[13px] font-semibold text-[#C0392B]">Análise preditiva — concentração de falhas</p>
             {preditiva.alertas.map((a) => (
-              <p key={a.subsistema} className="text-[12px] text-zinc-600">{a.alerta}</p>
+              <p key={a.subsistema} className="text-[12px] text-zinc-600 dark:text-zinc-300">{a.alerta}</p>
             ))}
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-bold text-zinc-900">Revisões por item</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Revisões por item</h2>
           </div>
           {trocandoItem && (
-            <form onSubmit={registrarTroca} className="px-5 py-4 bg-zinc-50 border-b border-zinc-100 space-y-3">
+            <form onSubmit={registrarTroca} className="px-5 py-4 bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-100 dark:border-zinc-800 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-[13px] font-medium text-zinc-900">
+                <p className="text-[13px] font-medium text-zinc-900 dark:text-white">
                   Registrar troca — {trocandoItem.nome}
                 </p>
-                <button type="button" onClick={() => setTrocandoItem(null)} className="text-[12px] text-zinc-400 hover:text-zinc-600">
+                <button type="button" onClick={() => setTrocandoItem(null)} className="text-[12px] text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300">
                   Cancelar
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <label className="block">
-                  <span className="block text-[11px] font-medium text-zinc-500 mb-1">KM atual</span>
+                  <span className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1">KM atual</span>
                   <input type="number" className={inputCls + " w-full font-mono tabular-nums"} value={kmAtual} onChange={(e) => setKmAtual(e.target.value === "" ? "" : Number(e.target.value))} required />
                 </label>
                 <label className="block">
-                  <span className="block text-[11px] font-medium text-zinc-500 mb-1">Fornecedor</span>
+                  <span className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1">Fornecedor</span>
                   <input className={inputCls + " w-full"} value={fornecedor} onChange={(e) => setFornecedor(e.target.value)} />
                 </label>
                 <label className="block">
-                  <span className="block text-[11px] font-medium text-zinc-500 mb-1">Valor (R$)</span>
+                  <span className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1">Valor (R$)</span>
                   <input type="number" step="0.01" className={inputCls + " w-full font-mono tabular-nums"} value={valor} onChange={(e) => setValor(e.target.value === "" ? "" : Number(e.target.value))} />
                 </label>
               </div>
@@ -198,18 +198,18 @@ export default function DetalheVeiculoPage() {
           )}
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Item</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Próximo KM</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Próxima data</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Ação</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Item</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Próximo KM</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Próxima data</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Status</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Ação</th>
               </tr>
             </thead>
             <tbody>
               {revisoes.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhum item de revisão cadastrado
                   </td>
                 </tr>
@@ -217,10 +217,10 @@ export default function DetalheVeiculoPage() {
               {revisoes.map((r) => {
                 const st = STATUS_REVISAO[r.status];
                 return (
-                  <tr key={r.id} className="border-b border-zinc-50 last:border-0">
-                    <td className="px-5 py-3.5 text-zinc-900">{r.nome}</td>
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">{r.kmProximo ?? "—"}</td>
-                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                  <tr key={r.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+                    <td className="px-5 py-3.5 text-zinc-900 dark:text-white">{r.nome}</td>
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">{r.kmProximo ?? "—"}</td>
+                    <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                       {r.dataProxima ? new Date(r.dataProxima).toLocaleDateString("pt-BR") : "—"}
                     </td>
                     <td className="px-5 py-3.5">
@@ -245,31 +245,31 @@ export default function DetalheVeiculoPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-zinc-100">
-              <h2 className="text-[13px] font-bold text-zinc-900">Pneus ({veiculo.pneus.length})</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Pneus ({veiculo.pneus.length})</h2>
             </div>
             <ul className="divide-y divide-zinc-50">
-              {veiculo.pneus.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400">Nenhum pneu cadastrado</li>}
+              {veiculo.pneus.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400 dark:text-zinc-500">Nenhum pneu cadastrado</li>}
               {veiculo.pneus.map((p) => (
                 <li key={p.id} className="px-5 py-3 text-[13px] flex justify-between">
-                  <span className="font-mono font-semibold text-zinc-900">{p.codigo}</span>
-                  <span className="text-zinc-500 text-[12px]">{p.posicaoAtual?.replace(/_/g, " ") || "—"}</span>
+                  <span className="font-mono font-semibold text-zinc-900 dark:text-white">{p.codigo}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 text-[12px]">{p.posicaoAtual?.replace(/_/g, " ") || "—"}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-zinc-100">
-              <h2 className="text-[13px] font-bold text-zinc-900">Seguros</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Seguros</h2>
             </div>
             <ul className="divide-y divide-zinc-50">
-              {veiculo.seguros.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400">Nenhum seguro cadastrado</li>}
+              {veiculo.seguros.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400 dark:text-zinc-500">Nenhum seguro cadastrado</li>}
               {veiculo.seguros.map((s) => (
                 <li key={s.id} className="px-5 py-3 text-[13px] flex justify-between">
-                  <span className="text-zinc-900">{s.seguradora}</span>
-                  <span className="font-mono tabular-nums text-zinc-500 text-[12px]">
+                  <span className="text-zinc-900 dark:text-white">{s.seguradora}</span>
+                  <span className="font-mono tabular-nums text-zinc-500 dark:text-zinc-400 text-[12px]">
                     {new Date(s.vencimento).toLocaleDateString("pt-BR")}
                   </span>
                 </li>
@@ -278,17 +278,17 @@ export default function DetalheVeiculoPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-100">
-            <h2 className="text-[13px] font-bold text-zinc-900">Documentos</h2>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Documentos</h2>
           </div>
           <ul className="divide-y divide-zinc-50">
-            {veiculo.documentosVeiculo.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400">Nenhum documento cadastrado</li>}
+            {veiculo.documentosVeiculo.length === 0 && <li className="px-5 py-4 text-[13px] text-zinc-400 dark:text-zinc-500">Nenhum documento cadastrado</li>}
             {veiculo.documentosVeiculo.map((d) => (
               <li key={d.id} className="px-5 py-3 text-[13px] flex justify-between items-center">
-                <span className="text-zinc-900">{d.tipo}</span>
+                <span className="text-zinc-900 dark:text-white">{d.tipo}</span>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono tabular-nums text-zinc-500 text-[12px]">
+                  <span className="font-mono tabular-nums text-zinc-500 dark:text-zinc-400 text-[12px]">
                     {new Date(d.vencimento).toLocaleDateString("pt-BR")}
                   </span>
                   <span

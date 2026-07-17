@@ -34,12 +34,12 @@ type ResultadoConfirmacao = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">{label}</span>
+      <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -146,8 +146,8 @@ export default function CotacaoPage() {
   return (
     <Shell title="Nova cotação" subtitle="Calcule margem em segundos">
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
-        <section className="bg-white rounded-2xl border border-zinc-200 p-5">
-          <h2 className="text-[13px] font-bold text-zinc-900 mb-4 flex items-center gap-2">
+        <section className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+          <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-[#E63A1F]">◆</span> Detalhes da viagem
           </h2>
 
@@ -216,16 +216,16 @@ export default function CotacaoPage() {
             </button>
 
             {resultado && (
-              <div className="pt-3 border-t border-zinc-100">
+              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[12px] font-medium text-zinc-500">Custo/km atual</span>
-                  <span className="font-mono tabular-nums text-[13px] font-bold text-zinc-900">
+                  <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">Custo/km atual</span>
+                  <span className="font-mono tabular-nums text-[13px] font-bold text-zinc-900 dark:text-white">
                     {fmt(resultado.custoKm)}/km
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between mt-1.5">
-                  <span className="text-[12px] font-medium text-zinc-500">Custo base da viagem</span>
-                  <span className="font-mono tabular-nums text-[13px] font-bold text-zinc-900">
+                  <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">Custo base da viagem</span>
+                  <span className="font-mono tabular-nums text-[13px] font-bold text-zinc-900 dark:text-white">
                     {fmt(resultado.custoBase)}
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export default function CotacaoPage() {
 
         <section className="space-y-4">
           {!resultado && !confirmado && (
-            <div className="bg-white rounded-2xl border border-dashed border-zinc-300 p-10 text-center text-zinc-400 text-[13px]">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-10 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
               Preencha os dados e clique em &ldquo;Calcular cotação&rdquo; para ver os cenários de margem
             </div>
           )}
@@ -252,7 +252,7 @@ export default function CotacaoPage() {
             <>
               <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-7 relative overflow-hidden">
                 <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#E63A1F]/25 blur-3xl" />
-                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-1.5">
+                <p className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide mb-1.5">
                   Valor sugerido (margem {margemCustomAtiva ? margemCustom || 0 : margemSel}%)
                 </p>
                 <div className="flex items-end gap-3">
@@ -263,14 +263,14 @@ export default function CotacaoPage() {
                     +{fmt(cenarioSel?.lucro ?? 0)} lucro
                   </span>
                 </div>
-                <p className="text-[12px] text-zinc-400 mt-3">
+                <p className="text-[12px] text-zinc-400 dark:text-zinc-500 mt-3">
                   {resultado.rota.origem} → {resultado.rota.destino} · {resultado.rota.kmEstimado} km ·{" "}
                   {resultado.veiculo.placa}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-[12px] font-semibold text-zinc-500 mb-2 uppercase tracking-wide">
+                <h3 className="text-[12px] font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wide">
                   Cenários de margem
                 </h3>
                 <div className="grid grid-cols-5 gap-2">
@@ -284,11 +284,11 @@ export default function CotacaoPage() {
                       className={`rounded-xl border p-3 text-left transition-all ${
                         !margemCustomAtiva && margemSel === c.margem
                           ? "border-[#E63A1F] bg-[#E63A1F]/6 ring-2 ring-[#E63A1F]/15"
-                          : "border-zinc-200 bg-white hover:border-zinc-300"
+                          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
                       }`}
                     >
-                      <div className="text-[11px] font-medium text-zinc-500">{c.margem}%</div>
-                      <div className="font-mono tabular-nums text-[14px] font-semibold text-zinc-900 mt-1">
+                      <div className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{c.margem}%</div>
+                      <div className="font-mono tabular-nums text-[14px] font-semibold text-zinc-900 dark:text-white mt-1">
                         {fmt(c.valorFinal)}
                       </div>
                       <div
@@ -304,8 +304,8 @@ export default function CotacaoPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-zinc-200 p-4">
-                <label className="flex items-center gap-2 text-[12px] font-medium text-zinc-600 mb-3">
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
+                <label className="flex items-center gap-2 text-[12px] font-medium text-zinc-600 dark:text-zinc-300 mb-3">
                   <input
                     type="checkbox"
                     checked={margemCustomAtiva}
@@ -324,7 +324,7 @@ export default function CotacaoPage() {
                         value={margemCustom}
                         onChange={(e) => setMargemCustom(e.target.value === "" ? "" : Number(e.target.value))}
                       />
-                      <span className="text-[13px] text-zinc-500 whitespace-nowrap">%</span>
+                      <span className="text-[13px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">%</span>
                     </div>
                     {margemCustom !== "" && Number(margemCustom) < 0 && (
                       <p className="text-[11px] text-[#C0392B] mt-2">
@@ -337,22 +337,22 @@ export default function CotacaoPage() {
               </div>
 
               {resultado.saldoARecuperar > 0 && (
-                <div className="bg-white rounded-2xl border border-zinc-200 p-4">
-                  <p className="text-[12px] text-zinc-500">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
+                  <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
                     Saldo a recuperar da empresa: <span className="font-mono font-medium text-[#C0392B]">{fmt(resultado.saldoARecuperar)}</span>
                   </p>
                 </div>
               )}
 
               {pendenteAprovacao ? (
-                <div className="bg-white rounded-2xl border border-[#E63A1F]/30 p-6 text-center">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-[#E63A1F]/30 p-6 text-center">
                   <div className="h-12 w-12 rounded-full bg-[#E63A1F]/10 flex items-center justify-center mx-auto mb-4">
                     <span className="text-[#E63A1F] text-[20px]">◈</span>
                   </div>
-                  <h3 className="text-[15px] font-semibold text-zinc-900 mb-1">
+                  <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-white mb-1">
                     Cotação enviada para aprovação do gestor
                   </h3>
-                  <p className="text-[13px] text-zinc-500 mb-4">
+                  <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mb-4">
                     Margem negativa exige aprovação. A OS só é gerada depois que o gestor aprovar em Aprovações.
                   </p>
                   <a
@@ -375,14 +375,14 @@ export default function CotacaoPage() {
           )}
 
           {confirmado && (
-            <div className="bg-white rounded-2xl border border-zinc-200 p-6 text-center">
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 text-center">
               <div className="h-12 w-12 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-4">
                 <span className="text-[#16A34A] text-[20px]">✓</span>
               </div>
-              <h3 className="text-[16px] font-semibold text-zinc-900 mb-1">
+              <h3 className="text-[16px] font-semibold text-zinc-900 dark:text-white mb-1">
                 OS #{confirmado.os.numero} gerada com sucesso
               </h3>
-              <p className="text-[13px] text-zinc-500 mb-4">
+              <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mb-4">
                 {fmt(confirmado.os.valorFinal)} · margem {confirmado.os.margem}% · status {confirmado.os.status}
               </p>
               {confirmado.alertaMetas?.precisaAprovacao && (
@@ -395,7 +395,7 @@ export default function CotacaoPage() {
                   setResultado(null);
                   setConfirmado(null);
                 }}
-                className="rounded-xl bg-white border border-zinc-200 text-zinc-700 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 transition-colors mr-2"
+                className="rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors mr-2"
               >
                 Nova cotação
               </button>

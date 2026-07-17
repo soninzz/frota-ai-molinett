@@ -88,9 +88,9 @@ export default function PermissoesPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-4 text-[12px] text-zinc-500">
+        <div className="flex items-center gap-4 text-[12px] text-zinc-500 dark:text-zinc-400">
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded border border-zinc-300 bg-white" /> padrão do sistema
+            <span className="h-3 w-3 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900" /> padrão do sistema
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded bg-[#16A34A]" /> liberado (override)
@@ -101,15 +101,15 @@ export default function PermissoesPage() {
         </div>
 
         {loading ? (
-          <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+          <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
         ) : (
-          <div className="bg-white rounded-2xl border border-zinc-200 overflow-x-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead>
-                <tr className="border-b border-zinc-100">
-                  <th className="px-4 py-3 text-left font-medium text-zinc-500 sticky left-0 bg-white">Perfil</th>
+                <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                  <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400 sticky left-0 bg-white dark:bg-zinc-900">Perfil</th>
                   {recursos.map((r) => (
-                    <th key={r} className="px-3 py-3 text-center font-medium text-zinc-500 whitespace-nowrap">
+                    <th key={r} className="px-3 py-3 text-center font-medium text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                       {NOME_RECURSO[r] ?? r}
                     </th>
                   ))}
@@ -117,8 +117,8 @@ export default function PermissoesPage() {
               </thead>
               <tbody>
                 {matriz.map((linha) => (
-                  <tr key={linha.perfil} className="border-b border-zinc-50 last:border-0">
-                    <td className="px-4 py-2.5 font-medium text-zinc-900 sticky left-0 bg-white whitespace-nowrap">
+                  <tr key={linha.perfil} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0">
+                    <td className="px-4 py-2.5 font-medium text-zinc-900 dark:text-white sticky left-0 bg-white dark:bg-zinc-900 whitespace-nowrap">
                       {NOME_PERFIL[linha.perfil] ?? linha.perfil}
                     </td>
                     {linha.recursos.map((r) => {
@@ -129,7 +129,7 @@ export default function PermissoesPage() {
                           <button
                             onClick={() => ciclarOverride(linha.perfil, r.recurso, r.override)}
                             disabled={salvando === chave}
-                            className="h-5 w-5 rounded border border-zinc-300 mx-auto block transition-colors disabled:opacity-50"
+                            className="h-5 w-5 rounded border border-zinc-300 dark:border-zinc-700 mx-auto block transition-colors disabled:opacity-50"
                             style={{ backgroundColor: cor }}
                             title={
                               r.override === null

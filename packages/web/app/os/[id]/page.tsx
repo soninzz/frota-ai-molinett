@@ -43,7 +43,7 @@ type Disponibilidade = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 const STATUS_COLOR: Record<string, string> = {
   AGUARDANDO: "#71717A",
@@ -130,7 +130,7 @@ export default function DetalheOsPage() {
   if (loading) {
     return (
       <Shell title="Detalhe da OS" subtitle="Carregando...">
-        <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+        <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
       </Shell>
     );
   }
@@ -138,7 +138,7 @@ export default function DetalheOsPage() {
   if (!os) {
     return (
       <Shell title="Detalhe da OS" subtitle="Não encontrada">
-        <div className="text-center text-zinc-400 text-[13px] py-8">OS não encontrada</div>
+        <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">OS não encontrada</div>
       </Shell>
     );
   }
@@ -152,9 +152,9 @@ export default function DetalheOsPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Cotação</h2>
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Cotação</h2>
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
               style={{
@@ -168,14 +168,14 @@ export default function DetalheOsPage() {
           </div>
           <div className="grid grid-cols-2 gap-4 text-[13px]">
             <div>
-              <p className="text-[11px] text-zinc-500">Rota</p>
-              <p className="text-zinc-900">
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Rota</p>
+              <p className="text-zinc-900 dark:text-white">
                 {os.snapshot.rota.origem} → {os.snapshot.rota.destino}
               </p>
             </div>
             <div>
-              <p className="text-[11px] text-zinc-500">Valor / Margem</p>
-              <p className="font-mono tabular-nums text-zinc-900">
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Valor / Margem</p>
+              <p className="font-mono tabular-nums text-zinc-900 dark:text-white">
                 {fmt(os.snapshot.valorFinal)} · {os.snapshot.margem}%
               </p>
             </div>
@@ -187,13 +187,13 @@ export default function DetalheOsPage() {
             <p className="text-[13px] font-semibold text-[#C0392B] mb-1">
               Motorista pode não estar apto pela Lei do Motorista
             </p>
-            <ul className="text-[12px] text-zinc-600 list-disc pl-4 space-y-0.5">
+            <ul className="text-[12px] text-zinc-600 dark:text-zinc-300 list-disc pl-4 space-y-0.5">
               {disponibilidade.motivos.map((m, i) => (
                 <li key={i}>{m}</li>
               ))}
             </ul>
             {disponibilidade.alternativos.length > 0 && (
-              <p className="text-[12px] text-zinc-600 mt-2">
+              <p className="text-[12px] text-zinc-600 dark:text-zinc-300 mt-2">
                 Motoristas livres agora: {disponibilidade.alternativos.map((a) => a.nome).join(", ")}
               </p>
             )}
@@ -201,11 +201,11 @@ export default function DetalheOsPage() {
         )}
 
         {!os.viagem && os.status === "AGUARDANDO" && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Iniciar viagem</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-4">Iniciar viagem</h2>
             {!os.snapshot.motorista && (
               <div className="mb-4">
-                <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">
+                <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                   Motorista (não foi definido na cotação)
                 </span>
                 <select
@@ -224,7 +224,7 @@ export default function DetalheOsPage() {
             )}
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">KM do hodômetro (início)</span>
+                <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">KM do hodômetro (início)</span>
                 <input
                   type="number"
                   className={inputCls + " font-mono tabular-nums"}
@@ -244,12 +244,12 @@ export default function DetalheOsPage() {
         )}
 
         {os.viagem && !os.viagem.concluidaEm && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-bold text-zinc-900 mb-1">Viagem em andamento</h2>
-            <p className="text-[12px] text-zinc-500 mb-4">KM início: {os.viagem.kmInicio}</p>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-1">Viagem em andamento</h2>
+            <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-4">KM início: {os.viagem.kmInicio}</p>
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">KM do hodômetro (final)</span>
+                <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">KM do hodômetro (final)</span>
                 <input
                   type="number"
                   className={inputCls + " font-mono tabular-nums"}
@@ -269,15 +269,15 @@ export default function DetalheOsPage() {
         )}
 
         {os.viagem?.concluidaEm && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-bold text-zinc-900 mb-4">Resultado da viagem</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-4">Resultado da viagem</h2>
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div>
-                <p className="text-[11px] text-zinc-500">KM rodado</p>
-                <p className="font-mono tabular-nums text-zinc-900">{os.viagem.kmRodado} km</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">KM rodado</p>
+                <p className="font-mono tabular-nums text-zinc-900 dark:text-white">{os.viagem.kmRodado} km</p>
               </div>
               <div>
-                <p className="text-[11px] text-zinc-500">Margem real</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Margem real</p>
                 <p
                   className={`font-mono tabular-nums font-medium ${
                     os.viagem.positivo ? "text-[#16A34A]" : "text-[#C0392B]"
@@ -287,23 +287,23 @@ export default function DetalheOsPage() {
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-zinc-500">Receita real</p>
-                <p className="font-mono tabular-nums text-zinc-900">{fmt(os.viagem.receitaReal ?? 0)}</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Receita real</p>
+                <p className="font-mono tabular-nums text-zinc-900 dark:text-white">{fmt(os.viagem.receitaReal ?? 0)}</p>
               </div>
               <div>
-                <p className="text-[11px] text-zinc-500">Custo real</p>
-                <p className="font-mono tabular-nums text-zinc-900">{fmt(os.viagem.custoReal ?? 0)}</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Custo real</p>
+                <p className="font-mono tabular-nums text-zinc-900 dark:text-white">{fmt(os.viagem.custoReal ?? 0)}</p>
               </div>
             </div>
           </div>
         )}
 
         {os.comissao && (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-5">
-            <h2 className="text-[13px] font-bold text-zinc-900 mb-3">Comissão do motorista</h2>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-3">Comissão do motorista</h2>
             <div className="flex items-baseline justify-between">
-              <span className="text-[12px] text-zinc-500">{os.comissao.percentual}% sobre a receita</span>
-              <span className="font-mono tabular-nums text-[18px] font-semibold text-zinc-900">
+              <span className="text-[12px] text-zinc-500 dark:text-zinc-400">{os.comissao.percentual}% sobre a receita</span>
+              <span className="font-mono tabular-nums text-[18px] font-semibold text-zinc-900 dark:text-white">
                 {fmt(os.comissao.valor)}
               </span>
             </div>

@@ -35,17 +35,17 @@ function GraficoFluxoCaixa({ pontos }: { pontos: PontoFluxo[] }) {
 
   if (dados.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-zinc-200 p-5 h-[280px] flex items-center justify-center">
-        <p className="text-[13px] text-zinc-400">Sem lançamentos previstos nos próximos 30 dias</p>
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 h-[280px] flex items-center justify-center">
+        <p className="text-[13px] text-zinc-400 dark:text-zinc-500">Sem lançamentos previstos nos próximos 30 dias</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-5">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[13px] font-bold text-zinc-900">Fluxo de caixa projetado (30 dias)</h2>
-        <div className="flex items-center gap-4 text-[11px] text-zinc-500">
+        <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Fluxo de caixa projetado (30 dias)</h2>
+        <div className="flex items-center gap-4 text-[11px] text-zinc-500 dark:text-zinc-400">
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#16A34A]" />Entradas</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#C0392B]" />Saídas</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#E63A1F]" />Saldo acumulado</span>
@@ -94,11 +94,11 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="relative bg-white rounded-2xl border border-zinc-200 p-5 overflow-hidden">
+    <div className="relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 overflow-hidden">
       <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: accent }} />
-      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2.5">{label}</p>
+      <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2.5">{label}</p>
       <div className="flex items-baseline gap-2">
-        <span className="text-[28px] font-bold text-zinc-900 tracking-tight leading-none font-mono tabular-nums">
+        <span className="text-[28px] font-bold text-zinc-900 dark:text-white tracking-tight leading-none font-mono tabular-nums">
           {value}
         </span>
         {delta && (
@@ -115,19 +115,19 @@ function ModuleCard({ href, icon, title, desc, metric }: { href: string; icon: s
   return (
     <Link
       href={href}
-      className="group relative bg-white rounded-2xl border border-zinc-200 p-5 hover:border-[#E63A1F]/50 hover:shadow-[0_4px_20px_-4px_rgba(230,58,31,0.15)] transition-all overflow-hidden"
+      className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 hover:border-[#E63A1F]/50 hover:shadow-[0_4px_20px_-4px_rgba(230,58,31,0.15)] transition-all overflow-hidden"
     >
       <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-[#E63A1F]/0 group-hover:bg-[#E63A1F]/[0.06] blur-xl transition-colors" />
       <div className="relative flex items-start justify-between mb-3">
         <div className="h-9 w-9 rounded-lg bg-[#E63A1F]/[0.08] flex items-center justify-center text-[#E63A1F] text-[15px] group-hover:bg-[#E63A1F] group-hover:text-white transition-colors">
           {icon}
         </div>
-        <span className="text-[10px] font-bold font-mono tabular-nums text-zinc-400 group-hover:text-[#E63A1F] transition-colors tracking-wide">
+        <span className="text-[10px] font-bold font-mono tabular-nums text-zinc-400 dark:text-zinc-500 group-hover:text-[#E63A1F] transition-colors tracking-wide">
           {metric}
         </span>
       </div>
-      <h3 className="relative text-[14px] font-bold text-zinc-900 mb-1">{title}</h3>
-      <p className="relative text-[12px] text-zinc-500 leading-relaxed">{desc}</p>
+      <h3 className="relative text-[14px] font-bold text-zinc-900 dark:text-white mb-1">{title}</h3>
+      <p className="relative text-[12px] text-zinc-500 dark:text-zinc-400 leading-relaxed">{desc}</p>
     </Link>
   );
 }
@@ -178,13 +178,13 @@ export default function DashboardPage() {
     <Shell title="Visão geral" subtitle="Bom dia — aqui está o que importa hoje">
       <div className="space-y-6">
         {loading ? (
-          <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+          <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
         ) : (
           <>
             <div className="bg-grid-dark bg-zinc-900 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
               <div className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-[#E63A1F]/30 blur-3xl" />
               <div className="absolute left-1/3 bottom-0 h-24 w-24 rounded-full bg-[#E63A1F]/10 blur-2xl" />
-              <p className="relative text-[12px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">
+              <p className="relative text-[12px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide mb-2">
                 Faltam para a meta do mês
               </p>
               <div className="relative flex items-end gap-3 flex-wrap">
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                 </span>
                 <span className="text-[13px] text-[#16A34A] font-semibold pb-1.5 sm:pb-2">{pctMeta}% já atingido</span>
               </div>
-              <p className="relative text-[12px] text-zinc-400 mt-4">
+              <p className="relative text-[12px] text-zinc-400 dark:text-zinc-500 mt-4">
                 {cotacoesAbertas} cotações em aberto · {comissoesPendentes} comissões pendentes de pagamento
               </p>
             </div>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
             <GraficoFluxoCaixa pontos={fluxo?.curva ?? []} />
 
             <div>
-              <h2 className="text-[13px] font-bold text-zinc-900 mb-3 tracking-tight">Módulos</h2>
+              <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white mb-3 tracking-tight">Módulos</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <ModuleCard
                   href="/cotacao"

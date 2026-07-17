@@ -10,12 +10,12 @@ import { api, toList, Veiculo } from "@/lib/api";
 // ============================================================
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">{label}</span>
+      <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -87,8 +87,8 @@ export default function CadastroVeiculosPage() {
         )}
 
         {showForm && (
-          <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Novo veículo</h2>
+          <form onSubmit={salvar} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Novo veículo</h2>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Placa">
                 <input
@@ -127,42 +127,42 @@ export default function CadastroVeiculosPage() {
           </form>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Placa</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Marca / Modelo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Ano</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Custo/km</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Placa</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Marca / Modelo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Ano</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Custo/km</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Status</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && veiculos.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={5} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhum veículo cadastrado
                   </td>
                 </tr>
               )}
               {veiculos.map((v) => (
-                <tr key={v.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900">
+                <tr key={v.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
+                  <td className="px-5 py-3.5 font-mono tabular-nums font-semibold text-zinc-900 dark:text-white">
                     <a href={`/frota/veiculos/${v.id}`} className="hover:text-[#E63A1F] hover:underline">{v.placa}</a>
                   </td>
-                  <td className="px-5 py-3.5 text-zinc-600">
+                  <td className="px-5 py-3.5 text-zinc-600 dark:text-zinc-300">
                     {v.marca} — {v.modelo}
                   </td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">{v.ano}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900">
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">{v.ano}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-900 dark:text-white">
                     {v.custoKmAtual ? `R$ ${v.custoKmAtual.toFixed(2)}` : "—"}
                   </td>
                   <td className="px-5 py-3.5">

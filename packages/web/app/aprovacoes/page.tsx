@@ -25,7 +25,7 @@ type CotacaoPendente = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 export default function AprovacoesPage() {
   const [pendentes, setPendentes] = useState<CotacaoPendente[]>([]);
@@ -79,22 +79,22 @@ export default function AprovacoesPage() {
           </div>
         )}
 
-        {loading && <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>}
+        {loading && <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>}
 
         {!loading && pendentes.length === 0 && (
-          <div className="bg-white rounded-2xl border border-dashed border-zinc-300 p-10 text-center text-zinc-400 text-[13px]">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 p-10 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
             Nenhuma cotação pendente de aprovação no momento
           </div>
         )}
 
         {pendentes.map((c) => (
-          <div key={c.id} className="bg-white rounded-2xl border border-[#C0392B]/20 p-5">
+          <div key={c.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-[#C0392B]/20 p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-[13px] font-bold text-zinc-900">
+                <p className="text-[13px] font-bold text-zinc-900 dark:text-white">
                   Cotação #{c.numero} · {c.cliente.nome}
                 </p>
-                <p className="text-[12px] text-zinc-500">
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
                   {c.origem} → {c.destino} · {c.veiculo.placa} · criado por {c.criadoPor.nome}
                 </p>
               </div>
@@ -105,22 +105,22 @@ export default function AprovacoesPage() {
             </div>
 
             <div className="flex items-baseline justify-between mb-4">
-              <span className="text-[12px] text-zinc-500">Valor da cotação</span>
-              <span className="font-mono tabular-nums text-[16px] font-semibold text-zinc-900">
+              <span className="text-[12px] text-zinc-500 dark:text-zinc-400">Valor da cotação</span>
+              <span className="font-mono tabular-nums text-[16px] font-semibold text-zinc-900 dark:text-white">
                 {fmt(c.valorFinal)}
               </span>
             </div>
 
             {(c.deficitRegistrado || c.justificativaDeficit) && (
-              <div className="rounded-lg bg-zinc-50 border border-zinc-200 px-3.5 py-2.5 mb-4">
+              <div className="rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 px-3.5 py-2.5 mb-4">
                 {c.deficitRegistrado != null && (
-                  <p className="text-[12px] text-zinc-600 mb-1">
+                  <p className="text-[12px] text-zinc-600 dark:text-zinc-300 mb-1">
                     Déficit registrado: <span className="font-mono font-medium text-[#C0392B]">{fmt(c.deficitRegistrado)}</span>
                   </p>
                 )}
                 {c.justificativaDeficit && (
-                  <p className="text-[12px] text-zinc-600">
-                    <span className="font-medium text-zinc-500">Justificativa do atendimento:</span> &ldquo;{c.justificativaDeficit}&rdquo;
+                  <p className="text-[12px] text-zinc-600 dark:text-zinc-300">
+                    <span className="font-medium text-zinc-500 dark:text-zinc-400">Justificativa do atendimento:</span> &ldquo;{c.justificativaDeficit}&rdquo;
                   </p>
                 )}
               </div>
@@ -128,7 +128,7 @@ export default function AprovacoesPage() {
 
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">
+                <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                   Motivo da aprovação (obrigatório, fica registrado na auditoria)
                 </span>
                 <input

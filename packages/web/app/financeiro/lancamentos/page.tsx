@@ -24,12 +24,12 @@ type Lancamento = {
 const PODE_DAR_BAIXA = new Set(["PENDENTE", "ATRASADO"]);
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3.5 py-2.5 text-[14px] text-zinc-900 placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
+  "w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-[14px] text-zinc-900 dark:text-white placeholder-zinc-400 outline-none transition-shadow focus:border-[#E63A1F] focus:ring-2 focus:ring-[#E63A1F]/15";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-medium text-zinc-500 mb-1.5">{label}</span>
+      <span className="block text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{label}</span>
       {children}
     </label>
   );
@@ -159,7 +159,7 @@ export default function LancamentosPage() {
           <button
             onClick={exportarCsv}
             disabled={exportando}
-            className="rounded-xl border border-zinc-200 bg-white text-zinc-700 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 text-[13px] font-medium px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors disabled:opacity-50"
           >
             {exportando ? "Exportando..." : "Exportar CSV"}
           </button>
@@ -178,8 +178,8 @@ export default function LancamentosPage() {
         )}
 
         {showForm && (
-          <form onSubmit={salvar} className="bg-white rounded-2xl border border-zinc-200 p-5 space-y-4">
-            <h2 className="text-[13px] font-bold text-zinc-900">Novo lançamento</h2>
+          <form onSubmit={salvar} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4">
+            <h2 className="text-[13px] font-bold text-zinc-900 dark:text-white">Novo lançamento</h2>
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Tipo">
@@ -259,38 +259,38 @@ export default function LancamentosPage() {
           </form>
         )}
 
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left">
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Tipo</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Descrição</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Vencimento</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Valor</th>
-                <th className="px-5 py-3 font-medium text-zinc-500 text-[11px] uppercase tracking-wide text-right">Ação</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-left">
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Tipo</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Descrição</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Vencimento</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide">Status</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Valor</th>
+                <th className="px-5 py-3 font-medium text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide text-right">Ação</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Carregando...
                   </td>
                 </tr>
               )}
               {!loading && lancamentos.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 text-[13px]">
+                  <td colSpan={6} className="px-5 py-8 text-center text-zinc-400 dark:text-zinc-500 text-[13px]">
                     Nenhum lançamento
                   </td>
                 </tr>
               )}
               {lancamentos.map((l) => (
-                <tr key={l.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-5 py-3.5 text-[12px] font-medium text-zinc-500">{TIPO_LABEL[l.tipo] ?? l.tipo}</td>
-                  <td className="px-5 py-3.5 text-zinc-700">{l.descricao}</td>
-                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500">
+                <tr key={l.id} className="border-b border-zinc-50 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/60/50 transition-colors">
+                  <td className="px-5 py-3.5 text-[12px] font-medium text-zinc-500 dark:text-zinc-400">{TIPO_LABEL[l.tipo] ?? l.tipo}</td>
+                  <td className="px-5 py-3.5 text-zinc-700 dark:text-zinc-300">{l.descricao}</td>
+                  <td className="px-5 py-3.5 font-mono tabular-nums text-zinc-500 dark:text-zinc-400">
                     {new Date(l.vencimento).toLocaleDateString("pt-BR")}
                   </td>
                   <td className="px-5 py-3.5">
@@ -310,7 +310,7 @@ export default function LancamentosPage() {
                   </td>
                   <td
                     className={`px-5 py-3.5 text-right font-mono tabular-nums font-medium ${
-                      l.tipo === "R" ? "text-[#16A34A]" : "text-zinc-900"
+                      l.tipo === "R" ? "text-[#16A34A]" : "text-zinc-900 dark:text-white"
                     }`}
                   >
                     {l.tipo === "R" ? "+" : ""}
@@ -320,7 +320,7 @@ export default function LancamentosPage() {
                     {PODE_DAR_BAIXA.has(l.status) && (
                       <div className="flex items-center justify-end gap-3">
                         {l.status === "ATRASADO" && (
-                          <button onClick={() => reagendar(l.id)} className="text-[12px] font-medium text-zinc-400 hover:text-zinc-600">
+                          <button onClick={() => reagendar(l.id)} className="text-[12px] font-medium text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300">
                             Reagendar
                           </button>
                         )}

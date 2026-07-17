@@ -80,17 +80,17 @@ export default function SaudeIntegracoesPage() {
         )}
 
         {loading ? (
-          <div className="text-center text-zinc-400 text-[13px] py-8">Carregando...</div>
+          <div className="text-center text-zinc-400 dark:text-zinc-500 text-[13px] py-8">Carregando...</div>
         ) : dados.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-8 text-center text-[13px] text-zinc-400">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-8 text-center text-[13px] text-zinc-400 dark:text-zinc-500">
             Nenhuma integração registrou atividade ainda.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {dados.map((d) => (
-              <div key={d.fonte} className="bg-white rounded-2xl border border-zinc-200 p-5">
+              <div key={d.fonte} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-[13px] font-bold text-zinc-900">{NOME_FONTE[d.fonte] ?? d.fonte}</h3>
+                  <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white">{NOME_FONTE[d.fonte] ?? d.fonte}</h3>
                   <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
                     style={{ backgroundColor: `${COR[d.saude]}1A`, color: COR[d.saude] }}
@@ -99,10 +99,10 @@ export default function SaudeIntegracoesPage() {
                     {LABEL[d.saude]}
                   </span>
                 </div>
-                <p className="text-[12px] text-zinc-500">
-                  Última atualização: <span className="text-zinc-700">{tempoRelativo(d.minutosDesdeUltimo)}</span>
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                  Última atualização: <span className="text-zinc-700 dark:text-zinc-300">{tempoRelativo(d.minutosDesdeUltimo)}</span>
                 </p>
-                {d.detalhes && <p className="text-[12px] text-zinc-400 mt-1">{d.detalhes}</p>}
+                {d.detalhes && <p className="text-[12px] text-zinc-400 dark:text-zinc-500 mt-1">{d.detalhes}</p>}
                 {d.erro && <p className="text-[12px] text-[#C0392B] mt-1">{d.erro}</p>}
                 <p className="text-[11px] text-zinc-300 mt-3">
                   limiar de alerta: {d.limiarMinutos >= 60 ? `${Math.round(d.limiarMinutos / 60)}h` : `${d.limiarMinutos}min`}
