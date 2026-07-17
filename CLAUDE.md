@@ -173,6 +173,15 @@ por ID externo). Já aplicado no banco (2026-07-10):
     `chamarAnthropic()` como provedor alternativo (`LLM_PROVIDER=anthropic`) sem mudar código.
     Endpoints: `POST /ocr/hodometro`, `POST /ocr/cupom`, `POST /ocr/qrcode-cupom` (esse último
     já é live). Tela `/diesel` tem campo pra colar o QR Code e conferir CNPJ/data na hora.
+  - **Re-verificado ao vivo em produção (2026-07-17)**: a pedido do cliente ("tudo que puder
+    integrar já oficial pode integrar, tirando CT-e/NFS-e e WhatsApp, tire o mock"), re-sincronizei
+    `OCR_MODE`, `LLM_PROVIDER`, `GEMINI_MODEL`, `GEMINI_API_KEY` na Vercel (molinett-api,
+    Production) com os valores confirmados do `.env` e redeployei. Testei `POST /ocr/hodometro`
+    direto contra a API de produção com uma imagem sintética nova — resposta real:
+    `{odometroKm: 128473, confianca: 1, fonte: "gemini"}`, confirmando que não caiu no fallback
+    mock (`fonte: "mock"` seria o sinal de que caiu). Rastreador (Assemilsat + MegaSat) e BCB SGS
+    também confirmados "Funcionando" via `GET /integracoes/saude` na mesma sessão — os três já
+    estavam de fato live, não precisavam de correção, só confirmação.
   - **Falta**: confirmar o ID exato do modelo Gemini "Flash" vigente com o cliente/docs (usado
     `gemini-2.5-flash`, funcionando, mas nomenclatura Gemini muda); e o certificado e-CNPJ se
     quiserem consulta automática de valor via NFeDistribuicaoDFe.
