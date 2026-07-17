@@ -83,8 +83,12 @@ por ID externo). Já aplicado no banco (2026-07-10):
   receita/custo, preço do diesel, km/mês, custo extra), cenários salvos e comparador lado a lado
 - **S04 Lei do Motorista** (`/jornada/lei-motorista` + `/jornada/horas-extra/por-classe` +
   tela): violações de direção diária (>10h/dia) e interjornada (<11h) por motorista; hora extra
-  agrupada por classe (campo `tipo` de `HoraExtra`) e por motorista. Direção contínua (5h30)
-  ainda não é verificável — exige persistir posição a posição do rastreador
+  agrupada por classe (campo `tipo` de `HoraExtra`) e por motorista. **Direção contínua (5h30 +
+  pausa 30min, CTB art. 67-C) e intrajornada (1h refeição, CLT 235-C §2º) confirmadas
+  implementadas (2026-07-17)** — essa nota dizia "ainda não verificável", estava desatualizada.
+  `LeiMotoristaService.analisarTelemetriaViagem()` percorre `TelemetriaPosicao` (persistida a
+  cada 5 min pelo cron do rastreador, só pra viagens em andamento) ponto a ponto, com lógica de
+  gap de sinal (>2h reseta contadores) e pausa acumulada (soma deltas parados, não delta único)
 - **Módulo de alertas corrigido**: arquivo renomeado pra `alertas.service.ts` e relation
   `HistoricoAlerta.regra` adicionada no schema (migration aplicada)
 
