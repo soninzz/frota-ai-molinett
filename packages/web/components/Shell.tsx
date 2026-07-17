@@ -267,7 +267,7 @@ export function Shell({
             tema={tema}
             onAlternarTema={alternarTema}
           />
-          <main className="bg-grid dark:bg-grid-dark flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+          <main className="bg-grid flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
             <div className="max-w-6xl w-full mx-auto">{children}</div>
           </main>
         </div>

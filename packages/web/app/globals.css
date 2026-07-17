@@ -22,7 +22,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Textura de grid sutil — identidade visual Molinett */
+/* Textura de grid sutil — identidade visual Molinett.
+   .dark .bg-grid sobrescreve via cascata pra funcionar no <main> do Shell
+   (className="bg-grid" sem variante) — "dark:bg-grid-dark" não funciona
+   porque bg-grid-dark não é um utilitário Tailwind real, é só uma classe
+   CSS escrita à mão, então o Tailwind não gera nenhuma regra pro prefixo. */
 .bg-grid {
   background-image:
     linear-gradient(to right, rgba(23, 20, 18, 0.035) 1px, transparent 1px),
@@ -30,9 +34,10 @@ body {
   background-size: 32px 32px;
 }
 
+.dark .bg-grid,
 .bg-grid-dark {
   background-image:
-    linear-gradient(to right, rgba(161, 161, 170, 0.18) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(161, 161, 170, 0.18) 1px, transparent 1px);
+    linear-gradient(to right, rgba(212, 212, 216, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 212, 216, 0.35) 1px, transparent 1px);
   background-size: 32px 32px;
 }
