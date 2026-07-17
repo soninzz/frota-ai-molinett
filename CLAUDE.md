@@ -107,11 +107,15 @@ por ID externo). Já aplicado no banco (2026-07-10):
   `molinett.vercel.app`, domínio `molinett.frotaai.com` adicionado ao projeto.
   **DNS pendente do cliente**: CNAME `molinett` → `210f71e8bbc09d95.vercel-dns-017.com`
   (fallback: `cname.vercel-dns.com`). Token Vercel fornecido pelo cliente (não comitar).
+- **API em produção (2026-07-17, confirmado ao vivo)**: ao contrário do que estava registrado
+  aqui antes, a API NestJS **está** respondendo em produção em `molinett-api.vercel.app`
+  (retornando 200 em `/frota/painel`, `/financeiro/painel` etc. — confirmado via login real
+  contra `molinett.vercel.app/login`). Ou seja, o site em produção já loga e carrega dados
+  reais hoje; a nota antiga dizendo que "NestJS não roda na Vercel, próximo passo é Railway"
+  estava desatualizada — não decidi migrar pra Railway sozinho, só corrigi o registro pra
+  bater com o estado real observado.
 
 ### Não iniciado / pendente
-- **API em produção**: NestJS NÃO roda na Vercel — plano original é Railway. Enquanto não
-  houver API hospedada, o site em produção não loga (NEXT_PUBLIC_API_URL aponta pra
-  localhost). Próximo passo do deploy.
 - **Supabase Auth**: cliente confirmou que quer "supabase auth normal" pro plano multi-domínio
   (molinett.frotaai.com / franco.frotaai.com). Migração JWT→Supabase Auth planejada, ainda
   não iniciada — é refactor grande (auth module, guards, frontend, seeds).
