@@ -37,7 +37,7 @@ body {
 .dark .bg-grid,
 .bg-grid-dark {
   background-image:
-    linear-gradient(to right, rgba(212, 212, 216, 0.35) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(212, 212, 216, 0.35) 1px, transparent 1px);
+    linear-gradient(to right, rgba(212, 212, 216, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 212, 216, 0.08) 1px, transparent 1px);
   background-size: 32px 32px;
 }
