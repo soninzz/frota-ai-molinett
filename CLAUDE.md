@@ -52,6 +52,20 @@ baseado no "Escopo Técnico v3" (documento anexo ao contrato). 5 sistemas integr
   e reaproveitando o `variables` devolvido no login, senão quebra com "Undefined index")
   devolve as posições. `RastreadorService.buscarPosicoesNovas()` agora combina Assemilsat +
   MegaSat (frotas parcialmente sobrepostas), dedup por placa pela posição mais recente.
+  **(2026-07-18)** Cliente mandou uma "Chave de Integração" oficial da STC
+  (`582f3f2570083f7b45e1c896758caa48`, chave de acesso `MSR`, usuário `66304071000196`,
+  senha `welCPW95` — salvas em `STC_CHAVE_*`/`STC_USUARIO`/`STC_SENHA` no `.env`, **não
+  usadas em código ainda**). Isso é a API REST oficial de verdade descrita no PDF que o
+  cliente anexou (`API - STC 1 2 (1).pdf`) — diferente do reverso acima. Testei contra o
+  endpoint reverso do MegaSat por curiosidade (não custava nada, é só leitura): respondeu
+  `"invalid key"` — confirma que é sistema/endpoint diferente, não são intercambiáveis.
+  A doc oficial (`ap2.stc.srv.br/docs/`) continua 404 (testei de novo em 2026-07-18,
+  inclusive `/admin/` que devolve 200 mas HTML vazio, SPA que não bootstrapa sem mais
+  contexto). **Não decidi integrar sozinho** — sem a doc real, qualquer endpoint que eu
+  tentasse seria chute contra o servidor de produção de um parceiro; o caminho certo é
+  pedir pro cliente confirmar com a STC um link de doc que funcione ou uma coleção
+  Postman/exemplo de requisição usando essa chave. O método reverso do MegaSat continua
+  sendo a fonte live confirmada — nada mudou em produção por causa disso.
 - **WhatsApp via Evolution API** (não é a API oficial da Meta — decisão do cliente, registrada
   e aceita apesar do risco de banimento). Instância `Diga3` criada, mas travada: WhatsApp recusa
   conectar novo dispositivo ("não é possível conectar no momento") — provável versão desatualizada
