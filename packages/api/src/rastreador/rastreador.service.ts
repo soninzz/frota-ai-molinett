@@ -42,6 +42,30 @@ interface MegasatGridResponse {
   data?: { data: MegasatTracker[] }
 }
 
+// API REST oficial da STC (Swagger público em
+// ap3.stc.srv.br/integration/prod/swagger#/, achado em 2026-07-18 — a doc em
+// ap2.stc.srv.br/docs/ citada no PDF do cliente dá 404, mas essa aqui é real
+// e funciona). Endpoint /ws/getBasicClientVehicles: requer key/user/pass,
+// devolve posição mais recente por veículo já com lat/lon/ignição/velocidade
+// — mais completo que o método reverso abaixo e não depende de engenharia
+// reversa de SPA. Senha funciona em texto puro (testado ao vivo), apesar do
+// PDF mencionar MD5 — provavelmente essa exigência é de outro fluxo (Admin).
+interface StcWsVehicleItem {
+  plate: string
+  date: string
+  ignition: string // "ON" | "OFF"
+  speed: string // numérico em string
+  latitude: string
+  longitude: string
+}
+
+interface StcWsResponse {
+  success: boolean
+  error: number
+  msg?: string | null
+  data?: StcWsVehicleItem[]
+}
+
 @Injectable()
 export class RastreadorService {
   private readonly logger = new Logger(RastreadorService.name)
@@ -160,12 +184,63 @@ export class RastreadorService {
   }
  
   // ── MODO LIVE — chamada real ao MegaSat/STC ──
+  // Tenta a API REST oficial primeiro (mais estável, documentada); cai pro
+  // método reverso (SPA) só se a oficial falhar — mantém o que já
+  // funcionava em produção como rede de segurança durante a transição.
+  private async buscarPosicoesMegasat(): Promise<PosicaoVeiculo[]> {
+    const oficial = await this.buscarPosicoesStcOficial()
+    if (oficial.length > 0) return oficial
+    return this.buscarPosicoesMegasatReverso()
+  }
+
+  // ── STC — API REST oficial (POST /ws/getBasicClientVehicles) ──
+  private async buscarPosicoesStcOficial(): Promise<PosicaoVeiculo[]> {
+    const baseUrl = this.config.get<string>('MEGASAT_API_URL') ?? 'http://ap3.stc.srv.br'
+    const key = this.config.get<string>('STC_CHAVE_INTEGRACAO')
+    const user = this.config.get<string>('STC_USUARIO')
+    const pass = this.config.get<string>('STC_SENHA')
+    if (!key || !user || !pass) return []
+
+    try {
+      const resp = await fetchComRetry(`${baseUrl}/integration/prod/ws/getBasicClientVehicles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, user, pass, page: 1 }),
+      })
+      const dados = (await resp.json()) as StcWsResponse
+      if (!resp.ok || !dados.success) {
+        this.logger.warn(`STC oficial: falha (${dados.msg ?? 'sem detalhe'}) — caindo pro método reverso`)
+        return []
+      }
+
+      const veiculos = dados.data ?? []
+      await this.prisma.integracaoLog.create({
+        data: { fonte: 'rastreador_megasat', status: 'OK', detalhes: `${veiculos.length} veículos recebidos (API oficial)` },
+      })
+
+      return veiculos.map((v) => ({
+        veiculoIdExterno: v.plate,
+        placa: /^[A-Z]{3}\d/.test(v.plate) ? v.plate.replace(/^([A-Z]{3})/, '$1-') : v.plate,
+        latitude: parseFloat(v.latitude),
+        longitude: parseFloat(v.longitude),
+        velocidade: parseFloat(v.speed) || 0,
+        motorLigado: v.ignition === 'ON',
+        timestamp: new Date(v.date.replace(' ', 'T')),
+        fonte: 'megasat' as const,
+      }))
+    } catch (e) {
+      this.logger.warn('STC oficial: erro de conexão, caindo pro método reverso', e)
+      return []
+    }
+  }
+
+  // ── MegaSat/STC — método reverso (fallback) ──
   // Auth confirmada em 2026-07-14 via engenharia reversa da SPA (portal não
   // documentado): POST /integration/prod/sys/api/user/login com
   // {key, user, pass} devolve um JWT; o grid de veículos exige esse token
   // via header Authorization. "key" é o slug do cliente na URL do portal
   // (não é a "chave de acesso" MSR informada — essa não é usada aqui).
-  private async buscarPosicoesMegasat(): Promise<PosicaoVeiculo[]> {
+  private async buscarPosicoesMegasatReverso(): Promise<PosicaoVeiculo[]> {
     const baseUrl = this.config.get<string>('MEGASAT_API_URL')
     const key = this.config.get<string>('MEGASAT_KEY')
     const usuario = this.config.get<string>('MEGASAT_LOGIN')

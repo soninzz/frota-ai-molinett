@@ -52,20 +52,21 @@ baseado no "Escopo Técnico v3" (documento anexo ao contrato). 5 sistemas integr
   e reaproveitando o `variables` devolvido no login, senão quebra com "Undefined index")
   devolve as posições. `RastreadorService.buscarPosicoesNovas()` agora combina Assemilsat +
   MegaSat (frotas parcialmente sobrepostas), dedup por placa pela posição mais recente.
-  **(2026-07-18)** Cliente mandou uma "Chave de Integração" oficial da STC
-  (`582f3f2570083f7b45e1c896758caa48`, chave de acesso `MSR`, usuário `66304071000196`,
-  senha `welCPW95` — salvas em `STC_CHAVE_*`/`STC_USUARIO`/`STC_SENHA` no `.env`, **não
-  usadas em código ainda**). Isso é a API REST oficial de verdade descrita no PDF que o
-  cliente anexou (`API - STC 1 2 (1).pdf`) — diferente do reverso acima. Testei contra o
-  endpoint reverso do MegaSat por curiosidade (não custava nada, é só leitura): respondeu
-  `"invalid key"` — confirma que é sistema/endpoint diferente, não são intercambiáveis.
-  A doc oficial (`ap2.stc.srv.br/docs/`) continua 404 (testei de novo em 2026-07-18,
-  inclusive `/admin/` que devolve 200 mas HTML vazio, SPA que não bootstrapa sem mais
-  contexto). **Não decidi integrar sozinho** — sem a doc real, qualquer endpoint que eu
-  tentasse seria chute contra o servidor de produção de um parceiro; o caminho certo é
-  pedir pro cliente confirmar com a STC um link de doc que funcione ou uma coleção
-  Postman/exemplo de requisição usando essa chave. O método reverso do MegaSat continua
-  sendo a fonte live confirmada — nada mudou em produção por causa disso.
+  **(2026-07-18) Migrado pra API REST oficial da STC, em produção.** Cliente mandou uma
+  "Chave de Integração" oficial (`582f3f2570083f7b45e1c896758caa48`, usuário
+  `66304071000196`, senha `welCPW95` — salvas em `STC_CHAVE_INTEGRACAO`/`STC_USUARIO`/
+  `STC_SENHA` no `.env`). A doc citada no PDF do cliente (`ap2.stc.srv.br/docs/`) continua
+  404, mas o usuário achou o Swagger real e público em
+  `ap3.stc.srv.br/integration/prod/swagger#/` (spec em `.../swagger-specs/public.yaml`) —
+  documentação de verdade, `POST /ws/getBasicClientVehicles` com `{key,user,pass,page}` no
+  corpo (senha em **texto puro**, funcionou ao vivo — o MD5 que o PDF menciona deve ser de
+  outro fluxo). Testado contra produção: devolveu os mesmos 3 veículos que o método reverso
+  já retornava (AAW8J03, IQU3C12, MJZ0693), com lat/lon/ignição/velocidade/endereço/hodômetro
+  — mais completo que o reverso. `RastreadorService.buscarPosicoesMegasat()` agora tenta a
+  API oficial primeiro (`buscarPosicoesStcOficial()`) e só cai pro método reverso
+  (`buscarPosicoesMegasatReverso()`, mantido como fallback) se a oficial falhar. Confirmado
+  rodando em produção via `GET /integracoes/saude` — `detalhes: "3 veículos recebidos (API
+  oficial)"`, não caiu no fallback.
 - **WhatsApp via Evolution API** (não é a API oficial da Meta — decisão do cliente, registrada
   e aceita apesar do risco de banimento). Instância `Diga3` criada, mas travada: WhatsApp recusa
   conectar novo dispositivo ("não é possível conectar no momento") — provável versão desatualizada
