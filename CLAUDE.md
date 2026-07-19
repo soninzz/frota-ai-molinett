@@ -87,6 +87,60 @@ baseado no "Escopo Técnico v3" (documento anexo ao contrato). 5 sistemas integr
   ponta a ponta em produção (criei conta de teste, resposta trouxe a senha gerada, segunda
   tentativa com mesmo e-mail bloqueou certo com "Já existe um usuário com esse e-mail", apaguei
   a conta de teste depois).
+- **Auditoria completa de docs vs código** — usuário pediu pra ler todos os 7 docs do projeto
+  (`criterios-de-sucesso`, `escopo-funcional`, `specs-tecnicas`, `integracoes`,
+  `normas_jornada_frota_2026`, `pesquisa_juridico_fiscal`, `ripd`) e cruzar com o código real
+  pra achar funcionalidade prometida e nunca construída. Achou **14 gaps genuínos** (confirmados
+  no código, não achismo) além dos já conhecidos (WhatsApp oficial, CT-e×NFS-e, RLI, e-CNPJ,
+  planilhas antigas). Fechados **8 deles** na sequência (ver itens abaixo); os outros 6 ficaram
+  pendentes: RBAC granular (ler/escrever/aprovar/configurar — adiado de propósito, mexeria em
+  autorização de todos os controllers, risco alto sem supervisão ao vivo), assistente de
+  orçamento de peças por IA, captação de pedido por palavra-chave em grupo do WhatsApp, leitura
+  de nota de oficina via WhatsApp, idempotência/retry/DLQ/circuit breaker formal (fila
+  BullMQ/Redis não existe no stack ainda), observabilidade (correlation-id, métricas de fila).
+- **Link do Google Maps na OS**: escopo funcional §5.1 prometia campo `link_maps` no JSON de
+  exemplo da OS, nunca implementado. `CotacaoService.confirmar()` agora gera um deep link
+  (`google.com/maps/dir/?api=1&origin=...&destination=...`, sem API paga) e salva em
+  `snapshot.rota.linkMaps`; tela de detalhe da OS mostra o link.
+- **Módulo de estoque criado do zero** (`/estoque` API): o schema (`ItemEstoque`,
+  `MovimentacaoEstoque`) já existia mas **não tinha nenhum código usando** — confirmado via
+  grep, zero referência em `src/`. Criado CRUD completo (listar, criar item, registrar
+  movimentação com ajuste transacional de `quantidadeAtual`) + scheduler diário (07h) que
+  dispara alerta quando item fica abaixo do `quantidadeMinima` cadastrado (mesmo padrão
+  `garantirRegra` idempotente do `resumos.scheduler.ts`).
+- **Cruzamento estoque × orçamento mensal** (`GET /estoque/cruzamento-orcamento`, S03↔S05):
+  soma comprado nos últimos 30 dias + custo estimado pra repor tudo abaixo do mínimo, compara
+  contra o saldo livre do fluxo de caixa (S05) e sinaliza `sugereReagendar` quando não cabe.
+- **Notificação ao Gestor Principal em ação sensível** (critério de aceite, camada transversal):
+  já existia pra margem negativa/meta ferida na cotação; estendido pra mudança de RBAC
+  (`PermissoesService.definirOverride`) e desativação de usuário (offboarding) — ambos agora
+  disparam `AlertasService.disparar()`, aparecem no painel `/alertas`.
+- **Expurgo automático de `TelemetriaPosicao`** (LGPD): o próprio RIPD já listava isso como gap
+  ("GPS bruto acumula indefinidamente"). Cron mensal (dia 1, meia-noite) apaga posição com mais
+  de 12 meses — prazo é o exemplo que o RIPD já sugeria.
+- **Sugestão de posto — cruzamento com horário/rota**: `sugerirPostos()` já existia (preço +
+  consumo médio); agora também considera o horário observado de abastecimento naquele posto
+  (proxy honesto — não temos horário de funcionamento oficial nem geolocalização de posto
+  cadastrados) e se aquele veículo específico já abasteceu lá antes (proxy pra "rota
+  habitual"). Aceita `veiculoId` opcional na query.
+- **Parser de extrato OFX + conciliação bancária**: `integracoes-molinett.md` já citava isso
+  como "viável já, baixo custo". `POST /financeiro/conciliacao/ofx` recebe o conteúdo do
+  arquivo `.OFX` baixado do internet banking + `contaBancariaId`, extrai as transações (regex
+  em cima do formato SGML-like do OFX, sem lib externa) e compara contra os lançamentos já
+  cadastrados (mesmo valor, vencimento a até 3 dias de distância) — não decide nada sozinho,
+  só marca `CONCILIADO`/`SEM_LANCAMENTO` pra revisão humana.
+- **Parser de comandos de chat do WhatsApp** (8 comandos): critérios de aceite exigem "≥8
+  comandos de consulta/ação por chat". Só existia o motor de alerta de saída
+  (`AlertasService`); nada interpretava mensagem recebida. `ComandosWhatsappService.processar()`
+  reconhece 8 comandos por palavra-chave (saldo, meta do mês, cotações abertas, aprovações
+  pendentes, veículos com alerta, comissões pendentes, vencimentos, atrasados) — testável hoje
+  via `POST /whatsapp/comando` mesmo sem o canal conectado; quando o WhatsApp oficial plugar, o
+  webhook só chama esse método direto. **Bug real achado testando contra produção**: regex
+  original não reconhecia "cotações"/"aprovações"/"comissões" porque tem "õ", não "ã" — corrigido
+  normalizando o texto (NFD + remove diacrítico) antes de comparar, resolve qualquer variação de
+  acento de uma vez. Comandos de **escrita** (ex: aprovar cotação por chat) foram deixados de
+  fora de propósito — executar ação financeira a partir de texto livre sem tela de confirmação
+  tem risco real de má-interpretação.
 
 ### Pendência de dado — placas dos veículos
 O banco tinha 6 veículos com placa cadastrada como CÓDIGO CURTO (`MHG`, `IFF`, `MLC`, `AAW`, `IQU`,
