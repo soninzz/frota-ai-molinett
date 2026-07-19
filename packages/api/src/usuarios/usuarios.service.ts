@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { randomBytes } from 'crypto'
 import * as bcrypt from 'bcryptjs'
-import { Perfil } from '@prisma/client'
+import { CategoriaAlerta, Perfil } from '@prisma/client'
 import { PrismaService } from '../database/prisma.service'
 import { AuditoriaService } from '../common/auditoria/auditoria.service'
+import { AlertasService } from '../alertas/alertas.service'
 
 // Gera uma senha temporária legível (sem caracteres ambíguos tipo 0/O, 1/l).
 function gerarSenhaTemporaria(): string {
@@ -17,6 +18,7 @@ export class UsuariosService {
   constructor(
     private prisma: PrismaService,
     private auditoria: AuditoriaService,
+    private alertas: AlertasService,
   ) {}
 
   async listar() {
@@ -80,7 +82,35 @@ export class UsuariosService {
       depois: { ativo: atualizado.ativo },
     })
 
+    // Offboarding é ação sensível (DoD camada transversal) — notifica o
+    // Gestor Principal no painel; JWT já é invalidado na hora via
+    // jwt.strategy.ts checando usuario.ativo em toda requisição.
+    if (!ativo) {
+      await this.garantirRegraOffboarding()
+      await this.alertas.disparar({
+        categoria: CategoriaAlerta.OPERACIONAL,
+        evento: 'USUARIO_DESATIVADO',
+        mensagem: `${alvo.nome} (${alvo.email}) foi desativado — acesso revogado imediatamente.`,
+        contexto: { usuarioId: id, desativadoPor: usuarioId },
+      })
+    }
+
     return atualizado
+  }
+
+  private async garantirRegraOffboarding() {
+    const existente = await this.prisma.regraAlerta.findFirst({ where: { evento: 'USUARIO_DESATIVADO' } })
+    if (!existente) {
+      await this.prisma.regraAlerta.create({
+        data: {
+          categoria: CategoriaAlerta.OPERACIONAL,
+          evento: 'USUARIO_DESATIVADO',
+          descricao: 'Colaborador desativado (offboarding)',
+          destinatariosPerfis: [Perfil.GESTOR_PRINCIPAL],
+          canal: 'PAINEL',
+        },
+      })
+    }
   }
 
   async resetarSenha(id: string, usuarioId: string) {

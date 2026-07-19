@@ -17,7 +17,7 @@ type OsDetalhe = {
   numero: number;
   status: string;
   snapshot: {
-    rota: { origem: string; destino: string; km?: number | null };
+    rota: { origem: string; destino: string; km?: number | null; linkMaps?: string | null };
     valorFinal: number;
     margem: number;
     motorista?: string | null;
@@ -172,6 +172,16 @@ export default function DetalheOsPage() {
               <p className="text-zinc-900 dark:text-white">
                 {os.snapshot.rota.origem} → {os.snapshot.rota.destino}
               </p>
+              {os.snapshot.rota.linkMaps && (
+                <a
+                  href={os.snapshot.rota.linkMaps}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-[#E63A1F] hover:underline"
+                >
+                  Ver rota no Google Maps
+                </a>
+              )}
             </div>
             <div>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Valor / Margem</p>

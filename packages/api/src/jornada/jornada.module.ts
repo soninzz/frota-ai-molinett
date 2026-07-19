@@ -10,5 +10,6 @@ import { AuditoriaModule } from '../common/auditoria/auditoria.module'
   imports: [AuditoriaModule],
   providers: [ViagensService, MotoristasService, ComissoesService, LeiMotoristaService],
   controllers: [JornadaController],
+  exports: [ViagensService, MotoristasService, ComissoesService, LeiMotoristaService],
 })
 export class JornadaModule {}

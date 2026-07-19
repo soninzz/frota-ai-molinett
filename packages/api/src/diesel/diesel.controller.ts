@@ -39,7 +39,7 @@ export class DieselController {
 
   @Get('sugestao-postos')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.MOTORISTA, Perfil.OPERACIONAL)
-  sugerirPostos(@Query('meses') meses: string) {
-    return this.dieselService.sugerirPostos(Number(meses) || 6)
+  sugerirPostos(@Query('meses') meses: string, @Query('veiculoId') veiculoId?: string) {
+    return this.dieselService.sugerirPostos(Number(meses) || 6, veiculoId)
   }
 }

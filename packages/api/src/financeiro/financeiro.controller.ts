@@ -27,6 +27,12 @@ export class FinanceiroController {
   getPainel() {
     return this.financeiroService.getPainelFinanceiro()
   }
+
+  @Post('conciliacao/ofx')
+  @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  conciliarOfx(@Body('conteudoOfx') conteudoOfx: string, @Body('contaBancariaId') contaBancariaId: string) {
+    return this.financeiroService.conciliarOfx(conteudoOfx, contaBancariaId)
+  }
  
   @Get('fluxo-caixa')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)

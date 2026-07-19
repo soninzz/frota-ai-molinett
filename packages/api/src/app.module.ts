@@ -21,6 +21,8 @@ import { IntegracoesModule } from './common/integracoes/integracoes.module'
 import { PermissoesModule } from './common/permissoes/permissoes.module'
 import { LgpdModule } from './lgpd/lgpd.module'
 import { UsuariosModule } from './usuarios/usuarios.module'
+import { EstoqueModule } from './estoque/estoque.module'
+import { WhatsappModule } from './whatsapp/whatsapp.module'
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { UsuariosModule } from './usuarios/usuarios.module'
     PermissoesModule,
     LgpdModule,
     UsuariosModule,
+    EstoqueModule,
+    WhatsappModule,
   ],
 })
 export class AppModule {}

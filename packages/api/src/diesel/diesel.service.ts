@@ -111,7 +111,7 @@ export class DieselService {
   // Sugestão de postos por preço/rendimento — baseado no histórico real de
   // abastecimentos (não tem dado de horário/rota ainda, só preço e consumo
   // médio observado em cada posto).
-  async sugerirPostos(limiteMeses = 6) {
+  async sugerirPostos(limiteMeses = 6, veiculoId?: string) {
     const desde = new Date()
     desde.setMonth(desde.getMonth() - limiteMeses)
 
@@ -120,30 +120,53 @@ export class DieselService {
         timestamp: { gte: desde },
         postoNome: { not: null },
       },
-      select: { postoNome: true, precoPorLitro: true, consumoKmL: true },
+      select: { postoNome: true, precoPorLitro: true, consumoKmL: true, timestamp: true, veiculoId: true },
     })
 
-    const porPosto = new Map<string, { precos: number[]; consumos: number[] }>()
+    const porPosto = new Map<
+      string,
+      { precos: number[]; consumos: number[]; horas: number[]; veiculos: Set<string> }
+    >()
     for (const a of abastecimentos) {
       const nome = a.postoNome as string
-      const grupo = porPosto.get(nome) ?? { precos: [], consumos: [] }
+      const grupo = porPosto.get(nome) ?? { precos: [], consumos: [], horas: [], veiculos: new Set<string>() }
       grupo.precos.push(a.precoPorLitro)
       if (a.consumoKmL !== null) grupo.consumos.push(a.consumoKmL)
+      grupo.horas.push(a.timestamp.getHours())
+      grupo.veiculos.add(a.veiculoId)
       porPosto.set(nome, grupo)
     }
 
     const media = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
+    const horaAtual = new Date().getHours()
 
     const ranking = [...porPosto.entries()]
-      .map(([posto, g]) => ({
-        posto,
-        precoMedioLitro: +media(g.precos).toFixed(3),
-        rendimentoMedioKmL: g.consumos.length ? +media(g.consumos).toFixed(2) : null,
-        amostras: g.precos.length,
-      }))
+      .map(([posto, g]) => {
+        // Não temos endereço/geolocalização de posto cadastrado — o proxy
+        // honesto pro que os dados realmente dão pra dizer: (1) horário
+        // observado de abastecimento nesse posto (não é horário de
+        // funcionamento oficial, é só "quando essa frota já abasteceu aqui"),
+        // (2) se esse veículo específico (rota habitual) já usou esse posto.
+        const horaMin = Math.min(...g.horas)
+        const horaMax = Math.max(...g.horas)
+        return {
+          posto,
+          precoMedioLitro: +media(g.precos).toFixed(3),
+          rendimentoMedioKmL: g.consumos.length ? +media(g.consumos).toFixed(2) : null,
+          amostras: g.precos.length,
+          horarioObservado: { min: horaMin, max: horaMax },
+          provavelmenteAbertoAgora: horaAtual >= horaMin && horaAtual <= horaMax,
+          naRotaDoVeiculo: veiculoId ? g.veiculos.has(veiculoId) : null,
+        }
+      })
       .filter((r) => r.amostras >= 2) // descarta posto com 1 amostra só (ruído)
-      .sort((a, b) => a.precoMedioLitro - b.precoMedioLitro)
+      .sort((a, b) => {
+        // Prioriza: já usado por esse veículo > aberto agora > preço
+        if (veiculoId && a.naRotaDoVeiculo !== b.naRotaDoVeiculo) return a.naRotaDoVeiculo ? -1 : 1
+        if (a.provavelmenteAbertoAgora !== b.provavelmenteAbertoAgora) return a.provavelmenteAbertoAgora ? -1 : 1
+        return a.precoMedioLitro - b.precoMedioLitro
+      })
 
-    return { periodo: { desde, meses: limiteMeses }, ranking }
+    return { periodo: { desde, meses: limiteMeses }, horaAtual, ranking }
   }
 }

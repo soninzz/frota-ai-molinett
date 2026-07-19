@@ -182,8 +182,12 @@ export class CotacaoService {
     })
 
     // ── GUARDRAIL 2: OS com snapshot imutável ─────────────
+    // linkMaps: deep link do Google Maps (sem API paga, só URL) — pedido
+    // explícito do escopo funcional §5.1 no JSON de exemplo da OS.
+    const linkMaps = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(cotacao.origem)}&destination=${encodeURIComponent(cotacao.destino)}`
+
     const snapshot = {
-      rota:       { origem: cotacao.origem, destino: cotacao.destino, km: cotacao.kmEstimado },
+      rota:       { origem: cotacao.origem, destino: cotacao.destino, km: cotacao.kmEstimado, linkMaps },
       cliente:    { id: cotacao.clienteId, nome: cotacao.cliente.nome },
       veiculo:    { id: cotacao.veiculoId, placa: cotacao.veiculo.placa },
       motorista:  cotacao.motoristaId,

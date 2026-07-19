@@ -9,6 +9,7 @@ import { FinanceiroClientesService } from './financeiro-clientes.service'
 import { FinanceiroMetasService } from './financeiro-metas.service'
 import { paraCsv } from '../common/csv.util'
 import { AuditoriaService } from '../common/auditoria/auditoria.service'
+import { parseOfx } from './ofx-parser.util'
 
 @Injectable()
 export class FinanceiroService {
@@ -420,6 +421,53 @@ export class FinanceiroService {
         atrasados:     { total: atrasados._count.id, valor: atrasados._sum.valor ?? 0 },
       },
       fluxo30dias: fluxo,
+    }
+  }
+
+  // ── Conciliação bancária via OFX ──────────────────────────
+  // Compara cada transação do extrato contra os lançamentos já cadastrados
+  // (mesmo valor, vencimento em até 3 dias de distância) — não decide nada
+  // sozinho, só marca o que já bate e o que fica "sem lançamento" pra
+  // revisão humana.
+  async conciliarOfx(conteudoOfx: string, contaBancariaId: string) {
+    const transacoes = parseOfx(conteudoOfx)
+    if (transacoes.length === 0) {
+      throw new BadRequestException('Nenhuma transação encontrada no arquivo OFX')
+    }
+
+    const datas = transacoes.map((t) => t.data.getTime())
+    const inicio = new Date(Math.min(...datas))
+    inicio.setDate(inicio.getDate() - 3)
+    const fim = new Date(Math.max(...datas))
+    fim.setDate(fim.getDate() + 3)
+
+    const lancamentos = await this.prisma.lancamento.findMany({
+      where: { contaBancariaId, vencimento: { gte: inicio, lte: fim } },
+    })
+
+    const TRES_DIAS_MS = 3 * 24 * 60 * 60 * 1000
+    const resultado = transacoes.map((t) => {
+      const match = lancamentos.find(
+        (l) =>
+          Math.abs(l.valor - Math.abs(t.valor)) < 0.01 &&
+          Math.abs(l.vencimento.getTime() - t.data.getTime()) <= TRES_DIAS_MS,
+      )
+      return {
+        fitId: t.fitId,
+        data: t.data,
+        valor: t.valor,
+        descricao: t.descricao,
+        status: match ? ('CONCILIADO' as const) : ('SEM_LANCAMENTO' as const),
+        lancamentoId: match?.id ?? null,
+      }
+    })
+
+    return {
+      contaBancariaId,
+      total: resultado.length,
+      conciliados: resultado.filter((r) => r.status === 'CONCILIADO').length,
+      semLancamento: resultado.filter((r) => r.status === 'SEM_LANCAMENTO').length,
+      transacoes: resultado,
     }
   }
 }

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { Perfil } from '@prisma/client'
+import { CategoriaAlerta, Perfil } from '@prisma/client'
 import { PrismaService } from '../../database/prisma.service'
 import { AuditoriaService } from '../auditoria/auditoria.service'
+import { AlertasService } from '../../alertas/alertas.service'
 
 // Recursos (módulos) que aceitam override de RBAC via /sistema/permissoes.
 // Controllers marcam suas rotas com @Recurso(nome) usando estes valores.
@@ -20,6 +21,8 @@ export const RECURSOS_DISPONIVEIS = [
   'auditoria',
   'integracoes',
   'usuarios',
+  'estoque',
+  'whatsapp',
 ] as const
 
 @Injectable()
@@ -27,6 +30,7 @@ export class PermissoesService {
   constructor(
     private prisma: PrismaService,
     private auditoria: AuditoriaService,
+    private alertas: AlertasService,
   ) {}
 
   // Matriz completa perfil × recurso, com o override atual (se houver) —
@@ -68,6 +72,33 @@ export class PermissoesService {
       depois: { perfil, recurso, permitido },
     })
 
+    // Mudança de RBAC é ação sensível (DoD camada transversal: "ação sensível
+    // notifica o Gestor Principal") — hoje só painel, WhatsApp quando o canal
+    // oficial estiver conectado.
+    await this.garantirRegraNotificacao()
+    const acao = permitido === null ? 'voltou ao padrão' : permitido ? 'foi liberado' : 'foi bloqueado';
+    await this.alertas.disparar({
+      categoria: CategoriaAlerta.OPERACIONAL,
+      evento: 'PERMISSAO_ALTERADA',
+      mensagem: `Permissão de "${recurso}" pro perfil ${perfil} ${acao}.`,
+      contexto: { perfil, recurso, permitido, alteradoPor: usuarioId },
+    })
+
     return { perfil, recurso, permitido }
+  }
+
+  private async garantirRegraNotificacao() {
+    const existente = await this.prisma.regraAlerta.findFirst({ where: { evento: 'PERMISSAO_ALTERADA' } })
+    if (!existente) {
+      await this.prisma.regraAlerta.create({
+        data: {
+          categoria: CategoriaAlerta.OPERACIONAL,
+          evento: 'PERMISSAO_ALTERADA',
+          descricao: 'Override de permissão (RBAC) alterado por um Administrador',
+          destinatariosPerfis: [Perfil.GESTOR_PRINCIPAL],
+          canal: 'PAINEL',
+        },
+      })
+    }
   }
 }
