@@ -86,6 +86,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Saúde das integrações", href: "/sistema/integracoes", icon: "◍" },
       { label: "Permissões", href: "/sistema/permissoes", icon: "◫" },
+      { label: "Usuários", href: "/sistema/usuarios", icon: "◒" },
     ],
   },
 ];

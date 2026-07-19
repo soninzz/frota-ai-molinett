@@ -35,6 +35,7 @@ const NOME_RECURSO: Record<string, string> = {
   ocr: "OCR",
   auditoria: "Auditoria",
   integracoes: "Integrações",
+  usuarios: "Usuários",
 };
 
 export default function PermissoesPage() {

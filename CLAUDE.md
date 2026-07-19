@@ -72,6 +72,22 @@ baseado no "Escopo Técnico v3" (documento anexo ao contrato). 5 sistemas integr
   conectar novo dispositivo ("não é possível conectar no momento") — provável versão desatualizada
   do Baileys no servidor Evolution, depende de quem administra o servidor (easypanel.host).
 
+### Concluído em 2026-07-19
+- **Gestão de usuários (`/usuarios` API + tela `/sistema/usuarios`)**: até aqui, criar conta de
+  colaborador (email/senha/perfil) só dava pra fazer rodando script direto no banco — buraco real
+  no critério "RBAC editável pelo Administrador sem suporte técnico". Cliente pediu explicitamente.
+  Administrador agora cria/desativa (offboarding)/reseta senha pela tela. Senha temporária é gerada
+  no backend e mostrada **uma única vez** na tela (banner com botão copiar) — não fica recuperável
+  depois, mesmo padrão de token/chave de API. **Sem envio automático de e-mail** — confirmei nos 4
+  docs do projeto que o canal de comunicação previsto no escopo é só WhatsApp (nenhuma menção a
+  e-mail como canal), e o WhatsApp oficial ainda não está conectado; então o Administrador copia a
+  senha gerada e manda pelo canal que preferir por enquanto. Auditoria (`CRIAR`/`DESATIVAR`/
+  `REATIVAR`/`RESETAR_SENHA`) seguindo o mesmo padrão dos outros módulos. `usuarios` também foi
+  adicionado à lista de recursos que aceitam override de RBAC em `/sistema/permissoes`. Testado
+  ponta a ponta em produção (criei conta de teste, resposta trouxe a senha gerada, segunda
+  tentativa com mesmo e-mail bloqueou certo com "Já existe um usuário com esse e-mail", apaguei
+  a conta de teste depois).
+
 ### Pendência de dado — placas dos veículos
 O banco tinha 6 veículos com placa cadastrada como CÓDIGO CURTO (`MHG`, `IFF`, `MLC`, `AAW`, `IQU`,
 `RLI`) em vez da placa real completa. O Assemilsat retorna placas completas (ex: `MHG-1A49`).

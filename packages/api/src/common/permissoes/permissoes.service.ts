@@ -19,6 +19,7 @@ export const RECURSOS_DISPONIVEIS = [
   'ocr',
   'auditoria',
   'integracoes',
+  'usuarios',
 ] as const
 
 @Injectable()

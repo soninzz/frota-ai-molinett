@@ -20,6 +20,7 @@ import { AuditoriaModule } from './common/auditoria/auditoria.module'
 import { IntegracoesModule } from './common/integracoes/integracoes.module'
 import { PermissoesModule } from './common/permissoes/permissoes.module'
 import { LgpdModule } from './lgpd/lgpd.module'
+import { UsuariosModule } from './usuarios/usuarios.module'
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { LgpdModule } from './lgpd/lgpd.module'
     IntegracoesModule,
     PermissoesModule,
     LgpdModule,
+    UsuariosModule,
   ],
 })
 export class AppModule {}
