@@ -1,4 +1,5 @@
 import { Recurso } from '../common/decorators/recurso.decorator'
+import { Acao } from '../common/decorators/acao.decorator'
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { ManutencaoService } from './manutencao.service'
 import { CriarOsManutencaoDto, AtualizarStatusOsDto } from './dto/manutencao.dto'
@@ -15,30 +16,35 @@ export class ManutencaoController {
   constructor(private manutencaoService: ManutencaoService) {}
  
   @Post('os')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.OPERACIONAL)
   criarOs(@Body() dto: CriarOsManutencaoDto, @CurrentUser() user: any) {
     return this.manutencaoService.criarOs(dto, user.id)
   }
  
   @Get('os')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.OPERACIONAL)
   listar(@Query('veiculoId') veiculoId: string, @Query('status') status: string) {
     return this.manutencaoService.listar(veiculoId, status)
   }
  
   @Patch('os/:id/status')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   atualizarStatus(@Param('id') id: string, @Body() dto: AtualizarStatusOsDto, @CurrentUser() user: any) {
     return this.manutencaoService.atualizarStatus(id, dto, user.id)
   }
  
   @Get('veiculos/:id/revisoes')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.OPERACIONAL)
   getRevisoes(@Param('id') id: string) {
     return this.manutencaoService.getRevisoes(id)
   }
  
   @Post('revisoes/:id/trocar')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   registrarTroca(
     @Param('id') id: string,
@@ -51,24 +57,28 @@ export class ManutencaoController {
   }
  
   @Get('veiculos/:id/preditiva')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   analisePreditiva(@Param('id') id: string) {
     return this.manutencaoService.analisePreditiva(id)
   }
 
   @Get('fornecedores/comparador')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   comparadorFornecedores(@Query('subsistema') subsistema?: string) {
     return this.manutencaoService.comparadorFornecedores(subsistema)
   }
 
   @Get('diagnostico-assistido')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.OPERACIONAL)
   diagnosticoAssistido(@Query('descricao') descricao: string, @Query('veiculoId') veiculoId?: string) {
     return this.manutencaoService.diagnosticoAssistido(descricao, veiculoId)
   }
 
   @Get('pecas/orcamento')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   orcamentoPeca(@Query('descricao') descricao: string, @Query('meses') meses?: string) {
     return this.manutencaoService.orcamentoPeca(descricao, Number(meses) || 18)

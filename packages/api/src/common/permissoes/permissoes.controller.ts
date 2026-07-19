@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common'
-import { Perfil } from '@prisma/client'
+import { AcaoPermissao, Perfil } from '@prisma/client'
 import { PermissoesService } from './permissoes.service'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 import { RolesGuard } from '../guards/roles.guard'
@@ -27,5 +27,23 @@ export class PermissoesController {
     @CurrentUser() user: any,
   ) {
     return this.permissoes.definirOverride(perfil, recurso, permitido, user.id)
+  }
+
+  @Get('acoes')
+  @Roles(Perfil.ADMINISTRADOR)
+  matrizAcoes() {
+    return this.permissoes.matrizAcoes()
+  }
+
+  @Patch('acoes')
+  @Roles(Perfil.ADMINISTRADOR)
+  definirAcao(
+    @Body('perfil') perfil: Perfil,
+    @Body('recurso') recurso: string,
+    @Body('acao') acao: AcaoPermissao,
+    @Body('permitido') permitido: boolean | null,
+    @CurrentUser() user: any,
+  ) {
+    return this.permissoes.definirOverrideAcao(perfil, recurso, acao, permitido, user.id)
   }
 }

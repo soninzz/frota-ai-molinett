@@ -1,4 +1,5 @@
 import { Recurso } from '../common/decorators/recurso.decorator'
+import { Acao } from '../common/decorators/acao.decorator'
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common'
 import { PneusService } from './pneus.service'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
@@ -15,12 +16,14 @@ export class PneusController {
   constructor(private pneusService: PneusService) {}
  
   @Get('veiculo/:veiculoId')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   listar(@Param('veiculoId') veiculoId: string) {
     return this.pneusService.listarPorVeiculo(veiculoId)
   }
  
   @Post(':id/movimentacao')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   registrar(
     @Param('id') id: string,
@@ -39,6 +42,7 @@ export class PneusController {
   }
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   @Post()
+  @Acao('ESCREVER')
   criar(@Body() dto: CriarPneuDto, @CurrentUser() user: any) {
     return this.pneusService.criar(dto, user.id)
   }

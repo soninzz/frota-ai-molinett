@@ -1,4 +1,5 @@
 import { Recurso } from '../common/decorators/recurso.decorator'
+import { Acao } from '../common/decorators/acao.decorator'
 import {
   Controller, Get, Post, Patch, Body,
   Query, Param, UseGuards, Res
@@ -23,24 +24,28 @@ export class FinanceiroController {
   ) {}
  
   @Get('painel')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   getPainel() {
     return this.financeiroService.getPainelFinanceiro()
   }
 
   @Post('conciliacao/ofx')
+  @Acao('ESCREVER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   conciliarOfx(@Body('conteudoOfx') conteudoOfx: string, @Body('contaBancariaId') contaBancariaId: string) {
     return this.financeiroService.conciliarOfx(conteudoOfx, contaBancariaId)
   }
  
   @Get('fluxo-caixa')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   getFluxoCaixa(@Query('dias') dias: string) {
     return this.financeiroService.getFluxoCaixa(Number(dias) || 90)
   }
  
   @Get('dre')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   getDre(@Query('mes') mes: string) {
     const mesAtual = mes || new Date().toISOString().slice(0, 7)
@@ -48,12 +53,14 @@ export class FinanceiroController {
   }
  
   @Post('lancamentos')
+  @Acao('ESCREVER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   criarLancamento(@Body() dto: CriarLancamentoDto, @CurrentUser() user: any) {
     return this.financeiroService.criarLancamento(dto, user.id)
   }
  
   @Get('lancamentos')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   listar(
     @Query('tipo')   tipo:   string,
@@ -65,6 +72,7 @@ export class FinanceiroController {
   }
  
   @Get('lancamentos/exportar')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   async exportar(
     @Query('tipo')   tipo:   string,
@@ -78,30 +86,35 @@ export class FinanceiroController {
   }
 
   @Get('lancamentos/atrasados')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   getAtrasados() {
     return this.financeiroService.getAtrasados()
   }
  
   @Patch('lancamentos/baixar')
+  @Acao('ESCREVER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   baixar(@Body() dto: BaixarLancamentoDto, @CurrentUser() user: any) {
     return this.financeiroService.baixarLancamento(dto, user.id)
   }
 
   @Patch('lancamentos/:id/reagendar')
+  @Acao('ESCREVER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   reagendar(@Param('id') id: string, @CurrentUser() user: any) {
     return this.financeiroService.reagendarLancamento(id, user.id)
   }
  
   @Get('metas')
+  @Acao('LER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.ATENDIMENTO)
   getMetas() {
     return this.metasService.getMetas()
   }
  
   @Post('metas/recalcular')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   recalcularMetas() {
     return this.metasService.recalcularMetas()
@@ -109,6 +122,7 @@ export class FinanceiroController {
 
   // Guardrail 4: gestor só pode AUMENTAR a meta acima do piso calculado
   @Patch('metas/ajustar')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   ajustarMetas(
     @Body('faturamentoMinimoManual') faturamentoMinimoManual: number | undefined,
@@ -119,6 +133,7 @@ export class FinanceiroController {
   }
  
   @Post('simulador')
+  @Acao('ESCREVER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   simular(
     @Body('valorTotal') valorTotal: number,
@@ -129,6 +144,7 @@ export class FinanceiroController {
   }
  
   @Post('comparador')
+  @Acao('ESCREVER')
   @Roles(Perfil.FINANCEIRO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   comparar(
     @Body('valor')    valor:    number,

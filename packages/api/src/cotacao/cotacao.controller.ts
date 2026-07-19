@@ -1,4 +1,5 @@
 import { Recurso } from '../common/decorators/recurso.decorator'
+import { Acao } from '../common/decorators/acao.decorator'
 import {
   Controller,
   Post,
@@ -28,6 +29,7 @@ export class CotacaoController {
  
   // Calcula os 5 cenários de margem
   @Post('calcular')
+  @Acao('ESCREVER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   calcular(@Body() dto: CriarCotacaoDto, @CurrentUser() user: any) {
     return this.cotacaoService.calcular(dto, user.id)
@@ -35,6 +37,7 @@ export class CotacaoController {
  
   // Confirma e gera OS
   @Post('confirmar')
+  @Acao('ESCREVER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   confirmar(@Body() dto: ConfirmarCotacaoDto, @CurrentUser() user: any) {
     return this.cotacaoService.confirmar(dto, user.id)
@@ -42,6 +45,7 @@ export class CotacaoController {
  
   // Painel de metas para o atendimento
   @Get('painel-metas')
+  @Acao('LER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.FINANCEIRO)
   getPainelMetas() {
     return this.cotacaoService.getPainelMetas()
@@ -49,17 +53,20 @@ export class CotacaoController {
  
   // Lista histórico
   @Get()
+  @Acao('LER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.FINANCEIRO)
   listar(@Query('pagina') pagina: string, @Query('limite') limite: string) {
     return this.cotacaoService.listar(Number(pagina) || 1, Number(limite) || 20)
   }
 
   @Get('pendentes-aprovacao')
+  @Acao('LER')
   listarPendentesAprovacao() {
     return this.cotacaoService.listarPendentesAprovacao()
   }
 
   @Get('metricas/canceladas-perdidas')
+  @Acao('LER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.FINANCEIRO)
   contadorCanceladasPerdidas(@Query('dataInicio') dataInicio?: string, @Query('dataFim') dataFim?: string) {
     return this.cotacaoService.contadorCanceladasPerdidas(dataInicio, dataFim)
@@ -67,6 +74,7 @@ export class CotacaoController {
  
   // Detalhe de uma cotação
   @Get(':id')
+  @Acao('LER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.FINANCEIRO)
   findById(@Param('id') id: string) {
     return this.cotacaoService.findById(id)
@@ -74,6 +82,7 @@ export class CotacaoController {
  
   // Cancela cotação
   @Delete(':id')
+  @Acao('ESCREVER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   cancelar(@Param('id') id: string, @Body('motivo') motivo: string, @CurrentUser() user: any) {
     return this.cotacaoService.cancelar(id, motivo, user.id)
@@ -81,16 +90,19 @@ export class CotacaoController {
  
   // Solicita alteração de OS
   @Post('os/alterar')
+  @Acao('ESCREVER')
   @Roles(Perfil.ATENDIMENTO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   solicitarAlteracao(@Body() dto: AlterarOsDto, @CurrentUser() user: any) {
     return this.cotacaoService.solicitarAlteracaoOs(dto, user.id)
   }
   @Get('os/:id')
+  @Acao('LER')
   buscarOs(@Param('id') id: string) {
     return this.cotacaoService.buscarOsPorId(id)
   }
 
   @Roles(Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  @Acao('APROVAR')
   @Post(':id/aprovar')
   aprovar(
     @Param('id') id: string,

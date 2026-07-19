@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { Recurso } from '../common/decorators/recurso.decorator'
+import { Acao } from '../common/decorators/acao.decorator'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -14,24 +15,28 @@ export class EstoqueController {
   constructor(private estoque: EstoqueService) {}
 
   @Get()
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   listar() {
     return this.estoque.listar()
   }
 
   @Get('abaixo-minimo')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   abaixoDoMinimo() {
     return this.estoque.itensAbaixoDoMinimo()
   }
 
   @Get('cruzamento-orcamento')
+  @Acao('LER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR, Perfil.FINANCEIRO)
   cruzamentoOrcamento() {
     return this.estoque.cruzamentoOrcamento()
   }
 
   @Post()
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   criar(
     @Body()
@@ -52,6 +57,7 @@ export class EstoqueController {
   }
 
   @Post('movimentacao')
+  @Acao('ESCREVER')
   @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
   registrarMovimentacao(
     @Body()

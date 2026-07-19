@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { CategoriaAlerta, Perfil } from '@prisma/client'
+import { AcaoPermissao, CategoriaAlerta, Perfil } from '@prisma/client'
 import { PrismaService } from '../../database/prisma.service'
 import { AuditoriaService } from '../auditoria/auditoria.service'
 import { AlertasService } from '../../alertas/alertas.service'
+
+// Os 4 verbos do critério de aceite (RBAC "ler/escrever/aprovar/configurar").
+export const ACOES_DISPONIVEIS: AcaoPermissao[] = ['LER', 'ESCREVER', 'APROVAR', 'CONFIGURAR']
 
 // Recursos (módulos) que aceitam override de RBAC via /sistema/permissoes.
 // Controllers marcam suas rotas com @Recurso(nome) usando estes valores.
@@ -85,6 +88,67 @@ export class PermissoesService {
     })
 
     return { perfil, recurso, permitido }
+  }
+
+  // Matriz granular perfil × recurso × ação — só relevante pra recursos que
+  // já tem rota(s) marcada(s) com @Acao(); sem override aqui, vale o padrão
+  // (RegraPermissao do recurso inteiro, senão o @Roles() hardcoded).
+  async matrizAcoes() {
+    const overrides = await this.prisma.regraPermissaoAcao.findMany()
+    const porChave = new Map(overrides.map((o) => [`${o.perfil}:${o.recurso}:${o.acao}`, o]))
+
+    const perfis = Object.values(Perfil)
+    return perfis.map((perfil) => ({
+      perfil,
+      recursos: RECURSOS_DISPONIVEIS.map((recurso) => ({
+        recurso,
+        acoes: ACOES_DISPONIVEIS.map((acao) => {
+          const override = porChave.get(`${perfil}:${recurso}:${acao}`)
+          return {
+            acao,
+            override: override ? override.permitido : null,
+            atualizadoEm: override?.atualizadoEm ?? null,
+          }
+        }),
+      })),
+    }))
+  }
+
+  async definirOverrideAcao(
+    perfil: Perfil,
+    recurso: string,
+    acao: AcaoPermissao,
+    permitido: boolean | null,
+    usuarioId: string,
+  ) {
+    if (permitido === null) {
+      await this.prisma.regraPermissaoAcao.deleteMany({ where: { perfil, recurso, acao } })
+    } else {
+      await this.prisma.regraPermissaoAcao.upsert({
+        where: { perfil_recurso_acao: { perfil, recurso, acao } },
+        update: { permitido, atualizadoPor: usuarioId },
+        create: { perfil, recurso, acao, permitido, atualizadoPor: usuarioId },
+      })
+    }
+
+    await this.auditoria.registrar({
+      usuarioId,
+      entidade: 'RegraPermissaoAcao',
+      registroId: `${perfil}:${recurso}:${acao}`,
+      acao: 'DEFINIR_OVERRIDE_ACAO',
+      depois: { perfil, recurso, acao, permitido },
+    })
+
+    await this.garantirRegraNotificacao()
+    const resultado = permitido === null ? 'voltou ao padrão' : permitido ? 'foi liberado' : 'foi bloqueado'
+    await this.alertas.disparar({
+      categoria: CategoriaAlerta.OPERACIONAL,
+      evento: 'PERMISSAO_ALTERADA',
+      mensagem: `Permissão de "${acao.toLowerCase()}" em "${recurso}" pro perfil ${perfil} ${resultado}.`,
+      contexto: { perfil, recurso, acao, permitido, alteradoPor: usuarioId },
+    })
+
+    return { perfil, recurso, acao, permitido }
   }
 
   private async garantirRegraNotificacao() {

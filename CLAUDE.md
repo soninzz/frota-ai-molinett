@@ -217,6 +217,32 @@ por ID externo). Já aplicado no banco (2026-07-10):
   a `observacao` com o status original da planilha e o solicitante, pra auditoria/correção
   manual se o mapeamento não fizer sentido em algum caso.
 
+### Concluído em 2026-07-19
+- **RBAC granular (ler/escrever/aprovar/configurar)** — item que eu mesmo tinha adiado antes
+  ("risco alto de mexer em autorização sem supervisão ao vivo"), retomado a pedido do cliente
+  ("o que da pra fazer de pendencia nossa pode fazer"). Pra não correr o risco que eu tinha
+  apontado, implementei como uma camada **totalmente aditiva e separada** da RBAC existente:
+  tabela nova `RegraPermissaoAcao` (perfil+recurso+ação→booleano) e decorator novo `@Acao()`,
+  independentes da tabela/decorator antigos (`RegraPermissao`/`@Recurso`) — uma rota sem
+  `@Acao()` continua funcionando exatamente como antes, e o `RegraPermissao` do recurso inteiro
+  (quando existe) continua tendo prioridade sobre o override granular. `RolesGuard` faz a
+  checagem granular só se a rota tiver `@Acao()` E existir override pra aquele
+  perfil+recurso+ação específico. Aplicado `@Acao()` em ~50 rotas: `cotacao` (LER/ESCREVER/
+  APROVAR, incluindo `:id/aprovar`), `usuarios` (LER/CONFIGURAR) e LER/ESCREVER (por método
+  HTTP: GET→LER, POST/PATCH/DELETE→ESCREVER) em `manutencao`, `frota`, `pneus`, `sinistros`,
+  `jornada`, `financeiro`, `diesel`, `ocr`, `estoque`. Endpoints novos: `GET/PATCH
+  /sistema/permissoes/acoes` (mesmo padrão de auditoria+alerta do endpoint whole-resource já
+  existente). Tela `/sistema/permissoes` ganhou uma segunda matriz abaixo da original —
+  seletor de recurso + tabela perfil×ação com o mesmo padrão de clique-pra-ciclar
+  (padrão→liberado→bloqueado→padrão). **Testado ao vivo em produção**: confirmei o ciclo
+  completo (ler matriz, aplicar override, ler de novo, reverter) via `/sistema/permissoes/acoes`,
+  e confirmei que o bloqueio realmente nega acesso — bloqueei `LER` de `manutencao` pro
+  ADMINISTRADOR, `GET /manutencao/os` foi de 200 pra 403 (`"Acesso negado — perfil sem
+  permissão de ler em manutencao"`), revertido o override e voltou a 200. Nenhum estado de
+  teste ficou pendurado em produção. Schema aplicado ao banco via `prisma db push` (não
+  `migrate dev` — motivo documentado abaixo, na seção de erros recorrentes desta sessão: P1001
+  intermitente atingindo o shadow DB, sem relação com firewall).
+
 ### Não iniciado / pendente
 - **Restante da planilha `GESTÃO VEÍCULOS TRANSPORTES.xlsx` — bloqueado, não é só rodar script**:
   - **HABILITAÇÕES e TÓXICOS** — **descartado, não é dado real** (confirmado com o cliente em

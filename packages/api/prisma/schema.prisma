@@ -803,6 +803,31 @@ model RegraPermissao {
   @@map("regras_permissao")
 }
 
+enum AcaoPermissao {
+  LER
+  ESCREVER
+  APROVAR
+  CONFIGURAR
+}
+
+// Camada ADITIVA de granularidade além de RegraPermissao (que continua
+// valendo do jeito que sempre valeu — bloqueio/liberação do recurso
+// inteiro). Essa aqui só refina mais quando o Administrador quer diferenciar
+// "pode ver" de "pode aprovar", por exemplo — critério de aceite pede os 4
+// verbos (ler/escrever/aprovar/configurar), o que já existia só tinha 1 nível.
+model RegraPermissaoAcao {
+  id           String        @id @default(cuid())
+  perfil       Perfil
+  recurso      String
+  acao         AcaoPermissao
+  permitido    Boolean
+  atualizadoPor String?
+  atualizadoEm DateTime      @updatedAt
+
+  @@unique([perfil, recurso, acao])
+  @@map("regras_permissao_acao")
+}
+
 enum StatusOS {
   COTACAO
   AGUARDANDO
