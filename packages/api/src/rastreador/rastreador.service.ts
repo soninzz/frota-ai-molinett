@@ -1,8 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { CategoriaAlerta } from '@prisma/client'
 import { PrismaService } from '../database/prisma.service'
 import { PosicaoVeiculo } from './dto/posicao-veiculo.dto'
 import { fetchComRetry } from '../common/fetch-retry.util'
+import { AlertasService } from '../alertas/alertas.service'
 
 interface AssemilsatPosicao {
   idveiculo: string
@@ -74,6 +76,7 @@ export class RastreadorService {
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
+    private alertas: AlertasService,
   ) {
     this.modo = this.config.get<string>('TRACKER_MODE', 'mock')
   }
@@ -319,93 +322,174 @@ export class RastreadorService {
   // Abaixo da qual consideramos o veículo "parado" mesmo com motor ligado
   // (tráfego, semáforo). Acima disso conta como direção efetiva.
   private static readonly VELOCIDADE_PARADO_KMH = 5
+  private static readonly MAX_TENTATIVAS = 5
+  private static readonly LOTE_PROCESSAMENTO = 500
 
   // ── Ponto único chamado pelo cron a cada 5 min ──
-  // Busca as posições UMA vez (Assemilsat não é idempotente — não pode
-  // chamar de novo) e usa o mesmo resultado pra duas coisas: (1) atualiza
-  // "última posição conhecida" de TODOS os veículos, pro mapa ao vivo;
-  // (2) atualiza HT/HP das viagens em andamento + telemetria bruta (Lei do
-  // Motorista).
+  // Duas fases separadas de propósito (idempotência real, sem Redis/BullMQ):
+  // (1) busca e persiste as posições cruas na fila `PosicaoRastreadorRecebida`
+  // imediatamente — o Assemilsat não é idempotente (cada chamada consome a
+  // fila do lado deles), então essa é a ÚNICA chance de não perder o dado se
+  // o processamento falhar depois; (2) processa a fila (linhas PENDENTE/ERRO
+  // com tentativas < máximo), uma posição por vez dentro de uma transação —
+  // se cair no meio, a linha nunca é marcada PROCESSADO e volta pro próximo
+  // ciclo sem contar HT/HP nem gravar telemetria em duplicidade.
   async sincronizarPosicoes() {
+    await this.receberPosicoes()
+    await this.processarPosicoesPendentes()
+  }
+
+  private async receberPosicoes() {
     const posicoes = await this.buscarPosicoesNovas()
     if (!posicoes.length) return
 
-    await this.atualizarUltimaPosicaoVeiculos(posicoes)
-    await this.atualizarViagensEmAndamento(posicoes)
+    await this.prisma.posicaoRastreadorRecebida.createMany({
+      data: posicoes.map((p) => ({
+        fonte: p.fonte,
+        veiculoIdExterno: p.veiculoIdExterno,
+        placa: p.placa,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        velocidade: p.velocidade,
+        motorLigado: p.motorLigado,
+        timestamp: p.timestamp,
+      })),
+    })
   }
 
-  private async atualizarUltimaPosicaoVeiculos(posicoes: PosicaoVeiculo[]) {
-    const veiculos = await this.prisma.veiculo.findMany({
-      where: { placa: { in: posicoes.map((p) => p.placa) } },
-      select: { id: true, placa: true },
+  private async processarPosicoesPendentes() {
+    const pendentes = await this.prisma.posicaoRastreadorRecebida.findMany({
+      where: {
+        OR: [
+          { status: 'PENDENTE' },
+          { status: 'ERRO', tentativas: { lt: RastreadorService.MAX_TENTATIVAS } },
+        ],
+      },
+      orderBy: { recebidoEm: 'asc' },
+      take: RastreadorService.LOTE_PROCESSAMENTO,
     })
-    const idPorPlaca = new Map(veiculos.map((v) => [v.placa, v.id]))
+    if (!pendentes.length) return
 
-    await Promise.all(
-      posicoes.map((p) => {
-        const veiculoId = idPorPlaca.get(p.placa)
-        if (!veiculoId) return null
-        return this.prisma.veiculo.update({
-          where: { id: veiculoId },
+    let sucesso = 0
+    let falhas = 0
+    for (const row of pendentes) {
+      try {
+        await this.processarUmaPosicao(row)
+        sucesso++
+      } catch (e) {
+        falhas++
+        await this.marcarFalha(row, e as Error)
+      }
+    }
+    this.logger.log(`Fila do rastreador: ${sucesso} posição(ões) processada(s), ${falhas} falha(s)`)
+  }
+
+  // Processa UMA posição por transação — atomicidade entre atualizar
+  // veículo/viagem/telemetria e marcar a linha PROCESSADO é o que garante
+  // "processa exatamente uma vez, mesmo com retry".
+  private async processarUmaPosicao(row: {
+    id: string
+    placa: string
+    latitude: number
+    longitude: number
+    velocidade: number
+    motorLigado: boolean
+    timestamp: Date
+    fonte: string
+  }) {
+    await this.prisma.$transaction(async (tx) => {
+      const veiculo = await tx.veiculo.findFirst({ where: { placa: row.placa } })
+      if (veiculo) {
+        await tx.veiculo.update({
+          where: { id: veiculo.id },
           data: {
-            ultimaLatitude: p.latitude,
-            ultimaLongitude: p.longitude,
-            ultimaVelocidade: p.velocidade,
-            ultimoMotorLigado: p.motorLigado,
-            ultimaPosicaoEm: p.timestamp,
-            ultimaPosicaoFonte: p.fonte,
+            ultimaLatitude: row.latitude,
+            ultimaLongitude: row.longitude,
+            ultimaVelocidade: row.velocidade,
+            ultimoMotorLigado: row.motorLigado,
+            ultimaPosicaoEm: row.timestamp,
+            ultimaPosicaoFonte: row.fonte,
           },
         })
-      }),
-    )
-  }
 
-  // ── Atualiza HT/HP da viagem em andamento com base nas posições ──
-  // Também persiste a telemetria bruta (necessária pra checar direção
-  // contínua de 5h30 e intervalo intrajornada de 1h — Lei do Motorista).
-  private async atualizarViagensEmAndamento(posicoes: PosicaoVeiculo[]) {
-    const viagensAtivas = await this.prisma.viagem.findMany({
-      where: { concluidaEm: null, iniciadaEm: { not: null } },
-      include: { veiculo: true },
-    })
+        const viagemAtiva = await tx.viagem.findFirst({
+          where: { veiculoId: veiculo.id, concluidaEm: null, iniciadaEm: { not: null } },
+        })
+        if (viagemAtiva) {
+          // Motor ligado + em movimento = direção efetiva (HT).
+          // Motor ligado + parado = tempo de espera (HP motor ligado — CLT 235-C
+          // §§8/9, conta como jornada). Motor desligado = HP motor desligado.
+          const emMovimento = row.motorLigado && row.velocidade > RastreadorService.VELOCIDADE_PARADO_KMH
+          const emEspera = row.motorLigado && !emMovimento
 
-    for (const viagem of viagensAtivas) {
-      const posicoesDoVeiculo = posicoes.filter((p) => p.placa === viagem.veiculo.placa)
-      if (!posicoesDoVeiculo.length) continue
-
-      // Motor ligado + em movimento = direção efetiva (HT).
-      // Motor ligado + parado = tempo de espera (HP motor ligado — CLT 235-C §§8/9,
-      // conta como jornada). Motor desligado = HP motor desligado.
-      let minutosDirecao = 0
-      let minutosEspera = 0
-      let minutosParado = 0
-      for (const p of posicoesDoVeiculo) {
-        if (p.motorLigado && p.velocidade > RastreadorService.VELOCIDADE_PARADO_KMH) minutosDirecao += 5
-        else if (p.motorLigado) minutosEspera += 5
-        else minutosParado += 5
+          await tx.viagem.update({
+            where: { id: viagemAtiva.id },
+            data: {
+              htMinutos: { increment: emMovimento ? 5 : 0 },
+              hpMotorLigado: { increment: emEspera ? 5 : 0 },
+              hpMotorDesligado: { increment: !row.motorLigado ? 5 : 0 },
+            },
+          })
+          await tx.telemetriaPosicao.create({
+            data: {
+              viagemId: viagemAtiva.id,
+              veiculoId: veiculo.id,
+              latitude: row.latitude,
+              longitude: row.longitude,
+              velocidade: row.velocidade,
+              motorLigado: row.motorLigado,
+              timestamp: row.timestamp,
+            },
+          })
+        }
       }
 
-      await this.prisma.$transaction([
-        this.prisma.viagem.update({
-          where: { id: viagem.id },
-          data: {
-            htMinutos: (viagem.htMinutos ?? 0) + minutosDirecao,
-            hpMotorLigado: (viagem.hpMotorLigado ?? 0) + minutosEspera,
-            hpMotorDesligado: (viagem.hpMotorDesligado ?? 0) + minutosParado,
-          },
-        }),
-        this.prisma.telemetriaPosicao.createMany({
-          data: posicoesDoVeiculo.map((p) => ({
-            viagemId: viagem.id,
-            veiculoId: viagem.veiculoId,
-            latitude: p.latitude,
-            longitude: p.longitude,
-            velocidade: p.velocidade,
-            motorLigado: p.motorLigado,
-            timestamp: p.timestamp,
-          })),
-        }),
-      ])
+      await tx.posicaoRastreadorRecebida.update({
+        where: { id: row.id },
+        data: { status: 'PROCESSADO', processadoEm: new Date() },
+      })
+    })
+  }
+
+  // DLQ: depois de MAX_TENTATIVAS falhas, a linha para de ser retentada
+  // automaticamente e vira FALHA_PERMANENTE — alerta o Gestor Principal em
+  // vez de ficar tentando pra sempre (ou some silenciosamente do sistema).
+  private async marcarFalha(row: { id: string; tentativas: number; placa: string }, erro: Error) {
+    const tentativas = row.tentativas + 1
+    const dlq = tentativas >= RastreadorService.MAX_TENTATIVAS
+    await this.prisma.posicaoRastreadorRecebida.update({
+      where: { id: row.id },
+      data: {
+        tentativas,
+        status: dlq ? 'FALHA_PERMANENTE' : 'ERRO',
+        erro: erro.message,
+      },
+    })
+    this.logger.error(`Falha ao processar posição de ${row.placa} (tentativa ${tentativas})`, erro)
+
+    if (dlq) {
+      await this.garantirRegraDlq()
+      await this.alertas.disparar({
+        categoria: CategoriaAlerta.OPERACIONAL,
+        evento: 'RASTREADOR_POSICAO_DLQ',
+        mensagem: `Posição do veículo ${row.placa} falhou ${tentativas}x ao processar e foi pra fila morta (DLQ) — requer checagem manual.`,
+        contexto: { placa: row.placa, posicaoId: row.id, erro: erro.message },
+      })
+    }
+  }
+
+  private async garantirRegraDlq() {
+    const existente = await this.prisma.regraAlerta.findFirst({ where: { evento: 'RASTREADOR_POSICAO_DLQ' } })
+    if (!existente) {
+      await this.prisma.regraAlerta.create({
+        data: {
+          categoria: CategoriaAlerta.OPERACIONAL,
+          evento: 'RASTREADOR_POSICAO_DLQ',
+          descricao: 'Posição do rastreador falhou repetidamente ao processar (fila morta)',
+          destinatariosPerfis: ['GESTOR_PRINCIPAL'],
+          canal: 'PAINEL',
+        },
+      })
     }
   }
 }

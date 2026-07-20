@@ -1,0 +1,27 @@
+name: Cron rastreador (sincronização a cada 5min)
+
+# A Vercel só oferece Cron Job nativo com frequência de 5 em 5 min no plano
+# Pro (o projeto está no Hobby, limitado a 1x/dia) — usa o GitHub Actions
+# como pinger externo gratuito em vez de contratar um serviço terceiro novo,
+# já que o código já vive aqui. Chama só o endpoint /cron/rastreador
+# (protegido por CRON_SECRET); os outros 6 jobs (diários/mensal) já rodam
+# via Vercel Cron Job nativo (ver packages/api/vercel.json).
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chama /cron/rastreador
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://molinett-api.vercel.app/cron/rastreador")
+          echo "status: $status"
+          if [ "$status" -ge 400 ]; then
+            echo "Falhou com status $status"
+            exit 1
+          fi

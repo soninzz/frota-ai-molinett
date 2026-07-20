@@ -1,15 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Cron } from '@nestjs/schedule'
 import { CategoriaAlerta, Perfil } from '@prisma/client'
 import { PrismaService } from '../database/prisma.service'
 import { AlertasService } from '../alertas/alertas.service'
 import { EstoqueService } from './estoque.service'
 
-const TZ = 'America/Sao_Paulo'
-
 // Escopo funcional §5.3: alerta de compra ao bater estoque mínimo. Os campos
 // (quantidadeAtual/quantidadeMinima) já existiam no schema, mas nada
-// comparava um contra o outro — roda 1x por dia às 07h.
+// comparava um contra o outro — disparado 1x por dia às 07h via Vercel
+// Cron Job → GET /cron/estoque-baixo (guard CronSecretGuard), não mais
+// @Cron do NestJS — não roda de forma confiável em serverless.
 @Injectable()
 export class EstoqueBaixoScheduler {
   private readonly logger = new Logger(EstoqueBaixoScheduler.name)
@@ -20,7 +19,6 @@ export class EstoqueBaixoScheduler {
     private estoque: EstoqueService,
   ) {}
 
-  @Cron('0 0 7 * * *', { timeZone: TZ })
   async verificarEstoqueBaixo() {
     try {
       await this.garantirRegra()

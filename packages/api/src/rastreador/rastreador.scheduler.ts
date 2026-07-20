@@ -1,8 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { RastreadorService } from './rastreador.service'
 
+// Disparado via GET /cron/rastreador (guard CronSecretGuard), não mais por
+// @Cron do NestJS — a Vercel é serverless, não mantém processo vivo pro
+// scheduler em memória disparar sozinho (achado ao vivo em produção: a
+// sincronização ficou 272 minutos sem rodar mesmo com o cron "registrado").
+// A cada 5 min é chamado por um pinger externo (fora da Vercel — o plano
+// Hobby só permite Cron Job nativo 1x/dia, não dá pra usar Vercel Cron aqui).
 @Injectable()
 export class RastreadorScheduler {
   private readonly logger = new Logger(RastreadorScheduler.name)
@@ -13,10 +18,9 @@ export class RastreadorScheduler {
     private rastreadorService: RastreadorService,
   ) {}
 
-  // A cada 5 min busca as posições novas do Assemilsat e atualiza HT/HP
-  // das viagens em andamento. Só roda em TRACKER_MODE=live — em mock as
-  // posições são aleatórias e poluiriam as viagens reais.
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  // Busca as posições novas do Assemilsat/MegaSat e atualiza HT/HP das
+  // viagens em andamento. Só roda em TRACKER_MODE=live — em mock as posições
+  // são aleatórias e poluiriam as viagens reais.
   async sincronizarPosicoes() {
     const modo = this.config.get<string>('TRACKER_MODE', 'mock')
     if (modo !== 'live') {

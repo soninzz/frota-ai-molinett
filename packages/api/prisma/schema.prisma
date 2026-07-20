@@ -934,3 +934,39 @@ enum StatusSinistro {
   RECUSADO
   ENCERRADO
 }
+
+// Fila de idempotência do rastreador (Postgres, sem Redis/BullMQ). O
+// endpoint do Assemilsat NÃO é idempotente — cada chamada consome a fila de
+// posições novas do lado deles, então se o processamento (atualizar
+// veículo/viagem) falhar depois do fetch, não dá pra simplesmente buscar de
+// novo. Por isso a posição bruta é persistida aqui IMEDIATAMENTE ao chegar
+// (antes de qualquer processamento) — o processamento em si vira resumível:
+// cada linha só sai de PENDENTE/ERRO quando o processamento dela É de fato
+// commitado (dentro da mesma transação), então uma falha no meio nunca conta
+// a posição duas vezes nem perde ela.
+model PosicaoRastreadorRecebida {
+  id               String                     @id @default(cuid())
+  fonte            String // "assemilsat" | "megasat"
+  veiculoIdExterno String
+  placa            String
+  latitude         Float
+  longitude        Float
+  velocidade       Float
+  motorLigado      Boolean
+  timestamp        DateTime
+  status           StatusPosicaoRastreador    @default(PENDENTE)
+  tentativas       Int                        @default(0)
+  erro             String?
+  recebidoEm       DateTime                   @default(now())
+  processadoEm     DateTime?
+
+  @@index([status])
+  @@map("posicoes_rastreador_recebidas")
+}
+
+enum StatusPosicaoRastreador {
+  PENDENTE
+  PROCESSADO
+  ERRO
+  FALHA_PERMANENTE
+}

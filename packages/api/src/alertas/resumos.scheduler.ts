@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Cron } from '@nestjs/schedule'
 import { CategoriaAlerta, Perfil } from '@prisma/client'
 import { PrismaService } from '../database/prisma.service'
 import { AlertasService } from './alertas.service'
 
-const TZ = 'America/Sao_Paulo'
 const DIA_MS = 24 * 60 * 60 * 1000
 
 // Resumos diários por perfil (Escopo v3 §S02): gestora 07h, manutenção 07h30,
 // atendimento 08h. Hoje gravam no painel de alertas; quando o WhatsApp
 // conectar, o mesmo disparo passa a enviar mensagem sem mudar quem chama.
+// Disparado via Vercel Cron Job → GET /cron/resumo-* (guard CronSecretGuard),
+// não mais @Cron do NestJS — não roda de forma confiável em serverless.
 @Injectable()
 export class ResumosScheduler {
   private readonly logger = new Logger(ResumosScheduler.name)
@@ -19,8 +19,7 @@ export class ResumosScheduler {
     private alertas: AlertasService,
   ) {}
 
-  // ── 07h00 — Gestor principal: visão financeira + operação ──
-  @Cron('0 0 7 * * *', { timeZone: TZ })
+  // ── Gestor principal: visão financeira + operação (07h) ──
   async resumoGestor() {
     await this.garantirRegra(CategoriaAlerta.FINANCEIRO, 'resumo_diario_gestor',
       'Resumo diário do gestor principal (07h)', [Perfil.GESTOR_PRINCIPAL])
@@ -48,8 +47,7 @@ export class ResumosScheduler {
     this.logger.log('Resumo diário do gestor disparado')
   }
 
-  // ── 07h30 — Gestor de manutenção ──
-  @Cron('0 30 7 * * *', { timeZone: TZ })
+  // ── Gestor de manutenção (07h30) ──
   async resumoManutencao() {
     await this.garantirRegra(CategoriaAlerta.MANUTENCAO, 'resumo_diario_manutencao',
       'Resumo diário da manutenção (07h30)', [Perfil.GESTOR_MANUTENCAO])
@@ -74,8 +72,7 @@ export class ResumosScheduler {
     this.logger.log('Resumo diário da manutenção disparado')
   }
 
-  // ── 08h00 — Atendimento: metas e OSs ──
-  @Cron('0 0 8 * * *', { timeZone: TZ })
+  // ── Atendimento: metas e OSs (08h) ──
   async resumoAtendimento() {
     await this.garantirRegra(CategoriaAlerta.COMERCIAL, 'resumo_diario_atendimento',
       'Resumo diário do atendimento (08h)', [Perfil.ATENDIMENTO, Perfil.OPERACIONAL])

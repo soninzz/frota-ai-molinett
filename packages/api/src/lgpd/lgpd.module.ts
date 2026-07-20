@@ -5,5 +5,6 @@ import { ExpurgoTelemetriaScheduler } from './expurgo-telemetria.scheduler'
 @Module({
   controllers: [LgpdController],
   providers: [ExpurgoTelemetriaScheduler],
+  exports: [ExpurgoTelemetriaScheduler],
 })
 export class LgpdModule {}

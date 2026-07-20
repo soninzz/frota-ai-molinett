@@ -1,4 +1,13 @@
 {
   "buildCommand": "",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "crons": [
+    { "path": "/cron/documentos-vencendo", "schedule": "0 9 * * *" },
+    { "path": "/cron/resumo-gestor", "schedule": "0 10 * * *" },
+    { "path": "/cron/resumo-manutencao", "schedule": "30 10 * * *" },
+    { "path": "/cron/resumo-atendimento", "schedule": "0 11 * * *" },
+    { "path": "/cron/estoque-baixo", "schedule": "0 10 * * *" },
+    { "path": "/cron/metas", "schedule": "5 3 * * *" },
+    { "path": "/cron/lgpd-expurgo", "schedule": "0 3 1 * *" }
+  ]
 }

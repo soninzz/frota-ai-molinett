@@ -10,6 +10,6 @@ import { FinanceiroModule } from '../financeiro/financeiro.module'
   imports: [AuditoriaModule, AlertasModule, FinanceiroModule],
   providers: [EstoqueService, EstoqueBaixoScheduler],
   controllers: [EstoqueController],
-  exports: [EstoqueService],
+  exports: [EstoqueService, EstoqueBaixoScheduler],
 })
 export class EstoqueModule {}

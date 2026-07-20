@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Cron } from '@nestjs/schedule'
 import { CategoriaAlerta, Perfil } from '@prisma/client'
 import { PrismaService } from '../database/prisma.service'
 import { AlertasService } from './alertas.service'
 
-const TZ = 'America/Sao_Paulo'
 const DIA_MS = 24 * 60 * 60 * 1000
 
 // "Regras vivas" de conformidade (guardrail 13): CNH, toxicológico, MOPP,
 // NR-20 (motorista) e aferição de tacógrafo (veículo). Antes as regras de
 // alerta existiam só como definição cadastrada (seed) — nada calculava a
-// data real de vencimento contra hoje. Roda 1x por dia às 06h.
+// data real de vencimento contra hoje. Disparado 1x por dia às 06h via
+// Vercel Cron Job → GET /cron/documentos-vencendo (guard CronSecretGuard) —
+// não mais @Cron do NestJS, que não roda de forma confiável em serverless.
 @Injectable()
 export class DocumentosVencendoScheduler {
   private readonly logger = new Logger(DocumentosVencendoScheduler.name)
@@ -20,7 +20,6 @@ export class DocumentosVencendoScheduler {
     private alertas: AlertasService,
   ) {}
 
-  @Cron('0 0 6 * * *', { timeZone: TZ })
   async verificarVencimentos() {
     try {
       await this.verificarMotoristas()

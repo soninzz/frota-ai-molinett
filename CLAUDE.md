@@ -218,6 +218,64 @@ por ID externo). Já aplicado no banco (2026-07-10):
   manual se o mapeamento não fizer sentido em algum caso.
 
 ### Concluído em 2026-07-19
+- **Idempotência/DLQ real do rastreador (Postgres, sem Redis)**: tabela nova
+  `PosicaoRastreadorRecebida` — o Assemilsat NÃO é idempotente (cada chamada consome a fila de
+  posições novas do lado deles), então antes, se o processamento (atualizar veículo/viagem)
+  falhasse depois do fetch, a posição se perdia pra sempre. Agora `sincronizarPosicoes()` separa
+  em duas fases: `receberPosicoes()` persiste a posição bruta como `PENDENTE` IMEDIATAMENTE ao
+  chegar (única chance de não perder o dado); `processarPosicoesPendentes()` processa a fila
+  (linhas `PENDENTE` ou `ERRO` com `tentativas < 5`), uma posição por vez, cada uma dentro de
+  uma `$transaction` que só marca a linha `PROCESSADO` se atualizar veículo + viagem + telemetria
+  tiver sucedido — se cair no meio, a linha nunca é marcada e volta pro próximo ciclo sem contar
+  HT/HP nem gravar telemetria em duplicidade (retry seguro/idempotente de verdade, não só
+  reentrância). Depois de 5 falhas, a linha vira `FALHA_PERMANENTE` (DLQ) e dispara alerta pro
+  Gestor Principal em vez de tentar pra sempre ou sumir em silêncio. **Testado localmente**:
+  simulei uma posição pendente e confirmei que processar 2x seguidas não reprocessa (mesmo
+  `processadoEm`); simulei uma linha com 4 tentativas e confirmei que a 5ª falha marca
+  `FALHA_PERMANENTE` e dispara o alerta de verdade (`HistoricoAlerta` real gravado, mensagem e
+  contexto conferidos).
+- **Achado real ao testar em produção — os `@Cron` do NestJS não rodavam de verdade**: ao
+  verificar a idempotência do rastreador, `GET /integracoes/saude` mostrou o rastreador **272
+  minutos sem sincronizar**, apesar do `@Cron(EVERY_5_MINUTES)` estar registrado. Causa: a
+  Vercel é serverless — não mantém processo Node vivo entre requisições, e o `vercel.json` não
+  tinha nenhum Cron Job nativo configurado apontando pra nada. Isso afetava os **7** jobs
+  agendados do sistema (rastreador 5min, resumos diários ×3, estoque baixo, metas, expurgo
+  LGPD), que só rodavam esporadicamente quando uma instância ficava quente por acaso logo
+  depois de um deploy — não no horário real. Confirmado com o cliente que era pra resolver
+  (fora do escopo original de "idempotência/DLQ", mas achado direto testando esse trabalho).
+  **Fix**: todos os `@Cron()` foram removidos (código morto em produção — instrução do projeto
+  é apagar código que não funciona, não deixar decoração enganosa) e substituídos por endpoints
+  HTTP protegidos (`GET /cron/*`, guard `CronSecretGuard` checando `Authorization: Bearer
+  $CRON_SECRET`, o mesmo padrão que a própria Vercel usa nativamente pros Cron Jobs dela).
+  - **6 jobs diários/mensal** (`documentos-vencendo` 06h, `resumo-gestor` 07h, `resumo-
+    manutencao` 07h30, `resumo-atendimento` 08h, `estoque-baixo` 07h, `metas` 00h05, `lgpd-
+    expurgo` dia 1 meia-noite): configurados como Vercel Cron Job nativo em
+    `packages/api/vercel.json` (`crons: [...]`, horários convertidos pra UTC). **Confirmado**:
+    a conta é plano Hobby (`digaaisuporte-4949's projects`), que só permite cron 1x/dia com
+    precisão de ±59min — suficiente pra esses 6, que já eram diários/mensais mesmo. `vercel
+    crons ls` confirma os 7 registrados (o rastreador também aparece na lista de rotas, mas
+    não recebe Cron Job da Vercel — ver abaixo).
+  - **Rastreador (5 em 5 min)**: Hobby não permite cron nativo mais frequente que 1x/dia (Pro
+    custaria ~$20/mês/membro — não decidi contratar sozinho, perguntei antes). Optei por
+    GitHub Actions como pinger externo gratuito (`.github/workflows/cron-rastreador.yml`,
+    `schedule: */5 * * * *` + `workflow_dispatch`) em vez de um serviço terceiro novo (ex:
+    cron-job.org), já que o repositório já existe e evita mais uma conta/dependência externa.
+    **Pendente de ação manual** (não consegui fazer sozinho — `gh` CLI não está instalado neste
+    ambiente e não tenho token do GitHub): (1) adicionar o secret `CRON_SECRET` no repositório
+    GitHub (Settings → Secrets and variables → Actions) com o mesmo valor do `.env`; (2) `git
+    push` do commit com o workflow (não fiz push sozinho — ver protocolo de confirmação antes
+    de ação em repositório compartilhado). Até isso ser feito, o rastreador só sincroniza
+    quando alguém chama `GET /cron/rastreador` manualmente (com o secret) ou abre alguma tela
+    que mantenha a função quente por acaso.
+  - **`CRON_SECRET`**: gerado (`crypto.randomBytes(32)`), salvo em `.env`/`.env.example` e como
+    env var `Production` no projeto `molinett-api` na Vercel.
+  - **Testado end-to-end localmente antes do deploy**: os 8 endpoints (`/cron/rastreador` +
+    7 diários/mensal) foram chamados de verdade contra o banco real — todos fizeram trabalho
+    real (rastreador processou 6 posições da fila; resumos criaram regra + dispararam alerta
+    de verdade; metas recalculou valores reais; LGPD expurgo rodou a query). **Ao vivo em
+    produção**: `GET /cron/rastreador` sem secret → 401; com secret certo → 200, e
+    `/integracoes/saude` confirmou o rastreador voltando pra "verde" (`minutosDesdeUltimo: 0`)
+    na hora.
 - **Observabilidade (correlation-id + log estruturado)**: `CorrelationIdMiddleware` gera um
   UUID por requisição (ou reaproveita `x-correlation-id` recebido), guarda num
   `AsyncLocalStorage` (`RequestContext`) e devolve no header da resposta — dá pra rastrear uma

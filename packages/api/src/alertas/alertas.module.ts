@@ -7,6 +7,8 @@ import { DocumentosVencendoScheduler } from './documentos-vencendo.scheduler'
 @Module({
   providers: [AlertasService, ResumosScheduler, DocumentosVencendoScheduler],
   controllers: [AlertasController],
-  exports: [AlertasService], // outros módulos (cotação, manutenção, etc.) vão injetar isso
+  // AlertasService: outros módulos (cotação, manutenção, etc.) vão injetar isso.
+  // Os dois schedulers: exportados só pro CronModule conseguir disparar via HTTP.
+  exports: [AlertasService, ResumosScheduler, DocumentosVencendoScheduler],
 })
 export class AlertasModule {}

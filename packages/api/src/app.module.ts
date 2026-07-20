@@ -26,6 +26,7 @@ import { LgpdModule } from './lgpd/lgpd.module'
 import { UsuariosModule } from './usuarios/usuarios.module'
 import { EstoqueModule } from './estoque/estoque.module'
 import { WhatsappModule } from './whatsapp/whatsapp.module'
+import { CronModule } from './common/cron/cron.module'
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module'
     UsuariosModule,
     EstoqueModule,
     WhatsappModule,
+    CronModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor }],
 })

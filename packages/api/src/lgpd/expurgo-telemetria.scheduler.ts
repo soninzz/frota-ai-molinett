@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { PrismaService } from '../database/prisma.service'
-
-const TZ = 'America/Sao_Paulo'
 
 // RIPD §2.1/§5 (gap listado no próprio relatório): "GPS bruto acumula
 // indefinidamente" — sem rotina de expurgo. Prazo de 12 meses é o exemplo
 // sugerido no documento. Só apaga TelemetriaPosicao (posição bruta, alto
 // volume); não mexe em Viagem/HoraExtra (dados já agregados/necessários
 // pra folha e histórico financeiro, fora do escopo desse gap específico).
+// Disparado 1x por mês (dia 1) via Vercel Cron Job → GET /cron/lgpd-expurgo
+// (guard CronSecretGuard), não mais @Cron do NestJS — não roda de forma
+// confiável em serverless.
 const RETENCAO_MESES = 12
 
 @Injectable()
@@ -17,7 +17,6 @@ export class ExpurgoTelemetriaScheduler {
 
   constructor(private prisma: PrismaService) {}
 
-  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT, { timeZone: TZ })
   async expurgar() {
     try {
       const limite = new Date()

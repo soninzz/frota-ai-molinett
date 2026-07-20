@@ -19,6 +19,7 @@ import { AuditoriaModule } from '../common/auditoria/auditoria.module'
     FinanceiroService,
     FinanceiroClientesService,
     FinanceiroMetasService,
+    MetasScheduler,
   ],
 })
 export class FinanceiroModule {}
