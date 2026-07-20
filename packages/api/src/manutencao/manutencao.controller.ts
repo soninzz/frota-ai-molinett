@@ -83,4 +83,13 @@ export class ManutencaoController {
   orcamentoPeca(@Query('descricao') descricao: string, @Query('meses') meses?: string) {
     return this.manutencaoService.orcamentoPeca(descricao, Number(meses) || 18)
   }
+
+  // Igual ao acima, mas com IA ampliando os termos de busca (sinônimos) e
+  // narrando os números reais em texto — não substitui, complementa.
+  @Get('pecas/assistente')
+  @Acao('LER')
+  @Roles(Perfil.GESTOR_MANUTENCAO, Perfil.GESTOR_PRINCIPAL, Perfil.ADMINISTRADOR)
+  assistenteOrcamentoPeca(@Query('descricao') descricao: string, @Query('meses') meses?: string) {
+    return this.manutencaoService.assistenteOrcamentoPeca(descricao, Number(meses) || 18)
+  }
 }

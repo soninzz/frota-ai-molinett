@@ -1,30 +1,53 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../database/prisma.service'
 import { CriarOsManutencaoDto, AtualizarStatusOsDto } from './dto/manutencao.dto'
 import { StatusOsManutencao } from '@prisma/client'
 import { AuditoriaService } from '../common/auditoria/auditoria.service'
+import { LlmService } from '../common/llm/llm.service'
 
 @Injectable()
 export class ManutencaoService {
+  private readonly logger = new Logger(ManutencaoService.name)
+
   constructor(
     private prisma: PrismaService,
     private auditoria: AuditoriaService,
+    private llm: LlmService,
   ) {}
 
+  // `pecas` (opcional): vem tipicamente da leitura de nota de oficina via IA
+  // (POST /ocr/nota-oficina) já revisada pelo usuário — cria a OS e os itens
+  // extraídos numa transação só ("abre OS automaticamente" a partir da
+  // leitura, sem precisar redigitar cada peça manualmente).
   async criarOs(dto: CriarOsManutencaoDto, usuarioId: string) {
-    const criada = await this.prisma.osManutencao.create({
-      data: {
-        veiculoId:      dto.veiculoId,
-        solicitanteId:  usuarioId,
-        descricao:      dto.descricao,
-        prioridade:     dto.prioridade,
-        subsistema:     dto.subsistema,
-        oficina:        dto.oficina,
-        valorEstimado:  dto.valorEstimado,
-        prazoEstimado:  dto.prazoEstimado ? new Date(dto.prazoEstimado) : undefined,
-        status:         StatusOsManutencao.SOLICITADO,
-      },
-      include: { veiculo: true },
+    const criada = await this.prisma.$transaction(async (tx) => {
+      const os = await tx.osManutencao.create({
+        data: {
+          veiculoId:      dto.veiculoId,
+          solicitanteId:  usuarioId,
+          descricao:      dto.descricao,
+          prioridade:     dto.prioridade,
+          subsistema:     dto.subsistema,
+          oficina:        dto.oficina,
+          valorEstimado:  dto.valorEstimado,
+          prazoEstimado:  dto.prazoEstimado ? new Date(dto.prazoEstimado) : undefined,
+          status:         StatusOsManutencao.SOLICITADO,
+        },
+        include: { veiculo: true },
+      })
+
+      if (dto.pecas?.length) {
+        await tx.osManutencaoPeca.createMany({
+          data: dto.pecas.map((p) => ({
+            osId: os.id,
+            descricao: p.descricao,
+            quantidade: p.quantidade ?? 1,
+            valorUnitario: p.valorUnitario,
+          })),
+        })
+      }
+
+      return os
     })
 
     await this.auditoria.registrar({
@@ -32,7 +55,7 @@ export class ManutencaoService {
       entidade: 'OsManutencao',
       registroId: criada.id,
       acao: 'CRIAR',
-      depois: { veiculoId: criada.veiculoId, descricao: criada.descricao, status: criada.status },
+      depois: { veiculoId: criada.veiculoId, descricao: criada.descricao, status: criada.status, pecas: dto.pecas?.length ?? 0 },
     })
 
     return criada
@@ -308,6 +331,127 @@ export class ManutencaoService {
         fornecedor: c.os.oficina,
         veiculo: c.os.veiculo.placa,
       })),
+    }
+  }
+
+  // ── Assistente de orçamento de peças por IA ───────────────
+  // `orcamentoPeca()` acima já existia, mas só casa por substring exata —
+  // se o usuário descreve a peça com um sinônimo/abreviação diferente do que
+  // ficou salvo no histórico (ex: "pastilha" vs "pastilha de freio dianteira"),
+  // não acha nada. Aqui a IA só faz DUAS coisas, nenhuma delas inventa preço:
+  // (1) sugere variações/sinônimos de busca em cima da descrição livre, pra
+  // aumentar o recall contra o histórico real; (2) narra em texto os números
+  // JÁ CALCULADOS por `orcamentoPeca()` — nunca escreve um valor que não veio
+  // do banco. Se a IA falhar ou não tiver chave configurada, cai pro resultado
+  // puro de `orcamentoPeca()` sem recomendação em texto (nunca quebra a
+  // funcionalidade principal por causa da parte de IA).
+  async assistenteOrcamentoPeca(descricaoLivre: string, meses = 18) {
+    const termos = await this.gerarTermosBusca(descricaoLivre)
+    const termosTentados = [descricaoLivre, ...termos.filter((t) => t.toLowerCase() !== descricaoLivre.toLowerCase())]
+
+    const vistos = new Set<string>()
+    const compras: { id: string; criadoEm: Date; valorUnitario: number; oficina: string | null; placa: string }[] = []
+
+    for (const termo of termosTentados) {
+      if (!termo?.trim()) continue
+      const desde = new Date()
+      desde.setMonth(desde.getMonth() - meses)
+      const encontradas = await this.prisma.osManutencaoPeca.findMany({
+        where: { descricao: { contains: termo, mode: 'insensitive' }, criadoEm: { gte: desde }, valorUnitario: { not: null } },
+        include: { os: { select: { oficina: true, veiculo: { select: { placa: true } } } } },
+      })
+      for (const c of encontradas) {
+        if (vistos.has(c.id)) continue
+        vistos.add(c.id)
+        compras.push({
+          id: c.id,
+          criadoEm: c.criadoEm,
+          valorUnitario: c.valorUnitario as number,
+          oficina: c.os.oficina,
+          placa: c.os.veiculo.placa,
+        })
+      }
+    }
+
+    if (compras.length === 0) {
+      return {
+        peca: descricaoLivre,
+        termosBuscados: termosTentados,
+        amostras: 0,
+        historico: [],
+        recomendacaoIA: null,
+      }
+    }
+
+    compras.sort((a, b) => b.criadoEm.getTime() - a.criadoEm.getTime())
+    const valores = compras.map((c) => c.valorUnitario)
+    const precoMedio = +(valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(2)
+    const precoMinimo = Math.min(...valores)
+    const precoMaximo = Math.max(...valores)
+
+    const porFornecedor = new Map<string, number[]>()
+    for (const c of compras) {
+      const forn = c.oficina ?? 'não informado'
+      const lista = porFornecedor.get(forn) ?? []
+      lista.push(c.valorUnitario)
+      porFornecedor.set(forn, lista)
+    }
+    const melhorFornecedor = [...porFornecedor.entries()]
+      .map(([fornecedor, vs]) => ({ fornecedor, precoMedio: +(vs.reduce((a, b) => a + b, 0) / vs.length).toFixed(2), amostras: vs.length }))
+      .sort((a, b) => a.precoMedio - b.precoMedio)[0]
+
+    const resultado = {
+      peca: descricaoLivre,
+      termosBuscados: termosTentados,
+      amostras: compras.length,
+      precoMedio,
+      precoMinimo,
+      precoMaximo,
+      melhorFornecedor,
+      historico: compras.slice(0, 20).map((c) => ({ data: c.criadoEm, valorUnitario: c.valorUnitario, fornecedor: c.oficina, veiculo: c.placa })),
+    }
+
+    const recomendacaoIA = await this.narrarOrcamento(resultado)
+    return { ...resultado, recomendacaoIA }
+  }
+
+  private async gerarTermosBusca(descricaoLivre: string): Promise<string[]> {
+    try {
+      const r = await this.llm.completar({
+        json: true,
+        prompt:
+          `Um mecânico de frota rodoviária brasileira quer buscar o histórico de preço da peça: "${descricaoLivre}". ` +
+          'Gere até 4 termos de busca curtos (2-4 palavras cada) incluindo sinônimos/abreviações comuns de oficina ' +
+          '(ex: variações de plural, "jogo de", nome comercial vs técnico). Responda APENAS JSON: {"termos": string[]}',
+      })
+      return Array.isArray(r?.termos) ? r.termos.slice(0, 4) : []
+    } catch (e) {
+      this.logger.warn('Assistente de peças: falha ao gerar termos de busca via IA, seguindo só com o termo original', e)
+      return []
+    }
+  }
+
+  private async narrarOrcamento(dados: {
+    peca: string
+    amostras: number
+    precoMedio: number
+    precoMinimo: number
+    precoMaximo: number
+    melhorFornecedor: { fornecedor: string; precoMedio: number; amostras: number }
+  }): Promise<string | null> {
+    try {
+      const texto = await this.llm.completar({
+        json: false,
+        prompt:
+          'Aqui estão dados REAIS de histórico de compra de uma peça de frota (não invente nenhum valor além ' +
+          `destes): ${JSON.stringify(dados)}. Escreva uma recomendação curta (2-3 frases, português informal de ` +
+          'oficina) mencionando o preço médio e o fornecedor mais barato. Se "amostras" for menor que 3, avise que ' +
+          'a confiança é baixa por causa da amostra pequena. Responda só o texto da recomendação, sem formatação.',
+      })
+      return typeof texto === 'string' ? texto.trim() : null
+    } catch (e) {
+      this.logger.warn('Assistente de peças: falha ao gerar recomendação em texto via IA', e)
+      return null
     }
   }
 }

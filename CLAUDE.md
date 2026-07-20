@@ -218,6 +218,44 @@ por ID externo). Já aplicado no banco (2026-07-10):
   manual se o mapeamento não fizer sentido em algum caso.
 
 ### Concluído em 2026-07-19
+- **Assistente de orçamento de peças por IA + leitura de nota de oficina via IA** — os 2 últimos
+  itens da pendência "nossa" do audit de docs. `LlmService` novo (`common/llm/`) extraído do
+  `OcrService` (que já tinha a integração Gemini/Anthropic pra hodômetro/cupom) — mesmo adaptador
+  texto+imagem, reaproveitado nos dois itens abaixo em vez de duplicar a chamada HTTP.
+  - **Assistente de peças** (`GET /manutencao/pecas/assistente`): `orcamentoPeca()` já existia
+    (histórico de preço), mas só casava por substring exata — descrever a peça diferente do que
+    ficou salvo (sinônimo/abreviação) não achava nada. A IA entra em só DOIS pontos, nenhum deles
+    inventa preço: (1) gera até 4 termos de busca alternativos pra ampliar o recall contra o
+    histórico real; (2) narra em texto os números JÁ CALCULADOS (nunca escreve valor que não veio
+    do banco — prompt explícito "não invente nenhum valor além destes"). Se a IA falhar, cai pro
+    resultado numérico puro sem recomendação em texto (nunca quebra por causa da parte de IA).
+    **Testado com dado sintético** (3 variações de "pastilha de freio" com preços diferentes,
+    removidas depois): os 4 termos gerados pela IA bateram nas 3 variações (dedup certo, sem
+    contar a mesma peça 2x), preço médio/mínimo/máximo bateram com a conta manual, e a
+    recomendação em texto citou os números certos e avisou corretamente que não sabia o
+    fornecedor mais barato (dado de teste não tinha oficina preenchida — a IA não inventou um).
+  - **Leitura de nota de oficina** (`POST /ocr/nota-oficina`): mesmo padrão "ler → humano
+    confirma → grava" já usado em hodômetro/cupom — só extrai (oficina, placa, itens com
+    descrição/qtd/valor, total, prazo), nunca cria a OS sozinha. `ManutencaoService.criarOs()`
+    ganhou um campo opcional `pecas[]` no DTO (`POST /manutencao/os`) que cria a OS e os itens
+    extraídos numa transação só — é isso que faz "abrir OS automaticamente" sem redigitar cada
+    peça, mas só depois que o usuário revisou/confirmou os campos extraídos (guardrail: nunca
+    commitar valor financeiro direto da leitura de IA sem revisão humana, mesmo padrão já usado
+    pros comandos de escrita do WhatsApp). **Testado com imagem sintética** (renderizada via
+    Playwright — HTML de um orçamento de oficina fake virado screenshot): extração leu
+    corretamente oficina, placa, os 3 itens com valores, total (R$ 675) e prazo (2 dias),
+    confiança 1.0, `fonte: "gemini"` (não caiu no mock). **Bug real achado e corrigido nesse
+    teste**: `sugerirVeiculoPorPlaca()` comparava a placa tirando o hífen só do lado da busca
+    (`"MHG-1A49"` → `"MHG1A49"`) contra o valor do banco que MANTÉM o hífen (`"MHG-1A49"`) — o
+    `contains` nunca batia, `veiculoSugerido` sempre voltava `null` mesmo pra placa existente.
+    Corrigido pra comparar direto (banco e IA usam o mesmo formato Mercosul com hífen) com
+    fallback por alfanumérico só se a comparação direta falhar. Depois do fix, confirmei que
+    `veiculoSugerido` retorna o veículo certo. Também testei `POST /manutencao/os` com o array
+    `pecas` extraído — os 3 itens foram persistidos em `OsManutencaoPeca` vinculados à OS
+    corretamente (conferido direto no banco, OS de teste removida depois).
+  - **Sem UI nova nas telas** — mesmo padrão já estabelecido pros "irmãos" desses endpoints
+    (`diagnosticoAssistido`, `comparadorFornecedores`, `orcamentoPeca` também não têm tela ainda,
+    só API); UI fica pendente pra quando fizer sentido priorizar.
 - **Idempotência/DLQ real do rastreador (Postgres, sem Redis)**: tabela nova
   `PosicaoRastreadorRecebida` — o Assemilsat NÃO é idempotente (cada chamada consome a fila de
   posições novas do lado deles), então antes, se o processamento (atualizar veículo/viagem)

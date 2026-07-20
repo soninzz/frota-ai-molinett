@@ -1,9 +1,9 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { decodificarChaveNFCe, ChaveDecodificada } from './nfce-chave.util'
-import { fetchComRetry } from '../common/fetch-retry.util'
 import { PrismaService } from '../database/prisma.service'
 import { AuditoriaService } from '../common/auditoria/auditoria.service'
+import { LlmService } from '../common/llm/llm.service'
 
 type Provedor = 'mock' | 'gemini' | 'anthropic'
 
@@ -26,6 +26,18 @@ export interface LeituraCupom {
   fonte: Provedor
 }
 
+export interface LeituraNotaOficina {
+  oficina: string | null
+  placa: string | null
+  itens: { descricao: string; quantidade: number; valorUnitario: number | null }[]
+  valorTotal: number | null
+  prazoEstimadoDias: number | null
+  confianca: number
+  precisaConfirmacaoHumana: boolean
+  fonte: Provedor
+  veiculoSugerido: { id: string; placa: string } | null
+}
+
 const PROMPT_HODOMETRO =
   'Leia SOMENTE o hodômetro (km) deste painel de caminhão. Identifique o modelo do painel, ' +
   'e se possível a MARCA do veículo (ex: Volvo, Mercedes-Benz, Volkswagen, MAN, Scania) ' +
@@ -38,6 +50,14 @@ const PROMPT_CUPOM =
   '{"posto_nome": string, "volume_litros": float, "valor_total": float, "preco_por_litro": float, "confianca": 0-1}'
 
 const LIMIAR_CONFIANCA = 0.7
+
+const PROMPT_NOTA_OFICINA =
+  'Leia esta foto de um orçamento/nota de oficina mecânica. Extraia: nome da oficina, placa do ' +
+  'veículo (se visível), lista de itens/serviços com descrição e valor unitário, valor total, e ' +
+  'prazo estimado em dias (se mencionado). Responda APENAS com JSON, sem texto extra: ' +
+  '{"oficina": string|null, "placa": string|null, "itens": [{"descricao": string, "quantidade": ' +
+  'number, "valorUnitario": number|null}], "valorTotal": number|null, "prazoEstimadoDias": ' +
+  'number|null, "confianca": 0-1}'
 
 // Adaptador de provedor de IA multimodal — troca de Gemini pra Anthropic (ou
 // qualquer outro) mudando só LLM_PROVIDER no .env, sem reescrever quem chama.
@@ -52,6 +72,7 @@ export class OcrService {
     private config: ConfigService,
     private prisma: PrismaService,
     private auditoria: AuditoriaService,
+    private llm: LlmService,
   ) {
     this.modoOcr = this.config.get<string>('OCR_MODE', 'mock')
     this.provedor = this.config.get<Provedor>('LLM_PROVIDER', 'gemini')
@@ -202,6 +223,96 @@ export class OcrService {
     }
   }
 
+  // ── Leitura de nota/orçamento de oficina (foto) ──
+  // Só extrai — NÃO cria a OS sozinha. O item extraído (peças/valores) segue
+  // pro mesmo padrão "ler → humano confirma → grava" já usado em hodômetro/
+  // cupom: quem chama essa leitura mostra os campos extraídos pro usuário
+  // revisar/corrigir e só então chama POST /manutencao/os com os itens, que
+  // aí sim cria a OS de verdade (guardrail: nunca commitar valor financeiro
+  // direto da leitura de IA sem revisão humana).
+  async lerNotaOficina(imagemBase64: string, mimeType = 'image/jpeg'): Promise<LeituraNotaOficina> {
+    if (this.modoOcr !== 'live') return this.mockNotaOficina()
+    try {
+      const r = await this.chamarIA(imagemBase64, mimeType, PROMPT_NOTA_OFICINA)
+      const confianca = typeof r.confianca === 'number' ? r.confianca : 0
+      await this.prisma.integracaoLog.create({
+        data: { fonte: `ocr_${this.provedor}`, status: 'OK', detalhes: `nota de oficina, confiança ${confianca}` },
+      })
+      const veiculoSugerido = await this.sugerirVeiculoPorPlaca(r.placa ?? null)
+      const itens = Array.isArray(r.itens)
+        ? r.itens.map((i: any) => ({
+            descricao: String(i.descricao ?? ''),
+            quantidade: typeof i.quantidade === 'number' && i.quantidade > 0 ? i.quantidade : 1,
+            valorUnitario: typeof i.valorUnitario === 'number' ? i.valorUnitario : null,
+          }))
+        : []
+      return {
+        oficina: r.oficina ?? null,
+        placa: r.placa ?? null,
+        itens,
+        valorTotal: typeof r.valorTotal === 'number' ? r.valorTotal : null,
+        prazoEstimadoDias: typeof r.prazoEstimadoDias === 'number' ? r.prazoEstimadoDias : null,
+        confianca,
+        precisaConfirmacaoHumana: confianca < LIMIAR_CONFIANCA,
+        fonte: this.provedor,
+        veiculoSugerido,
+      }
+    } catch (e) {
+      this.logger.error(`Falha na leitura da nota de oficina via ${this.provedor}`, e)
+      await this.prisma.integracaoLog.create({
+        data: { fonte: `ocr_${this.provedor}`, status: 'ERRO', erro: (e as Error).message },
+      })
+      return {
+        oficina: null,
+        placa: null,
+        itens: [],
+        valorTotal: null,
+        prazoEstimadoDias: null,
+        confianca: 0,
+        precisaConfirmacaoHumana: true,
+        fonte: this.provedor,
+        veiculoSugerido: null,
+      }
+    }
+  }
+
+  private async sugerirVeiculoPorPlaca(placa: string | null) {
+    if (!placa) return null
+    // Placa no banco já vem no formato Mercosul com hífen (ex: "MHG-1A49"),
+    // igual o que a IA normalmente lê da nota — comparação direta (sem
+    // stripar caracteres, que quebrava o match tirando o hífen só de um lado).
+    const veiculo = await this.prisma.veiculo.findFirst({
+      where: { ativo: true, placa: { equals: placa.trim(), mode: 'insensitive' } },
+      select: { id: true, placa: true },
+    })
+    if (veiculo) return veiculo
+
+    // Fallback: a IA pode ler sem hífen ou com formato antigo — tenta por
+    // substring dos alfanuméricos em ambos os sentidos.
+    const somenteAlfanumerico = placa.replace(/[^A-Z0-9]/gi, '')
+    if (somenteAlfanumerico.length < 4) return null
+    const candidatos = await this.prisma.veiculo.findMany({
+      where: { ativo: true },
+      select: { id: true, placa: true },
+    })
+    return candidatos.find((v) => v.placa.replace(/[^A-Z0-9]/gi, '').toUpperCase() === somenteAlfanumerico.toUpperCase()) ?? null
+  }
+
+  private mockNotaOficina(): LeituraNotaOficina {
+    this.logger.debug('OCR_MODE!=live — nota de oficina precisa de confirmação manual')
+    return {
+      oficina: null,
+      placa: null,
+      itens: [],
+      valorTotal: null,
+      prazoEstimadoDias: null,
+      confianca: 0,
+      precisaConfirmacaoHumana: true,
+      fonte: 'mock',
+      veiculoSugerido: null,
+    }
+  }
+
   private mockHodometro(): LeituraHodometro {
     this.logger.debug('OCR_MODE!=live — hodômetro precisa de confirmação manual')
     return {
@@ -227,86 +338,11 @@ export class OcrService {
     }
   }
 
-  // ── Dispatch por provedor ──
-  private async chamarIA(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
-    if (this.provedor === 'anthropic') return this.chamarAnthropic(imagemBase64, mimeType, prompt)
-    return this.chamarGemini(imagemBase64, mimeType, prompt)
-  }
-
   // GEMINI_MODEL fica configurável de propósito — a nomenclatura dos modelos
   // Gemini muda com frequência e não dá pra garantir aqui qual é o nome exato
   // vigente da versão "Flash" pedida pelo cliente; confirmar o ID certo em
   // ai.google.dev/gemini-api/docs/models antes de virar OCR_MODE=live.
-  private async chamarGemini(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
-    const apiKey = this.config.get<string>('GEMINI_API_KEY')
-    if (!apiKey) {
-      throw new Error('OCR_MODE=live com LLM_PROVIDER=gemini mas GEMINI_API_KEY não está configurada')
-    }
-    const model = this.config.get<string>('GEMINI_MODEL', 'gemini-2.5-flash')
-
-    const response = await fetchComRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { inline_data: { mime_type: mimeType, data: imagemBase64 } },
-                { text: prompt },
-              ],
-            },
-          ],
-          generationConfig: { response_mime_type: 'application/json' },
-        }),
-      },
-    )
-
-    if (!response.ok) {
-      throw new Error(`Gemini API (${model}) retornou ${response.status}: ${await response.text()}`)
-    }
-
-    const dados = await response.json()
-    const texto = dados.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}'
-    return JSON.parse(texto)
-  }
-
-  private async chamarAnthropic(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
-    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY')
-    if (!apiKey) {
-      throw new Error('OCR_MODE=live com LLM_PROVIDER=anthropic mas ANTHROPIC_API_KEY não está configurada')
-    }
-
-    const response = await fetchComRetry('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-5',
-        max_tokens: 512,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mimeType, data: imagemBase64 } },
-              { type: 'text', text: prompt },
-            ],
-          },
-        ],
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Anthropic API retornou ${response.status}: ${await response.text()}`)
-    }
-
-    const dados = await response.json()
-    const texto = dados.content?.[0]?.text ?? '{}'
-    const jsonMatch = texto.match(/\{[\s\S]*\}/)
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : {}
+  private async chamarIA(imagemBase64: string, mimeType: string, prompt: string): Promise<any> {
+    return this.llm.completar({ prompt, imagemBase64, mimeType, json: true })
   }
 }

@@ -18,6 +18,15 @@ export class LerCupomDto {
   mimeType?: string
 }
 
+export class LerNotaOficinaDto {
+  @IsString()
+  imagemBase64: string
+
+  @IsOptional()
+  @IsString()
+  mimeType?: string
+}
+
 export class LerQrCodeDto {
   @IsString()
   conteudoQrCode: string // URL completa ou chave nua de 44 dígitos
