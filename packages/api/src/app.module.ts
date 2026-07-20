@@ -1,6 +1,9 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { APP_INTERCEPTOR } from '@nestjs/core'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
+import { CorrelationIdMiddleware } from './common/observabilidade/correlation-id.middleware'
+import { LoggingInterceptor } from './common/observabilidade/logging.interceptor'
 import { DatabaseModule } from './database/database.module'
 import { AuthModule } from './auth/auth.module'
 import { CotacaoModule } from './cotacao/cotacao.module'
@@ -54,5 +57,10 @@ import { WhatsappModule } from './whatsapp/whatsapp.module'
     EstoqueModule,
     WhatsappModule,
   ],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: LoggingInterceptor }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*')
+  }
+}

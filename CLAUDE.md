@@ -218,6 +218,30 @@ por ID externo). Já aplicado no banco (2026-07-10):
   manual se o mapeamento não fizer sentido em algum caso.
 
 ### Concluído em 2026-07-19
+- **Observabilidade (correlation-id + log estruturado)**: `CorrelationIdMiddleware` gera um
+  UUID por requisição (ou reaproveita `x-correlation-id` recebido), guarda num
+  `AsyncLocalStorage` (`RequestContext`) e devolve no header da resposta — dá pra rastrear uma
+  requisição específica do frontend até o log da API. `LoggingInterceptor` (global, via
+  `APP_INTERCEPTOR`) loga uma linha JSON por requisição (`correlationId`, método, rota,
+  status, duração, usuarioId, erro se houver) — a Vercel já indexa stdout, não precisa de
+  agregador externo pra já dar pra filtrar por correlationId num incidente. **Achado real ao
+  testar localmente antes de confirmar**: minha primeira tentativa retornava um objeto plano
+  `{subscribe: ...}` do interceptor pra fugir de um erro de tipagem (ver abaixo) — quebrou em
+  runtime (`TypeError: You provided an invalid object where a stream was expected`), porque o
+  rxjs 7.8 não aceita mais duck-typing genérico de `Subscribable`, só `Observable`/Promise/
+  Array/etc de verdade. Corrigido usando `next.handle().pipe(tap(...), catchError(...))` de
+  verdade (o jeito idiomático) — testado de novo localmente (`node dist/src/main.js` +
+  `curl`), confirmando log de sucesso (`nivel:"info"`, 201) e de erro (`nivel:"error"`, 401)
+  antes de considerar pronto. **Erro de tipagem `tsc` à parte** (não é bug, é artefato do
+  monorepo): existem duas cópias físicas de `rxjs` (uma hoisted na raiz do monorepo, outra
+  aninhada em `packages/api/node_modules` — visível no `package-lock.json`, só diferem no
+  patch version 7.8.1×7.8.2), então o TS trata `Observable<T>` das duas cópias como tipos
+  incompatíveis (identidade nominal, não estrutural) — precisei de um cast `any` só no ponto
+  de chamar `.pipe()`; em runtime funciona sem problema porque os operadores do rxjs interagem
+  via `source.lift()`, que não depende de qual cópia do módulo criou a função operadora.
+  Confirmado ao vivo em produção: `X-Correlation-Id` retorna no header da resposta, e o teste
+  de RBAC granular já existente (ler/aplicar/reverter override) continuou funcionando sem
+  regressão depois do deploy com o interceptor global ativo.
 - **RBAC granular (ler/escrever/aprovar/configurar)** — item que eu mesmo tinha adiado antes
   ("risco alto de mexer em autorização sem supervisão ao vivo"), retomado a pedido do cliente
   ("o que da pra fazer de pendencia nossa pode fazer"). Pra não correr o risco que eu tinha
