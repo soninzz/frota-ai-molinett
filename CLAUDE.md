@@ -218,6 +218,22 @@ por ID externo). Já aplicado no banco (2026-07-10):
   manual se o mapeamento não fizer sentido em algum caso.
 
 ### Concluído em 2026-07-19
+- **Captação de pedido por palavra-chave em grupo do WhatsApp** — último item da leva de
+  pendência "nossa" do audit de docs. Diferente do `ComandosWhatsappService` já existente (que
+  responde consulta 1:1 de quem já está no sistema — "saldo", "meta do mês" etc.), isso monitora
+  mensagem de GRUPO: cliente avisando "preciso de guincho" num grupo, texto solto, sem estrutura.
+  `CaptacaoGrupoService.processarMensagemGrupo()` (`POST /whatsapp/grupo`, mesmo padrão
+  testável-sem-webhook do endpoint irmão) casa por palavra-chave (guincho, reboque, socorro,
+  pane, quebrou, acidente, "preciso de transporte" etc., mesma normalização NFD/diacrítico já
+  usada no parser 1:1) e dispara alerta pro ATENDIMENTO/OPERACIONAL via `AlertasService`, mesmo
+  padrão `garantirRegra()` idempotente de sempre. **De propósito NÃO cria Cotação sozinho** —
+  extrair origem/destino/veículo de texto livre de forma confiável exigiria NLU de verdade, não
+  regex, e criar uma cotação errada é pior que não criar nenhuma (mesmo raciocínio já usado pra
+  excluir comandos de ESCRITA do parser 1:1: ação com consequência financeira a partir de texto
+  livre sem confirmação tem risco real de má-interpretação). Testado ao vivo contra o banco real:
+  mensagem com palavra-chave → `{capturado:true}` + alerta gravado em `HistoricoAlerta` com
+  autor/grupo/texto/palavra-chave detectada corretos (conferido direto no banco, removido depois);
+  mensagem sem palavra-chave → `{capturado:false}`, nenhum alerta disparado.
 - **Assistente de orçamento de peças por IA + leitura de nota de oficina via IA** — os 2 últimos
   itens da pendência "nossa" do audit de docs. `LlmService` novo (`common/llm/`) extraído do
   `OcrService` (que já tinha a integração Gemini/Anthropic pra hodômetro/cupom) — mesmo adaptador
